@@ -6,23 +6,7 @@ import NouveauClientCard from "./clients_components/NouveauClientCard";
 import PanierMoyenCard from "./clients_components/PanierMoyenCard";
 import ClientsTable from "./clients_components/ClientsTable";
 import ClientForm from "./clients_components/ClientForm";
-
-interface Client {
-  id: string;
-  entreprise: string;
-  patron: string;
-  telephone: string;
-  email: string;
-  statut: "Actif" | "Inactif" | "Prospect";
-  abonnement?: "Actif" | "Inactif";
-  caTotal: number;
-  projets: {
-    enCours: number;
-    actifs: number;
-    termines: number;
-  };
-  derniereActivite: string;
-}
+import type { Client } from "@/app/clients/types";
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);

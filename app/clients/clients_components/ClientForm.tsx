@@ -2,23 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-
-interface Client {
-  id: string;
-  entreprise: string;
-  patron: string;
-  telephone: string;
-  email: string;
-  statut: "Actif" | "Inactif" | "Prospect";
-  abonnement: "Actif" | "Inactif";
-  caTotal: number;
-  projets: {
-    enCours: number;
-    actifs: number;
-    termines: number;
-  };
-  derniereActivite: string;
-}
+import type { Client } from "@/app/clients/types";
 
 interface ClientFormProps {
   client?: Client | null;
