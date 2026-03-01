@@ -60,68 +60,68 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
       {/* Barre de recherche et filtre */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-4">
         <div className="flex-1 relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm" />
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm" />
           <input
             type="text"
             placeholder="🔍 Rechercher un client..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white md:bg-white border border-gray-200 rounded-xl text-gray-600 placeholder-gray-400 focus:outline-none focus:border-[#ED8600] focus:ring-1 focus:ring-[#ED8600]/20 transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-black md:bg-white border border-gray-200 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800 focus:ring-1 focus:ring-[#ED8600]/20 dark:focus:ring-blue-800/20 transition-colors"
           />
         </div>
         <div className="relative">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="appearance-none px-4 py-2.5 pr-8 bg-white border border-gray-200 rounded-xl text-gray-600 focus:outline-none focus:border-[#ED8600] cursor-pointer text-sm"
+            className="appearance-none px-4 py-2.5 pr-8 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800 cursor-pointer text-sm"
           >
             <option value="Tous les statuts">Tous les statuts</option>
             <option value="Actif">Actif</option>
             <option value="Inactif">Inactif</option>
             <option value="Prospect">Prospect</option>
           </select>
-          <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
+          <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none" />
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-xl md:rounded-2xl bg-white overflow-hidden md:shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-xl md:rounded-2xl bg-white dark:bg-black overflow-hidden md:shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:md:shadow-none">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-300">
-                <th className="text-left p-4 text-gray-500 text-sm font-semibold">Client</th>
-                <th className="text-left p-4 text-gray-500 text-sm font-semibold">Contact</th>
-                <th className="text-left p-4 text-gray-500 text-sm font-semibold">Statut</th>
-                <th className="text-left p-4 text-gray-500 text-sm font-semibold">CA Total</th>
-                <th className="text-left p-4 text-gray-500 text-sm font-semibold">Abonnement</th>
-                <th className="text-left p-4 text-gray-500 text-sm font-semibold">Dernière activité</th>
-                <th className="text-left p-4 text-gray-500 text-sm font-semibold"></th>
+              <tr className="border-b border-gray-300 dark:border-gray-700">
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Client</th>
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Contact</th>
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Statut</th>
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">CA Total</th>
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Abonnement</th>
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Dernière activité</th>
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold"></th>
               </tr>
             </thead>
             <tbody>
               {filteredClients.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-gray-500">
+                  <td colSpan={7} className="p-8 text-center text-gray-500 dark:text-gray-400">
                     Aucun client trouvé
                   </td>
                 </tr>
               ) : (
                 filteredClients.map((client) => (
-                <tr key={client.id} className="border-b border-gray-300 hover:bg-gray-200 transition-colors">
+                <tr key={client.id} className="border-b border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-[#1A10AC] flex items-center justify-center text-white font-semibold text-sm">
                         {getInitials(client.entreprise)}
                       </div>
-                      <span className="text-gray-500 text-sm">{client.entreprise}</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">{client.entreprise}</span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-gray-500 text-sm">{client.patron}</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">{client.patron}</span>
                       <div className="flex items-center gap-2">
-                        <FaEnvelope className="text-gray-500 text-xs" />
-                        <span className="text-gray-500 text-xs">{client.email}</span>
+                        <FaEnvelope className="text-gray-500 dark:text-gray-400 text-xs" />
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">{client.email}</span>
                       </div>
                     </div>
                   </td>
@@ -133,7 +133,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className="text-gray-500 text-sm">{(client.caTotal ?? 0).toLocaleString("fr-FR")} €</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm">{(client.caTotal ?? 0).toLocaleString("fr-FR")} €</span>
                   </td>
                   <td className="p-4 align-middle">
                     <div className="flex items-center">
@@ -143,19 +143,19 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className="text-gray-500 text-sm">{client.derniereActivite}</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm">{client.derniereActivite}</span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => onEdit(client)}
-                        className="text-gray-500 hover:text-gray-600 transition-colors p-2"
+                        className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2"
                       >
                         <FaEllipsisV className="text-sm" />
                       </button>
                       <button
                         onClick={() => onDelete(client.id)}
-                        className="text-red-500 hover:text-red-600 transition-colors text-sm"
+                        className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors text-sm"
                       >
                         Supprimer
                       </button>

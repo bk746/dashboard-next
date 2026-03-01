@@ -170,23 +170,23 @@ export default function Objectifs() {
     : 0;
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] dark:bg-black p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
       <div className="md:max-w-[1600px] md:mx-auto">
         <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Suivi</p>
-              <h1 className="text-[#ED8600] font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Objectifs</h1>
-              <p className="text-gray-500 text-sm sm:text-base md:text-[15px] mt-0.5">Suivi et gestion de vos objectifs</p>
+              <p className="text-gray-400 dark:text-gray-500 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Suivi</p>
+              <h1 className="text-[#ED8600] dark:text-blue-800 font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Objectifs</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-[15px] mt-0.5">Suivi et gestion de vos objectifs</p>
             </div>
             <button
               onClick={handleNewObjectif}
-              className="px-4 sm:px-6 py-2.5 bg-[#ED8600] rounded-xl text-white font-medium text-sm sm:text-base w-full sm:w-auto shadow-lg shadow-[#ED8600]/25 hover:shadow-[#ED8600]/30 hover:opacity-95 transition-all duration-200"
+              className="px-4 sm:px-6 py-2.5 bg-[#ED8600] dark:bg-blue-800 rounded-xl text-white font-medium text-sm sm:text-base w-full sm:w-auto shadow-lg shadow-[#ED8600]/25 dark:shadow-blue-800/25 hover:opacity-95 transition-all duration-200"
             >
               Nouvel objectif
             </button>
           </div>
-          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent hidden md:block" />
+          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent hidden md:block" />
         </header>
 
         <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Progression globale">
@@ -208,7 +208,7 @@ export default function Objectifs() {
           );
         })}
         {objectifs.length === 0 && (
-          <div className="col-span-full text-center text-gray-500 py-10">
+          <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-10">
             Aucun objectif défini. Créez votre premier objectif !
           </div>
         )}

@@ -215,14 +215,14 @@ export default function Finance() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] dark:bg-black p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
       <div className="md:max-w-[1600px] md:mx-auto">
         <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Trésorerie</p>
-              <h1 className="text-[#ED8600] font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Finance</h1>
-              <p className="text-gray-500 text-sm sm:text-base md:text-[15px] mt-0.5">Devis et factures</p>
+              <p className="text-gray-400 dark:text-gray-500 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Trésorerie</p>
+              <h1 className="text-[#ED8600] dark:text-blue-800 font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Finance</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-[15px] mt-0.5">Devis et factures</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -230,7 +230,7 @@ export default function Finance() {
                   setEditingDevis(null);
                   setShowDevisForm(true);
                 }}
-                className="px-4 sm:px-5 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-white hover:border-gray-300 font-medium text-sm shadow-sm transition-all duration-200"
+                className="px-4 sm:px-5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:border-gray-300 font-medium text-sm shadow-sm transition-all duration-200"
               >
                 Nouveau devis
               </button>
@@ -240,7 +240,7 @@ export default function Finance() {
                   setFactureFromDevis(null);
                   setShowFactureForm(true);
                 }}
-                className="px-4 sm:px-6 py-2.5 bg-[#ED8600] rounded-xl text-white font-medium text-sm shadow-lg shadow-[#ED8600]/25 hover:shadow-[#ED8600]/30 hover:opacity-95 transition-all duration-200"
+                className="px-4 sm:px-6 py-2.5 bg-[#ED8600] dark:bg-blue-800 rounded-xl text-white font-medium text-sm shadow-lg shadow-[#ED8600]/25 dark:shadow-blue-800/25 hover:opacity-95 transition-all duration-200"
               >
                 Nouvelle facture
               </button>
@@ -249,23 +249,23 @@ export default function Finance() {
                   setEditingDepense(null);
                   setShowDepenseForm(true);
                 }}
-                className="px-4 sm:px-5 py-2.5 border border-gray-200 rounded-xl text-gray-600 hover:bg-white hover:border-gray-300 font-medium text-sm shadow-sm transition-all duration-200"
+                className="px-4 sm:px-5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:border-gray-300 font-medium text-sm shadow-sm transition-all duration-200"
               >
                 Nouvelle dépense
               </button>
             </div>
           </div>
-          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent hidden md:block" />
-          <div className="flex gap-0 mt-6 md:mt-6 border-b border-gray-200 -mb-px">
+          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent hidden md:block" />
+          <div className="flex gap-0 mt-6 md:mt-6 border-b border-gray-200 dark:border-gray-700 -mb-px">
             <button
               onClick={() => setTab("devis")}
-              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${tab === "devis" ? "bg-transparent text-[#ED8600] border-[#ED8600]" : "text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50/50"}`}
+              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${tab === "devis" ? "bg-transparent text-[#ED8600] dark:text-blue-800 border-[#ED8600] dark:border-blue-800" : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50"}`}
             >
               Devis
             </button>
             <button
               onClick={() => setTab("factures")}
-              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${tab === "factures" ? "bg-transparent text-[#ED8600] border-[#ED8600]" : "text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50/50"}`}
+              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${tab === "factures" ? "bg-transparent text-[#ED8600] dark:text-blue-800 border-[#ED8600] dark:border-blue-800" : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50"}`}
             >
               Factures
             </button>
@@ -284,34 +284,34 @@ export default function Finance() {
           </section>
           {depenses.length > 0 && (
             <div className="px-4 sm:px-6 md:px-0 pb-4 md:pb-6">
-              <div className="border border-gray-200 md:rounded-2xl md:shadow-[0_1px_3px_rgba(0,0,0,0.06)] bg-white md:bg-white overflow-hidden">
-                <div className="p-4 md:p-5 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-gray-600 font-semibold text-sm md:text-base">Liste des dépenses</h3>
+              <div className="border border-gray-200 dark:border-gray-700 md:rounded-2xl md:shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:md:shadow-none bg-white dark:bg-black md:bg-white overflow-hidden">
+                <div className="p-4 md:p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                  <h3 className="text-gray-600 dark:text-gray-400 font-semibold text-sm md:text-base">Liste des dépenses</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-300">
-                        <th className="text-left p-4 text-gray-500 text-sm font-semibold">Désignation</th>
-                        <th className="text-left p-4 text-gray-500 text-sm font-semibold">Montant</th>
-                        <th className="text-left p-4 text-gray-500 text-sm font-semibold">Type</th>
-                        <th className="text-left p-4 text-gray-500 text-sm font-semibold"></th>
+                      <tr className="border-b border-gray-300 dark:border-gray-700">
+                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Désignation</th>
+                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Montant</th>
+                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Type</th>
+                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {depenses.map((d) => (
-                        <tr key={d.id} className="border-b border-gray-300 hover:bg-gray-200">
-                          <td className="p-4 text-gray-500 text-sm">{d.libelle}</td>
-                          <td className="p-4 text-gray-500 text-sm">{d.montant.toLocaleString("fr-FR")} €</td>
+                        <tr key={d.id} className="border-b border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800">
+                          <td className="p-4 text-gray-500 dark:text-gray-400 text-sm">{d.libelle}</td>
+                          <td className="p-4 text-gray-500 dark:text-gray-400 text-sm">{d.montant.toLocaleString("fr-FR")} €</td>
                           <td className="p-4">
-                            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${d.type === "Récurrent" ? "bg-amber-200 text-amber-900" : "bg-gray-300 text-gray-700"}`}>
+                            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${d.type === "Récurrent" ? "bg-amber-200 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200" : "bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300"}`}>
                               {d.type}
                             </span>
                           </td>
                           <td className="p-4">
                             <button
                               onClick={() => { setEditingDepense(d); setShowDepenseForm(true); }}
-                              className="text-gray-500 hover:text-gray-600 text-sm mr-2"
+                              className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm mr-2"
                             >
                               Modifier
                             </button>
