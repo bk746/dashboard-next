@@ -21,6 +21,7 @@ export default function Home() {
             Accéder au Dashboard
           </Link>
         </div>
+        <p className="mt-8 text-xs text-gray-400">Dernière mise à jour : 2 mars 2026</p>
       </div>
     </div>
   );
