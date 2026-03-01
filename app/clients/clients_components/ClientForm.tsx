@@ -11,19 +11,14 @@ interface ClientFormProps {
 }
 
 export default function ClientForm({ client, onClose, onSave }: ClientFormProps) {
-  const [formData, setFormData] = useState<Omit<Client, "id">>({
+  const [formData, setFormData] = useState({
     entreprise: "",
     patron: "",
     telephone: "",
     email: "",
-    statut: "Actif",
-    abonnement: "Actif",
-    caTotal: 0,
-    projets: {
-      enCours: 0,
-      actifs: 0,
-      termines: 0,
-    },
+    statut: "Actif" as const,
+    abonnement: "Actif" as const,
+    secteurActivite: "",
     derniereActivite: new Date().toLocaleDateString("fr-FR"),
   });
 
@@ -36,8 +31,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
         email: client.email,
         statut: client.statut,
         abonnement: client.abonnement || "Actif",
-        caTotal: client.caTotal,
-        projets: client.projets,
+        secteurActivite: client.secteurActivite ?? "",
         derniereActivite: client.derniereActivite,
       });
     }
@@ -48,6 +42,8 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
     const clientToSave: Client = {
       ...formData,
       id: client?.id || Date.now().toString(),
+      caTotal: client?.caTotal ?? 0,
+      projets: client?.projets ?? { enCours: 0, actifs: 0, termines: 0 },
     };
     onSave(clientToSave);
     onClose();
@@ -143,66 +139,14 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
           </div>
 
           <div>
-            <label className="block text-gray-500 text-sm mb-2">CA Total (€)</label>
+            <label className="block text-gray-500 text-sm mb-2">Secteur d'activité</label>
             <input
-              type="number"
-              required
-              min="0"
-              value={formData.caTotal}
-              onChange={(e) => setFormData({ ...formData, caTotal: parseInt(e.target.value) || 0 })}
+              type="text"
+              value={formData.secteurActivite}
+              onChange={(e) => setFormData({ ...formData, secteurActivite: e.target.value })}
+              placeholder="Ex. Tech, Santé, BTP..."
               className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             />
-          </div>
-
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Projets</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-gray-500 text-xs mb-1">En cours</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.projets.enCours}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      projets: { ...formData.projets, enCours: parseInt(e.target.value) || 0 },
-                    })
-                  }
-                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 text-xs mb-1">Actifs</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.projets.actifs}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      projets: { ...formData.projets, actifs: parseInt(e.target.value) || 0 },
-                    })
-                  }
-                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-500 text-xs mb-1">Terminés</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.projets.termines}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      projets: { ...formData.projets, termines: parseInt(e.target.value) || 0 },
-                    })
-                  }
-                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-                />
-              </div>
-            </div>
           </div>
 
           <div>

@@ -133,7 +133,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className="text-gray-500 text-sm">{client.caTotal.toLocaleString("fr-FR")} €</span>
+                    <span className="text-gray-500 text-sm">{(client.caTotal ?? 0).toLocaleString("fr-FR")} €</span>
                   </td>
                   <td className="p-4 align-middle">
                     <div className="flex items-center">

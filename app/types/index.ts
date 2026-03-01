@@ -10,8 +10,11 @@ export interface Client {
   email: string;
   statut: "Actif" | "Inactif" | "Prospect";
   abonnement?: "Actif" | "Inactif";
-  caTotal: number;
-  projets: { enCours: number; actifs: number; termines: number };
+  secteurActivite?: string;
+  /** Calculé côté finance à partir des factures, pas saisi dans le formulaire client */
+  caTotal?: number;
+  /** Non saisi dans le formulaire client */
+  projets?: { enCours: number; actifs: number; termines: number };
   derniereActivite: string;
 }
 

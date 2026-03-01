@@ -10,11 +10,9 @@ interface EvolutionCACardProps {
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
   if (active && payload?.length) {
     return (
-      <div className="rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-lg">
-        <p className="text-xs font-medium text-gray-500">{label}</p>
-        <p className="mt-0.5 text-base font-semibold text-gray-900 tabular-nums">
-          {payload[0].value.toLocaleString("fr-FR")} €
-        </p>
+      <div className="rounded-lg bg-white border border-neutral-300 px-4 py-3 shadow-lg">
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <p className="text-lg font-bold text-[#ED8600]">{payload[0].value.toLocaleString("fr-FR")} €</p>
       </div>
     );
   }
@@ -23,46 +21,28 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function EvolutionCACard({ data }: EvolutionCACardProps) {
   return (
-    <div className="h-full rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500">Évolution du CA</p>
-          <p className="mt-0.5 text-xs text-gray-400">Chiffre d'affaires mensuel</p>
-        </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50">
-          <FaChartLine className="h-4 w-4 text-orange-500" />
-        </div>
+    <div className="h-full rounded-2xl md:rounded-xl p-6 md:p-5 flex flex-col overflow-hidden relative transition-all duration-300 ease-out bg-white md:bg-gradient-to-tr md:from-[#f6f6f6] md:via-[#f6f6f6] md:to-[#ED8600] border border-neutral-300 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] md:shadow-2xl md:shadow-[#0000002b] hover:shadow-[0_2px_4px_rgba(0,0,0,0.04),0_12px_32px_rgba(0,0,0,0.08)] md:hover:shadow-2xl md:hover:shadow-[#0000002b] hover:scale-[1.01] md:hover:scale-[1.03]">
+      <div className="absolute top-3 right-3 w-10 h-10 bg-white/80 border border-neutral-300 rounded-lg flex items-center justify-center backdrop-blur-sm z-10 hidden md:flex">
+        <FaChartLine className="text-[#ED8600] text-lg" />
       </div>
-      <div className="flex-1 min-h-0 w-full">
+      <div className="mb-2 z-10">
+        <h3 className="text-[#ED8600] text-lg font-bold mb-1">Évolution du CA</h3>
+        <p className="text-gray-500 text-sm mb-5">Chiffre d'affaires mensuel sur l'année</p>
+      </div>
+      <div className="flex-1 w-full -mt-2 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f97316" stopOpacity={0.25} />
-                <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
+                <stop offset="0%" stopColor="#ED8600" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#ED8600" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" vertical={false} />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "rgb(107,114,128)", fontSize: 11 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: "rgb(107,114,128)", fontSize: 11 }} tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} />
             <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="revenue"
-              stroke="#f97316"
-              strokeWidth={2}
-              fill="url(#revenueGradient)"
-            />
+            <Area type="monotone" dataKey="revenue" stroke="#ED8600" strokeWidth={2} fill="url(#revenueGradient)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

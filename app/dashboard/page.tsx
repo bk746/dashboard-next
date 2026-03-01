@@ -193,29 +193,37 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen w-full bg-[#fafafa]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
-        <header className="mb-8 lg:mb-10">
-          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-500">Vue d'ensemble de votre activité</p>
+    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+      <div className="md:max-w-[1600px] md:mx-auto">
+        <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
+          <div>
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Tableau de bord</p>
+            <h1 className="text-[#ED8600] font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Dashboard</h1>
+            <p className="text-gray-500 text-sm sm:text-base md:text-[15px] mt-0.5">Vue d'ensemble de votre activité</p>
+          </div>
+          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent hidden md:block" />
         </header>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-10">
-          <CACard caActuel={caActuel} variation={variationCA} />
-          <ClientsActifCard clientsActifs={clientsActifs} variation={variationClients} />
-          <ObjectifAnnuelCard
-            caActuel={caActuel}
-            objectif={objectifAnnuelValue}
-            progression={progressionObjectif}
-          />
+        <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Indicateurs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
+            <CACard caActuel={caActuel} variation={variationCA} />
+            <ClientsActifCard clientsActifs={clientsActifs} variation={variationClients} />
+            <ObjectifAnnuelCard
+              caActuel={caActuel}
+              objectif={objectifAnnuelValue}
+              progression={progressionObjectif}
+            />
+          </div>
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          <div className="lg:col-span-2 min-h-[380px] lg:min-h-[420px]">
-            <EvolutionCACard data={evolutionCAData} />
-          </div>
-          <div className="min-h-[380px] lg:min-h-[420px]">
-            <NouveauxClientsCard data={nouveauxClientsData} />
+        <section className="px-4 sm:px-6 md:px-0" aria-label="Graphiques">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
+            <div className="lg:col-span-2 min-h-[400px] sm:min-h-[480px]">
+              <EvolutionCACard data={evolutionCAData} />
+            </div>
+            <div className="min-h-[400px] sm:min-h-[480px]">
+              <NouveauxClientsCard data={nouveauxClientsData} />
+            </div>
           </div>
         </section>
       </div>
