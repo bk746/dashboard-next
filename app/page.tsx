@@ -2,19 +2,26 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center gap-6 px-4">
-      <h1 className="text-3xl font-bold text-gray-400 md:text-4xl">
-        Bienvenue sur <span className="text-orange-500">BK Copilot</span>
-      </h1>
-      <p className="max-w-md text-center text-gray-500 text-lg">
-        Gérez votre dashboard, clients, finance et objectifs en un seul endroit.
-      </p>
-      <Link
-        href="/dashboard"
-        className="rounded-lg bg-orange-500 px-6 py-3 font-semibold text-gray-400 transition hover:bg-orange-600"
-      >
-        Accéder au Dashboard
-      </Link>
+    <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-12">
+      <div className="mx-auto w-full max-w-xl text-center">
+        <p className="text-sm font-medium uppercase tracking-widest text-gray-400">
+          Bienvenue
+        </p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
+          <span className="text-orange-500">BK Copilot</span>
+        </h1>
+        <p className="mt-5 text-base leading-relaxed text-gray-500 sm:text-lg">
+          Gérez votre dashboard, clients, finance et objectifs en un seul endroit.
+        </p>
+        <div className="mt-10">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center rounded-xl bg-orange-500 px-8 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+          >
+            Accéder au Dashboard
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
