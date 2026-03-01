@@ -11,13 +11,22 @@ interface ClientFormProps {
 }
 
 export default function ClientForm({ client, onClose, onSave }: ClientFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    entreprise: string;
+    patron: string;
+    telephone: string;
+    email: string;
+    statut: "Actif" | "Inactif" | "Prospect";
+    abonnement: "Actif" | "Inactif";
+    secteurActivite: string;
+    derniereActivite: string;
+  }>({
     entreprise: "",
     patron: "",
     telephone: "",
     email: "",
-    statut: "Actif" as const,
-    abonnement: "Actif" as const,
+    statut: "Actif",
+    abonnement: "Actif",
     secteurActivite: "",
     derniereActivite: new Date().toLocaleDateString("fr-FR"),
   });
