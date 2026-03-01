@@ -50,15 +50,15 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-black border border-neutral-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-neutral-700">
-          <h2 className="text-white text-xl font-bold">
+    <div className="fixed inset-0 bg-black/50 flex items-start md:items-center justify-center z-50 p-4 pt-20 md:pt-4">
+      <div className="bg-[#f6f6f6] border border-gray-300 rounded-xl w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
+        <div className="flex items-center justify-between p-6 border-b border-gray-300">
+          <h2 className="text-gray-500 text-xl font-bold">
             {objectif ? "Modifier l'objectif" : "Nouvel objectif"}
           </h2>
           <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-white transition-colors"
+            className="text-gray-500 hover:text-gray-600 transition-colors"
           >
             <FaTimes className="text-xl" />
           </button>
@@ -66,23 +66,23 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Libellé</label>
+            <label className="block text-gray-500 text-sm mb-2">Libellé</label>
             <input
               type="text"
               required
               value={formData.libelle}
               onChange={(e) => setFormData({ ...formData, libelle: e.target.value })}
               placeholder="Ex: Objectif 200 000€"
-              className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             />
           </div>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Type</label>
+            <label className="block text-gray-500 text-sm mb-2">Type</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as "Financier" | "Client" })}
-              className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             >
               <option value="Financier">Financier</option>
               <option value="Client">Client</option>
@@ -90,7 +90,7 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
           </div>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">
+            <label className="block text-gray-500 text-sm mb-2">
               Objectif {formData.type === "Financier" ? "(€)" : ""}
             </label>
             <input
@@ -100,31 +100,31 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
               value={formData.objectif}
               onChange={(e) => setFormData({ ...formData, objectif: parseInt(e.target.value) || 0 })}
               placeholder={formData.type === "Financier" ? "Ex: 200000" : "Ex: 100"}
-              className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-neutral-400 text-sm mb-2">Date de début</label>
+              <label className="block text-gray-500 text-sm mb-2">Date de début</label>
               <input
                 type="text"
                 required
                 value={formData.dateDebut}
                 onChange={(e) => setFormData({ ...formData, dateDebut: e.target.value })}
                 placeholder="DD/MM/YYYY"
-                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
               />
             </div>
 
             <div>
-              <label className="block text-neutral-400 text-sm mb-2">Date de fin</label>
+              <label className="block text-gray-500 text-sm mb-2">Date de fin</label>
               <input
                 type="text"
                 value={formData.dateFin}
                 onChange={(e) => setFormData({ ...formData, dateFin: e.target.value })}
                 placeholder="DD/MM/YYYY"
-                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
               />
             </div>
           </div>
@@ -133,13 +133,13 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-neutral-700 rounded-lg text-white hover:bg-neutral-900 transition-colors w-full sm:w-auto"
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-200 transition-colors w-full sm:w-auto"
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-[#1A10AC] rounded-lg text-white hover:bg-[#1a0fc0] transition-colors w-full sm:w-auto"
+              className="px-6 py-2 bg-[#ED8600] rounded-lg text-white hover:opacity-90 transition-colors w-full sm:w-auto"
             >
               {objectif ? "Modifier" : "Créer"}
             </button>

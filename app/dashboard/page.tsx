@@ -193,11 +193,11 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen w-full bg-[#000000] p-3 sm:p-4 md:p-6">
+    <div className="min-h-screen w-full bg-[#f6f6f6] p-3 sm:p-4 md:p-6">
       <div className="px-4 sm:px-6 md:px-10">
-        <h2 className="text-white font-bold text-lg sm:text-xl">Dashboard</h2>
-        <p className="text-neutral-400 text-sm sm:text-base md:text-lg">Vue d'ensemble de votre activité</p>
-        <hr className="text-neutral-400 w-full mt-2" />
+        <h2 className="text-[#ED8600] font-bold text-lg sm:text-xl">Dashboard</h2>
+        <p className="text-gray-500 font-semibold text-sm sm:text-base md:text-lg">Vue d'ensemble de votre activité</p>
+        <hr className="text-neutral-300 w-full mt-2" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 md:p-10">
         <CACard caActuel={caActuel} variation={variationCA} />

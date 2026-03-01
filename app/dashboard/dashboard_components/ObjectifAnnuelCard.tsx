@@ -11,25 +11,25 @@ export default function ObjectifAnnuelCard({ caActuel, objectif, progression }: 
   const isCompleted = progression >= 100;
   
   return (
-    <div className="border border-neutral-700 rounded-xl p-5 bg-linear-to-bl from-balck via-black to-[#1A10AC] h-full flex justify-between hover:scale-103 transition-all duration-300 ease-out overflow-hidden">
+    <div className="border border-neutral-300 rounded-xl p-5 bg-linear-to-bl from-[#f6f6f6] via-[#f6f6f6] to-[#ED8600] h-full flex shadow-2xl shadow-[#0000002b] justify-between hover:scale-103 transition-all duration-300 ease-out overflow-hidden">
       <div className="flex flex-col gap-1.5">
-        <h3 className="text-neutral-400 text-lg">Objectif annuel</h3>
-        <p className="text-white text-[clamp(28px,3vw,40px)] font-semibold">{objectif > 0 ? caActuel.toLocaleString("fr-FR") : 0} €</p>
-        <p className="text-white text-sm">
+        <h3 className="text-[#ED8600] text-lg font-bold">Objectif annuel</h3>
+        <p className="text-gray-500 text-[clamp(28px,3vw,40px)] font-semibold">{objectif > 0 ? caActuel.toLocaleString("fr-FR") : 0} €</p>
+        <p className="text-gray-500 text-sm">
           Objectif {caActuel.toLocaleString("fr-FR")} / {objectif > 0 ? objectif.toLocaleString("fr-FR") : 0} €
         </p>
-        <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+        <div className="w-full bg-gray-300 rounded-full h-2 mt-2">
           <div 
-            className={`h-2 rounded-full transition-all duration-500 ${isCompleted ? "bg-green-500" : "bg-teal-400"}`}
+            className={`h-2 rounded-full transition-all duration-500 ${isCompleted ? "bg-green-500" : "bg-[#ED8600]"}`}
             style={{ width: `${percentage}%` }}
           ></div>
         </div>
         {isCompleted && (
-          <p className="text-green-400 text-xs text-right mt-1">100% atteint ✅</p>
+          <p className="text-green-600 text-xs text-right mt-1">100% atteint ✅</p>
         )}
       </div>
       <div className="hidden sm:block">
-        <FaBullseye className="h-10 w-10 sm:h-12 sm:w-12 p-1.5 bg-transparent rounded-xl text-white" />
+        <FaBullseye className="h-10 w-10 sm:h-12 sm:w-12 p-1.5 bg-transparent rounded-xl text-[#ED8600]" />
       </div>
     </div>
   );

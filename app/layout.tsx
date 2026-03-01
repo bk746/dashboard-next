@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import MobileNav from "./components/MobileNav";
 import Sidebar from "./components/Sidebar";
+import CacheBuster from "./components/CacheBuster";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,7 +18,26 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FinPilot",
   description: "FinPilot Dashboard",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "FinPilot",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
 };
+
+export const viewport: Viewport = {
+  themeColor: "#f97316",
+};
+
+// Éviter la mise en cache statique des pages
+export const dynamic = "force-dynamic";
 
 export default function RootLayout({
   children,
@@ -37,9 +57,9 @@ export default function RootLayout({
           <Sidebar />
 
           {/* Main Content */}
-          <main className="flex-1 w-full md:ml-[280px] bg-black min-h-screen pt-14 md:pt-0 relative z-0 overflow-auto">
-            <div className="h-auto mb-5 px-4 md:px-6">
-              {children}
+          <main className="flex-1 w-full md:ml-[280px] min-h-screen pt-20 md:pt-0 relative z-0 overflow-auto bg-[#f6f6f6] md:bg-[#f8f8f7]">
+            <div className="h-auto md:min-h-screen">
+              <CacheBuster>{children}</CacheBuster>
             </div>
           </main>
         </div>

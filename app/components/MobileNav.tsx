@@ -15,6 +15,7 @@ export default function MobileNav() {
     { href: "/finance", label: "Finance" },
     { href: "/deals-projets", label: "Deals / Projets" },
     { href: "/objectifs", label: "Objectifs" },
+    { href: "/parametres", label: "Paramètres" },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -22,14 +23,15 @@ export default function MobileNav() {
   return (
     <>
       {/* Mobile Navbar */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 bg-black border-b border-neutral-700 z-50">
+      <nav className="md:hidden fixed top-0 left-0 right-0 bg-[#f6f6f6] border-b border-gray-300 z-50">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-lg font-bold text-white">
-            <span className="text-[#1A10AC] text-xl">BK</span> Copilot
+          <h1 className="text-lg font-bold">
+            <span className="text-[#ED8600] text-xl">BK</span>{" "}
+            <span className="text-gray-400">Copilot</span>
           </h1>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-white hover:bg-neutral-800 rounded-lg transition-colors"
+            className="p-2 text-gray-400 hover:bg-gray-200 hover:text-[#ED8600] rounded-lg transition-colors"
             aria-label="Toggle menu"
           >
             {isOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
@@ -47,19 +49,20 @@ export default function MobileNav() {
 
       {/* Mobile Menu Drawer */}
       <aside
-        className={`md:hidden fixed top-0 right-0 h-full w-64 bg-black border-l border-neutral-700 z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`md:hidden fixed top-0 right-0 h-full w-64 bg-[#f6f6f6] border-l border-gray-300 z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-4 border-b border-neutral-700 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white">
-              <span className="text-[#1A10AC]">BK</span> Copilot
+          <div className="p-4 border-b border-gray-300 flex items-center justify-between">
+            <h2 className="text-lg font-bold">
+              <span className="text-[#ED8600]">BK</span>{" "}
+              <span className="text-gray-400">Copilot</span>
             </h2>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 text-white hover:bg-neutral-800 rounded-lg transition-colors"
+              className="p-2 text-gray-400 hover:bg-gray-200 hover:text-[#ED8600] rounded-lg transition-colors"
             >
               <FaTimes className="text-xl" />
             </button>
@@ -72,10 +75,10 @@ export default function MobileNav() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 text-gray-300 rounded-lg transition-all duration-200 ${
+                className={`block px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive(item.href)
-                    ? "bg-[#1A10AC] text-white font-semibold"
-                    : "hover:bg-neutral-800 hover:text-white"
+                    ? "bg-[#ED8600] text-white font-semibold"
+                    : "text-gray-400 hover:bg-gray-200 hover:text-[#ED8600]"
                 }`}
               >
                 {item.label}

@@ -6,7 +6,7 @@ export default function Home() {
       <h1 className="text-3xl font-bold text-white md:text-4xl">
         Bienvenue sur <span className="text-[#1A10AC]">BK Copilot</span>
       </h1>
-      <p className="max-w-md text-center text-gray-400 text-lg">
+      <p className="max-w-md text-center text-gray-500 text-lg">
         Gérez votre dashboard, clients, finance et objectifs en un seul endroit.
       </p>
       <Link

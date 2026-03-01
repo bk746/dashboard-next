@@ -10,9 +10,9 @@ interface NouveauxClientsCardProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg bg-gray-900 border border-neutral-700 px-4 py-3 shadow-lg">
-        <p className="text-sm font-medium text-white">{label}</p>
-        <p className="text-lg font-bold text-[#1A10AC]">
+      <div className="rounded-xl bg-white/95 backdrop-blur-sm border border-neutral-300 px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+        <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
+        <p className="text-xl font-bold text-gray-800 mt-0.5 tabular-nums">
           {payload[0].value} nouveau{payload[0].value > 1 ? "x" : ""} client{payload[0].value > 1 ? "s" : ""}
         </p>
       </div>
@@ -23,39 +23,41 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function NouveauxClientsCard({ data }: NouveauxClientsCardProps) {
   return (
-    <div className="border border-neutral-700 rounded-xl p-5 bg-linear-to-tl from-balck via-black to-[#1A10AC] h-full flex flex-col relative overflow-hidden">
-      <div className="absolute top-3 right-3 w-10 h-10 bg-gray-900/50 border border-neutral-700 rounded-lg flex items-center justify-center backdrop-blur-sm z-10">
-        <FaUsers className="text-white text-lg" />
+    <div className="rounded-2xl md:rounded-xl p-6 md:p-5 h-full flex flex-col relative overflow-hidden transition-all duration-300 ease-out
+      bg-white md:bg-linear-to-tl md:from-[#f6f6f6] md:via-[#f6f6f6] md:to-[#ED8600] border border-neutral-300 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] md:shadow-2xl md:shadow-[#0000002b] hover:shadow-[0_2px_4px_rgba(0,0,0,0.04),0_12px_32px_rgba(0,0,0,0.08)] md:hover:shadow-2xl md:hover:shadow-[#0000002b] hover:scale-[1.01] md:hover:scale-103">
+      <div className="absolute top-4 right-4 md:top-3 md:right-3 w-10 h-10 bg-gray-50 md:bg-white/80 md:border md:border-neutral-300 rounded-xl md:rounded-lg flex items-center justify-center z-10">
+        <FaUsers className="text-[#ED8600]/90 md:text-[#ED8600] text-lg" />
       </div>
-      
-      <div className="mb-2 z-10">
-        <h3 className="text-white text-lg font-semibold mb-1">Nouveaux clients</h3>
-        <p className="text-neutral-400 text-sm mb-5">Acquisition mensuelle</p>
+
+      <div className="mb-4 md:mb-2 z-10">
+        <p className="text-gray-500 md:text-white text-xs md:text-lg font-medium md:font-bold uppercase md:normal-case tracking-widest md:tracking-normal">Nouveaux clients</p>
+        <h3 className="text-gray-800 md:text-white text-lg font-bold mt-0.5 md:mb-1">Acquisition mensuelle</h3>
+        <p className="text-gray-400 md:text-gray-500 text-sm mt-1 md:mb-5">Sur les 12 derniers mois</p>
       </div>
       
       <div className="flex-1 w-full -mt-2 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              stroke="rgba(255, 255, 255, 0.1)" 
-              vertical={false} 
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(0, 0, 0, 0.06)"
+              vertical={false}
             />
-            <XAxis 
-              dataKey="month" 
-              axisLine={false} 
+            <XAxis
+              dataKey="month"
+              axisLine={false}
               tickLine={false}
-              tick={{ fill: "rgba(255, 255, 255, 0.6)", fontSize: 11 }}
+              tick={{ fill: "#9ca3af", fontSize: 11 }}
             />
-            <YAxis 
-              axisLine={false} 
+            <YAxis
+              axisLine={false}
               tickLine={false}
-              tick={{ fill: "rgba(255, 255, 255, 0.5)", fontSize: 11 }}
+              tick={{ fill: "#9ca3af", fontSize: 11 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar
               dataKey="clients"
-              fill="#1A10AC"
+              fill="#ED8600"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

@@ -170,30 +170,31 @@ export default function Objectifs() {
     : 0;
 
   return (
-    <div className="min-h-screen w-full bg-[#000000] p-3 sm:p-4 md:p-6">
-      <div className="px-4 sm:px-6 md:px-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-white font-bold text-lg sm:text-xl">Objectifs</h2>
-            <p className="text-neutral-400 text-sm sm:text-base md:text-lg">Suivi et gestion de vos objectifs</p>
+    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+      <div className="md:max-w-[1600px] md:mx-auto">
+        <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Suivi</p>
+              <h1 className="text-[#ED8600] font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Objectifs</h1>
+              <p className="text-gray-500 text-sm sm:text-base md:text-[15px] mt-0.5">Suivi et gestion de vos objectifs</p>
+            </div>
+            <button
+              onClick={handleNewObjectif}
+              className="px-4 sm:px-6 py-2.5 bg-[#ED8600] rounded-xl text-white font-medium text-sm sm:text-base w-full sm:w-auto shadow-lg shadow-[#ED8600]/25 hover:shadow-[#ED8600]/30 hover:opacity-95 transition-all duration-200"
+            >
+              Nouvel objectif
+            </button>
           </div>
-          <button
-            onClick={handleNewObjectif}
-            className="px-4 sm:px-6 py-2 bg-[#1A10AC] rounded-lg text-white hover:bg-[#1a0fc0] transition-colors font-medium text-sm sm:text-base w-full sm:w-auto"
-          >
-            Nouvel objectif
-          </button>
-        </div>
-        <hr className="text-neutral-400 w-full" />
-      </div>
+          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent hidden md:block" />
+        </header>
 
-      {/* Grande barre de progression */}
-      <div className="px-4 sm:px-6 md:px-10 pt-4 sm:pt-6 md:pt-10">
-        <ProgressionTotalCard progressionTotal={progressionTotal} />
-      </div>
+        <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Progression globale">
+          <ProgressionTotalCard progressionTotal={progressionTotal} />
+        </section>
 
-      {/* Cartes d'objectifs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 md:p-10">
+        <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Objectifs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
         {objectifs.map((objectif) => {
           const actuel = objectif.type === "Financier" ? caActuel : clientsActuels;
           return (
@@ -207,13 +208,18 @@ export default function Objectifs() {
           );
         })}
         {objectifs.length === 0 && (
-          <div className="col-span-full text-center text-neutral-400 py-10">
+          <div className="col-span-full text-center text-gray-500 py-10">
             Aucun objectif défini. Créez votre premier objectif !
           </div>
         )}
+          </div>
+        </section>
+
+        <section className="px-4 sm:px-6 md:px-0" aria-label="Liste des objectifs">
+          <ObjectifsTable objectifs={objectifs} onDelete={handleDeleteObjectif} onEdit={handleEditObjectif} />
+        </section>
       </div>
 
-      <ObjectifsTable objectifs={objectifs} onDelete={handleDeleteObjectif} onEdit={handleEditObjectif} />
       {showForm && (
         <ObjectifForm
           objectif={editingObjectif}

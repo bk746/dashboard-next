@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import type { Client } from "@/app/clients/types";
+import type { Client } from "@/app/types";
 
 interface ClientFormProps {
   client?: Client | null;
@@ -54,15 +54,15 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-black border border-neutral-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-neutral-700">
-          <h2 className="text-white text-xl font-bold">
+    <div className="fixed inset-0 bg-black/50 flex items-start md:items-center justify-center z-50 p-4 pt-20 md:pt-4">
+      <div className="bg-[#f6f6f6] border border-gray-300 rounded-xl w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
+        <div className="flex items-center justify-between p-6 border-b border-gray-300">
+          <h2 className="text-gray-500 text-xl font-bold">
             {client ? "Modifier le client" : "Nouveau client"}
           </h2>
           <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-white transition-colors"
+            className="text-gray-500 hover:text-gray-600 transition-colors"
           >
             <FaTimes className="text-xl" />
           </button>
@@ -70,58 +70,58 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Nom de l'entreprise</label>
+            <label className="block text-gray-500 text-sm mb-2">Nom de l'entreprise</label>
             <input
               type="text"
               required
               value={formData.entreprise}
               onChange={(e) => setFormData({ ...formData, entreprise: e.target.value })}
-              className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             />
           </div>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Nom du patron</label>
+            <label className="block text-gray-500 text-sm mb-2">Nom du patron</label>
             <input
               type="text"
               required
               value={formData.patron}
               onChange={(e) => setFormData({ ...formData, patron: e.target.value })}
-              className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-neutral-400 text-sm mb-2">Téléphone</label>
+              <label className="block text-gray-500 text-sm mb-2">Téléphone</label>
               <input
                 type="tel"
                 required
                 value={formData.telephone}
                 onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
               />
             </div>
 
             <div>
-              <label className="block text-neutral-400 text-sm mb-2">Email</label>
+              <label className="block text-gray-500 text-sm mb-2">Email</label>
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-neutral-400 text-sm mb-2">Statut</label>
+              <label className="block text-gray-500 text-sm mb-2">Statut</label>
               <select
                 value={formData.statut}
                 onChange={(e) => setFormData({ ...formData, statut: e.target.value as "Actif" | "Inactif" | "Prospect" })}
-                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
               >
                 <option value="Actif">Actif</option>
                 <option value="Inactif">Inactif</option>
@@ -130,11 +130,11 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
             </div>
 
             <div>
-              <label className="block text-neutral-400 text-sm mb-2">Abonnement</label>
+              <label className="block text-gray-500 text-sm mb-2">Abonnement</label>
               <select
                 value={formData.abonnement}
                 onChange={(e) => setFormData({ ...formData, abonnement: e.target.value as "Actif" | "Inactif" })}
-                className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
               >
                 <option value="Actif">Actif</option>
                 <option value="Inactif">Inactif</option>
@@ -143,22 +143,22 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
           </div>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">CA Total (€)</label>
+            <label className="block text-gray-500 text-sm mb-2">CA Total (€)</label>
             <input
               type="number"
               required
               min="0"
               value={formData.caTotal}
               onChange={(e) => setFormData({ ...formData, caTotal: parseInt(e.target.value) || 0 })}
-              className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             />
           </div>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Projets</label>
+            <label className="block text-gray-500 text-sm mb-2">Projets</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-neutral-400 text-xs mb-1">En cours</label>
+                <label className="block text-gray-500 text-xs mb-1">En cours</label>
                 <input
                   type="number"
                   min="0"
@@ -169,11 +169,11 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                       projets: { ...formData.projets, enCours: parseInt(e.target.value) || 0 },
                     })
                   }
-                  className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
                 />
               </div>
               <div>
-                <label className="block text-neutral-400 text-xs mb-1">Actifs</label>
+                <label className="block text-gray-500 text-xs mb-1">Actifs</label>
                 <input
                   type="number"
                   min="0"
@@ -184,11 +184,11 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                       projets: { ...formData.projets, actifs: parseInt(e.target.value) || 0 },
                     })
                   }
-                  className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
                 />
               </div>
               <div>
-                <label className="block text-neutral-400 text-xs mb-1">Terminés</label>
+                <label className="block text-gray-500 text-xs mb-1">Terminés</label>
                 <input
                   type="number"
                   min="0"
@@ -199,21 +199,21 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                       projets: { ...formData.projets, termines: parseInt(e.target.value) || 0 },
                     })
                   }
-                  className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-neutral-400 text-sm mb-2">Dernière activité</label>
+            <label className="block text-gray-500 text-sm mb-2">Dernière activité</label>
             <input
               type="text"
               required
               value={formData.derniereActivite}
               onChange={(e) => setFormData({ ...formData, derniereActivite: e.target.value })}
               placeholder="DD/MM/YYYY"
-              className="w-full px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[#1A10AC]"
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
             />
           </div>
 
@@ -221,13 +221,13 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-neutral-700 rounded-lg text-white hover:bg-neutral-900 transition-colors w-full sm:w-auto"
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-200 transition-colors w-full sm:w-auto"
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-[#1A10AC] rounded-lg text-white hover:bg-[#1a0fc0] transition-colors w-full sm:w-auto"
+              className="px-6 py-2 bg-[#ED8600] rounded-lg text-white hover:opacity-90 transition-colors w-full sm:w-auto"
             >
               {client ? "Modifier" : "Créer"}
             </button>

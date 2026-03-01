@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import TotalClientCard from "./clients_components/TotalClientCard";
 import NouveauClientCard from "./clients_components/NouveauClientCard";
-import PanierMoyenCard from "./clients_components/PanierMoyenCard";
+import AbonnementActifsCard from "./clients_components/AbonnementActifsCard";
 import ClientsTable from "./clients_components/ClientsTable";
 import ClientForm from "./clients_components/ClientForm";
-import type { Client } from "@/app/clients/types";
+import type { Client } from "@/app/types";
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -87,37 +87,42 @@ export default function Clients() {
     return clientDate.getMonth() === currentMonth && clientDate.getFullYear() === currentYear;
   }).length;
 
-  // Calculer le panier moyen (moyenne des CA totaux)
-  const panierMoyen = clients.length > 0 
-    ? Math.round(clients.reduce((sum, client) => sum + client.caTotal, 0) / clients.length)
-    : 0;
+  // Compter les clients avec abonnement actif
+  const abonnementActifs = clients.filter((c) => c.abonnement === "Actif").length;
 
   return (
-    <div className="min-h-screen w-full bg-[#000000] p-3 sm:p-4 md:p-6">
-      <div className="px-4 sm:px-6 md:px-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-white font-bold text-lg sm:text-xl">Clients</h2>
-            <p className="text-neutral-400 text-sm sm:text-base md:text-lg">Gestion et suivi de vos clients</p>
+    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+      <div className="md:max-w-[1600px] md:mx-auto">
+        <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Gestion</p>
+              <h1 className="text-[#ED8600] font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Clients</h1>
+              <p className="text-gray-500 text-sm sm:text-base md:text-[15px] mt-0.5">Gestion et suivi de vos clients</p>
+            </div>
+            <button
+              onClick={handleNewClient}
+              className="px-4 sm:px-6 py-2.5 bg-[#ED8600] rounded-xl text-white font-medium text-sm sm:text-base w-full sm:w-auto shadow-lg shadow-[#ED8600]/25 hover:shadow-[#ED8600]/30 hover:opacity-95 transition-all duration-200"
+            >
+              Nouveau client
+            </button>
           </div>
-          <button
-            onClick={handleNewClient}
-            className="px-4 sm:px-6 py-2 bg-[#1A10AC] rounded-lg text-white hover:bg-[#1a0fc0] transition-colors font-medium text-sm sm:text-base w-full sm:w-auto"
-          >
-            Nouveau client
-          </button>
-        </div>
-        <hr className="text-neutral-400 w-full" />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 md:p-10">
-        <TotalClientCard totalClients={totalClients} />
-        <NouveauClientCard nouveauxClients={nouveauxClients} />
-        <PanierMoyenCard panierMoyen={panierMoyen} />
-      </div>
-      <ClientsTable clients={clients} onDelete={handleDeleteClient} onEdit={handleEditClient} />
+          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent hidden md:block" />
+        </header>
+        <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Indicateurs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
+            <TotalClientCard totalClients={totalClients} />
+            <NouveauClientCard nouveauxClients={nouveauxClients} />
+            <AbonnementActifsCard abonnementActifs={abonnementActifs} />
+          </div>
+        </section>
+        <section className="px-4 sm:px-6 md:px-0" aria-label="Liste des clients">
+          <ClientsTable clients={clients} onDelete={handleDeleteClient} onEdit={handleEditClient} />
+        </section>
       {showForm && (
         <ClientForm client={editingClient} onClose={() => setShowForm(false)} onSave={handleSaveClient} />
       )}
+      </div>
     </div>
   );
 }

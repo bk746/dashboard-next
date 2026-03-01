@@ -18,3 +18,29 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   min-height: 100vh;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .devis-print-area,
+  .devis-print-area *,
+  .facture-print-area,
+  .facture-print-area * {
+    visibility: visible;
+  }
+  .devis-print-area,
+  .facture-print-area {
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: white !important;
+    padding: 24px !important;
+    box-shadow: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
