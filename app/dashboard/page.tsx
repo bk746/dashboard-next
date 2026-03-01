@@ -193,29 +193,32 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f6] p-3 sm:p-4 md:p-6">
-      <div className="px-4 sm:px-6 md:px-10">
-        <h2 className="text-[#ED8600] font-bold text-lg sm:text-xl">Dashboard</h2>
-        <p className="text-gray-500 font-semibold text-sm sm:text-base md:text-lg">Vue d'ensemble de votre activité</p>
-        <hr className="text-neutral-300 w-full mt-2" />
+    <div className="min-h-screen w-full bg-[#fafafa]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <header className="mb-8 lg:mb-10">
+          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-500">Vue d'ensemble de votre activité</p>
+        </header>
+
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-10">
+          <CACard caActuel={caActuel} variation={variationCA} />
+          <ClientsActifCard clientsActifs={clientsActifs} variation={variationClients} />
+          <ObjectifAnnuelCard
+            caActuel={caActuel}
+            objectif={objectifAnnuelValue}
+            progression={progressionObjectif}
+          />
+        </section>
+
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="lg:col-span-2 min-h-[380px] lg:min-h-[420px]">
+            <EvolutionCACard data={evolutionCAData} />
+          </div>
+          <div className="min-h-[380px] lg:min-h-[420px]">
+            <NouveauxClientsCard data={nouveauxClientsData} />
+          </div>
+        </section>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 md:p-10">
-        <CACard caActuel={caActuel} variation={variationCA} />
-        <ClientsActifCard clientsActifs={clientsActifs} variation={variationClients} />
-        <ObjectifAnnuelCard 
-          caActuel={caActuel} 
-          objectif={objectifAnnuelValue} 
-          progression={progressionObjectif}
-        />
-      </div>
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 auto-rows-[520px] pb-4 sm:pb-6 md:pb-10 px-4 sm:px-6 md:px-10">
-        <div className="lg:col-span-2 h-full min-h-[400px] sm:min-h-[520px]">
-          <EvolutionCACard data={evolutionCAData} />
-        </div>
-        <div className="h-full col-span-1 min-h-[400px] sm:min-h-[520px]">
-          <NouveauxClientsCard data={nouveauxClientsData} />
-        </div>
-      </section>
     </div>
   );
 }

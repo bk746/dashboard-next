@@ -1,19 +1,28 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { FaUsers } from "react-icons/fa";
+import { FaUserPlus } from "react-icons/fa";
 
 interface NouveauxClientsCardProps {
   data: { month: string; clients: number }[];
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { value: number }[];
+  label?: string;
+}) => {
+  if (active && payload?.length) {
+    const n = payload[0].value;
     return (
-      <div className="rounded-xl bg-white/95 backdrop-blur-sm border border-neutral-300 px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
-        <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
-        <p className="text-xl font-bold text-gray-800 mt-0.5 tabular-nums">
-          {payload[0].value} nouveau{payload[0].value > 1 ? "x" : ""} client{payload[0].value > 1 ? "s" : ""}
+      <div className="rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-lg">
+        <p className="text-xs font-medium text-gray-500">{label}</p>
+        <p className="mt-0.5 text-base font-semibold text-gray-900 tabular-nums">
+          {n} nouveau{n !== 1 ? "x" : ""} client{n !== 1 ? "s" : ""}
         </p>
       </div>
     );
@@ -23,26 +32,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function NouveauxClientsCard({ data }: NouveauxClientsCardProps) {
   return (
-    <div className="rounded-2xl md:rounded-xl p-6 md:p-5 h-full flex flex-col relative overflow-hidden transition-all duration-300 ease-out
-      bg-white md:bg-linear-to-tl md:from-[#f6f6f6] md:via-[#f6f6f6] md:to-[#ED8600] border border-neutral-300 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] md:shadow-2xl md:shadow-[#0000002b] hover:shadow-[0_2px_4px_rgba(0,0,0,0.04),0_12px_32px_rgba(0,0,0,0.08)] md:hover:shadow-2xl md:hover:shadow-[#0000002b] hover:scale-[1.01] md:hover:scale-103">
-      <div className="absolute top-4 right-4 md:top-3 md:right-3 w-10 h-10 bg-gray-50 md:bg-white/80 md:border md:border-neutral-300 rounded-xl md:rounded-lg flex items-center justify-center z-10">
-        <FaUsers className="text-[#ED8600]/90 md:text-[#ED8600] text-lg" />
+    <div className="h-full rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex flex-col">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-500">Nouveaux clients</p>
+          <p className="mt-0.5 text-xs text-gray-400">Acquisition sur 12 mois</p>
+        </div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50">
+          <FaUserPlus className="h-4 w-4 text-orange-500" />
+        </div>
       </div>
-
-      <div className="mb-4 md:mb-2 z-10">
-        <p className="text-gray-500 md:text-white text-xs md:text-lg font-medium md:font-bold uppercase md:normal-case tracking-widest md:tracking-normal">Nouveaux clients</p>
-        <h3 className="text-gray-800 md:text-white text-lg font-bold mt-0.5 md:mb-1">Acquisition mensuelle</h3>
-        <p className="text-gray-400 md:text-gray-500 text-sm mt-1 md:mb-5">Sur les 12 derniers mois</p>
-      </div>
-      
-      <div className="flex-1 w-full -mt-2 min-h-0">
+      <div className="flex-1 min-h-0 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="rgba(0, 0, 0, 0.06)"
-              vertical={false}
-            />
+          <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
             <XAxis
               dataKey="month"
               axisLine={false}
@@ -55,11 +58,7 @@ export default function NouveauxClientsCard({ data }: NouveauxClientsCardProps) 
               tick={{ fill: "#9ca3af", fontSize: 11 }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Bar
-              dataKey="clients"
-              fill="#ED8600"
-              radius={[4, 4, 0, 0]}
-            />
+            <Bar dataKey="clients" fill="#f97316" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

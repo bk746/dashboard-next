@@ -7,21 +7,30 @@ interface CACardProps {
 
 export default function CACard({ caActuel, variation }: CACardProps) {
   const isPositive = variation >= 0;
-  
+
   return (
-    <div className="border border-neutral-300 rounded-xl p-5 bg-linear-to-br from-[#f6f6f6] shadow-2xl shadow-[#0000002b] via-[#f6f6f6] to-[#ED8600] h-full flex justify-between hover:scale-103 transition-all duration-300 ease-out overflow-hidden">
-      <div className="flex flex-col gap-1.5">
-        <h3 className="text-[#ED8600] text-lg font-bold">Chiffre d'affaires</h3>
-        <p className="text-gray-500 text-[clamp(28px,3vw,40px)] font-semibold">{caActuel.toLocaleString("fr-FR")} €</p>
-        <div className="flex gap-3 items-center mt-2">
-          <div className={`px-2 py-1 rounded-full text-white text-sm ${isPositive ? "bg-green-700" : "bg-red-700"}`}>
-            {isPositive ? "+" : ""}{variation.toFixed(1)}%
+    <div className="h-full rounded-2xl bg-white border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-gray-500">Chiffre d'affaires</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900 tabular-nums">
+            {caActuel.toLocaleString("fr-FR")} €
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                isPositive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+              }`}
+            >
+              {isPositive ? "+" : ""}
+              {variation.toFixed(1)}%
+            </span>
+            <span className="text-xs text-gray-400">vs mois dernier</span>
           </div>
-          <div className="text-gray-500 text-sm">vs mois dernier</div>
         </div>
-      </div>
-      <div className="hidden sm:block">
-        <FaEuroSign className="h-10 w-10 sm:h-12 sm:w-12 p-1.5 bg-transparent rounded-xl text-[#ED8600]" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50">
+          <FaEuroSign className="h-5 w-5 text-orange-500" />
+        </div>
       </div>
     </div>
   );

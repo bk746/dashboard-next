@@ -9,27 +9,35 @@ interface ObjectifAnnuelCardProps {
 export default function ObjectifAnnuelCard({ caActuel, objectif, progression }: ObjectifAnnuelCardProps) {
   const percentage = Math.min(progression, 100);
   const isCompleted = progression >= 100;
-  
+
   return (
-    <div className="border border-neutral-300 rounded-xl p-5 bg-linear-to-bl from-[#f6f6f6] via-[#f6f6f6] to-[#ED8600] h-full flex shadow-2xl shadow-[#0000002b] justify-between hover:scale-103 transition-all duration-300 ease-out overflow-hidden">
-      <div className="flex flex-col gap-1.5">
-        <h3 className="text-[#ED8600] text-lg font-bold">Objectif annuel</h3>
-        <p className="text-gray-500 text-[clamp(28px,3vw,40px)] font-semibold">{objectif > 0 ? caActuel.toLocaleString("fr-FR") : 0} €</p>
-        <p className="text-gray-500 text-sm">
-          Objectif {caActuel.toLocaleString("fr-FR")} / {objectif > 0 ? objectif.toLocaleString("fr-FR") : 0} €
-        </p>
-        <div className="w-full bg-gray-300 rounded-full h-2 mt-2">
-          <div 
-            className={`h-2 rounded-full transition-all duration-500 ${isCompleted ? "bg-green-500" : "bg-[#ED8600]"}`}
-            style={{ width: `${percentage}%` }}
-          ></div>
+    <div className="h-full rounded-2xl bg-white border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-gray-500">Objectif annuel</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900 tabular-nums">
+            {objectif > 0 ? caActuel.toLocaleString("fr-FR") : 0} €
+          </p>
+          <p className="mt-1 text-xs text-gray-400">
+            sur {objectif > 0 ? objectif.toLocaleString("fr-FR") : 0} €
+          </p>
+          <div className="mt-3">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isCompleted ? "bg-emerald-500" : "bg-orange-500"
+                }`}
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            {isCompleted && (
+              <p className="mt-1.5 text-xs font-medium text-emerald-600">Objectif atteint</p>
+            )}
+          </div>
         </div>
-        {isCompleted && (
-          <p className="text-green-600 text-xs text-right mt-1">100% atteint ✅</p>
-        )}
-      </div>
-      <div className="hidden sm:block">
-        <FaBullseye className="h-10 w-10 sm:h-12 sm:w-12 p-1.5 bg-transparent rounded-xl text-[#ED8600]" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50">
+          <FaBullseye className="h-5 w-5 text-orange-500" />
+        </div>
       </div>
     </div>
   );
