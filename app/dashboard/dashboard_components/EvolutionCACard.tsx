@@ -8,12 +8,19 @@ interface EvolutionCACardProps {
   data: { month: string; revenue: number }[];
 }
 
-const CustomTooltip = ({ active, payload, label, isDark }: { active?: boolean; payload?: { value: number }[]; label?: string; isDark?: boolean }) => {
-  if (active && payload?.length) {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: readonly { value?: number }[];
+  label?: string | number;
+  isDark?: boolean;
+}
+
+const CustomTooltip = ({ active, payload, label, isDark }: CustomTooltipProps) => {
+  if (active && payload?.length && payload[0]?.value != null) {
     return (
       <div className="rounded-lg bg-white dark:bg-black border border-neutral-300 dark:border-gray-700 px-4 py-3 shadow-lg">
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
-        <p className={`text-lg font-bold ${isDark ? "text-green-500" : "text-[#ED8600]"}`}>{payload[0].value.toLocaleString("fr-FR")} €</p>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{String(label ?? "")}</p>
+        <p className={`text-lg font-bold ${isDark ? "text-green-500" : "text-[#ED8600]"}`}>{Number(payload[0].value).toLocaleString("fr-FR")} €</p>
       </div>
     );
   }
