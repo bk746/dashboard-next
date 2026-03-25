@@ -18,6 +18,7 @@ import AbonnementActifsCard from "./clients_components/AbonnementActifsCard";
 import ClientsTable from "./clients_components/ClientsTable";
 import ClientForm from "./clients_components/ClientForm";
 import type { Client } from "@/app/types";
+import { countAbonnementPremiumClients } from "@/lib/abonnement";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
 
 export default function Clients() {
@@ -77,7 +78,7 @@ export default function Clients() {
     }
   }).length;
 
-  const abonnementActifs = clients.filter((c) => c.abonnement === "Actif").length;
+  const abonnementActifs = countAbonnementPremiumClients(clients);
 
   return (
     <div className={pageShellClass}>

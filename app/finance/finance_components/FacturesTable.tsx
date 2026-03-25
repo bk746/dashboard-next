@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { FaSearch, FaChevronDown, FaEllipsisV, FaEye } from "react-icons/fa";
 import { Receipt } from "lucide-react";
 import type { Facture } from "@/app/types";
+import { normalizeAbonnement } from "@/lib/abonnement";
 import { inputFieldClass, panelSurfaceClass, sectionIntroTitleClass, sectionIntroDescClass } from "@/app/components/appCardStyles";
 
 interface FacturesTableProps {
@@ -48,10 +49,13 @@ export default function FacturesTable({ factures, totalInDatabase, onDelete, onE
   };
 
   const getAbonnementBadgeColor = (abonnement: string) => {
-    switch (abonnement) {
-      case "Actif":
+    const a = normalizeAbonnement(abonnement);
+    switch (a) {
+      case "Croissance":
+        return "bg-violet-600/90 text-white dark:bg-violet-500/80";
+      case "Performance":
         return "bg-emerald-600/90 text-white dark:bg-emerald-500/80";
-      case "Inactif":
+      case "Essentiel":
         return "bg-zinc-500 text-white";
       default:
         return "bg-zinc-500 text-white";
@@ -204,7 +208,7 @@ export default function FacturesTable({ factures, totalInDatabase, onDelete, onE
                     </td>
                     <td className="p-4 align-middle">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getAbonnementBadgeColor(facture.abonnement)}`}>
-                        {facture.abonnement}
+                        {normalizeAbonnement(facture.abonnement)}
                       </span>
                     </td>
                     <td className="p-4">

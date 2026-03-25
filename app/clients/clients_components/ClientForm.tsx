@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import type { Client } from "@/app/types";
+import type { AbonnementOffre, Client } from "@/app/types";
+import { ABONNEMENT_OPTIONS, normalizeAbonnement } from "@/lib/abonnement";
 import {
   overlayBackdropClass,
   overlayPanelClass,
@@ -30,7 +31,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
     telephone: string;
     email: string;
     statut: "Actif" | "Inactif" | "Prospect";
-    abonnement: "Actif" | "Inactif";
+    abonnement: AbonnementOffre;
     secteurActivite: string;
     derniereActivite: string;
   }>({
@@ -39,7 +40,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
     telephone: "",
     email: "",
     statut: "Actif",
-    abonnement: "Actif",
+    abonnement: "Essentiel",
     secteurActivite: "",
     derniereActivite: new Date().toLocaleDateString("fr-FR"),
   });
@@ -52,7 +53,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
         telephone: client.telephone,
         email: client.email,
         statut: client.statut,
-        abonnement: client.abonnement || "Actif",
+        abonnement: normalizeAbonnement(client.abonnement),
         secteurActivite: client.secteurActivite ?? "",
         derniereActivite: client.derniereActivite,
       });
@@ -160,12 +161,18 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                 <select
                   value={formData.abonnement}
                   onChange={(e) =>
-                    setFormData({ ...formData, abonnement: e.target.value as "Actif" | "Inactif" })
+                    setFormData({
+                      ...formData,
+                      abonnement: e.target.value as AbonnementOffre,
+                    })
                   }
                   className={inputFieldClass}
                 >
-                  <option value="Actif">Actif</option>
-                  <option value="Inactif">Inactif</option>
+                  {ABONNEMENT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

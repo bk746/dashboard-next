@@ -2,6 +2,9 @@
  * Types métier pour le dashboard.
  */
 
+/** Offre d’abonnement (client, devis, facture). */
+export type AbonnementOffre = "Essentiel" | "Performance" | "Croissance";
+
 export interface Client {
   id: string;
   entreprise: string;
@@ -9,7 +12,7 @@ export interface Client {
   telephone: string;
   email: string;
   statut: "Actif" | "Inactif" | "Prospect";
-  abonnement?: "Actif" | "Inactif";
+  abonnement?: AbonnementOffre;
   secteurActivite?: string;
   /** CA encaissé : somme des factures payées (recalculé depuis Finance), pas saisi au formulaire client */
   caTotal?: number;
@@ -25,7 +28,7 @@ export interface Facture {
   statut: "Payé" | "Non payé";
   date: string;
   prix: number;
-  abonnement: "Actif" | "Inactif";
+  abonnement: AbonnementOffre;
 }
 
 export interface PrestationDevis {
@@ -42,7 +45,7 @@ export interface Devis {
   prix: number;
   prestations?: PrestationDevis[];
   validite?: string;
-  abonnement: "Actif" | "Inactif";
+  abonnement: AbonnementOffre;
 }
 
 export interface Objectif {

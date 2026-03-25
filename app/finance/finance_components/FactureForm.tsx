@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import type { Client, Devis, Facture } from "@/app/types";
+import type { AbonnementOffre, Client, Devis, Facture } from "@/app/types";
+import { ABONNEMENT_OPTIONS, normalizeAbonnement } from "@/lib/abonnement";
 import {
   overlayBackdropClass,
   overlayPanelClass,
@@ -32,7 +33,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
     statut: "Non payé",
     date: new Date().toLocaleDateString("fr-FR"),
     prix: 0,
-    abonnement: "Actif",
+    abonnement: "Essentiel",
   });
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
         statut: facture.statut,
         date: facture.date,
         prix: facture.prix,
-        abonnement: facture.abonnement,
+        abonnement: normalizeAbonnement(facture.abonnement),
       });
     } else if (fromDevis) {
       const savedFactures = localStorage.getItem("factures");
@@ -55,7 +56,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
         statut: "Non payé",
         date: new Date().toLocaleDateString("fr-FR"),
         prix: fromDevis.prix,
-        abonnement: fromDevis.abonnement,
+        abonnement: normalizeAbonnement(fromDevis.abonnement),
       });
     } else {
       const savedFactures = localStorage.getItem("factures");
@@ -83,7 +84,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
     setFormData({
       ...formData,
       entreprise,
-      abonnement: client?.abonnement || "Actif",
+      abonnement: normalizeAbonnement(client?.abonnement),
     });
   };
 
@@ -158,11 +159,16 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                 <label className={formLabelClass}>Abonnement</label>
                 <select
                   value={formData.abonnement}
-                  onChange={(e) => setFormData({ ...formData, abonnement: e.target.value as "Actif" | "Inactif" })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, abonnement: e.target.value as AbonnementOffre })
+                  }
                   className={inputFieldClass}
                 >
-                  <option value="Actif">Actif</option>
-                  <option value="Inactif">Inactif</option>
+                  {ABONNEMENT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

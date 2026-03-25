@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { FaTimes, FaPlus, FaTrash } from "react-icons/fa";
-import type { Client, Devis, PrestationDevis } from "@/app/types";
+import type { AbonnementOffre, Client, Devis, PrestationDevis } from "@/app/types";
+import { ABONNEMENT_OPTIONS, normalizeAbonnement } from "@/lib/abonnement";
+import { generateDevisNumero } from "@/lib/devisNumber";
 import {
   buildPrestationsFromEstimation,
   getLatestEstimationForClient,
@@ -37,8 +39,9 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
   const [entreprise, setEntreprise] = useState("");
   const [statut, setStatut] = useState<Devis["statut"]>("Brouillon");
   const [date, setDate] = useState(new Date().toLocaleDateString("fr-FR"));
-  const [validite, setValidite] = useState("");
-  const [abonnement, setAbonnement] = useState<"Actif" | "Inactif">("Actif");
+  const [validitePreset, setValiditePreset] = useState<"15j" | "30j" | "custom">("15j");
+  const [validiteCustom, setValiditeCustom] = useState("");
+  const [abonnement, setAbonnement] = useState<AbonnementOffre>("Essentiel");
   const [prestations, setPrestations] = useState<PrestationDevis[]>([defaultPrestation()]);
   const [estimationHint, setEstimationHint] = useState<string | null>(null);
 
@@ -80,8 +83,23 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
       setEntreprise(devis.entreprise);
       setStatut(devis.statut);
       setDate(devis.date);
-      setValidite(devis.validite ?? "");
-      setAbonnement(devis.abonnement);
+      {
+        const v = devis.validite ?? "";
+        if (v === "15 jours") {
+          setValiditePreset("15j");
+          setValiditeCustom("");
+        } else if (v === "30 jours") {
+          setValiditePreset("30j");
+          setValiditeCustom("");
+        } else if (v.trim()) {
+          setValiditePreset("custom");
+          setValiditeCustom(v);
+        } else {
+          setValiditePreset("15j");
+          setValiditeCustom("");
+        }
+      }
+      setAbonnement(normalizeAbonnement(devis.abonnement));
       setEstimationHint(null);
       if (devis.prestations && devis.prestations.length > 0) {
         setPrestations(devis.prestations);
@@ -90,15 +108,25 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
       }
     } else {
       const savedDevis = localStorage.getItem("devis");
-      const devisList = savedDevis ? JSON.parse(savedDevis) : [];
-      const nextNumero = devisList.length + 1;
-      setNumeroDevis(`DEV-${String(nextNumero).padStart(6, "0")}`);
+      const devisList: Devis[] = savedDevis ? JSON.parse(savedDevis) : [];
+      const nums = devisList.map((d) => d.numeroDevis);
+      setNumeroDevis(generateDevisNumero(nums));
+      setValiditePreset("15j");
+      setValiditeCustom("");
+      setAbonnement("Essentiel");
       setPrestations([defaultPrestation()]);
       setEstimationHint(null);
     }
   }, [devis]);
 
   const total = prestations.reduce((s, p) => s + p.prix, 0);
+
+  const resolvedValidite = (): string | undefined => {
+    if (validitePreset === "15j") return "15 jours";
+    if (validitePreset === "30j") return "30 jours";
+    const t = validiteCustom.trim();
+    return t || undefined;
+  };
 
   const buildDevisToSave = (): Devis | null => {
     const cleaned = prestations.filter((p) => p.designation.trim() !== "" || p.prix > 0);
@@ -111,7 +139,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
       date,
       prix: cleaned.reduce((s, p) => s + p.prix, 0),
       prestations: cleaned,
-      validite: validite || undefined,
+      validite: resolvedValidite(),
       abonnement,
     };
   };
@@ -136,7 +164,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
   const handleEntrepriseChange = (val: string) => {
     setEntreprise(val);
     const client = clients.find((c) => c.entreprise === val);
-    if (client?.abonnement) setAbonnement(client.abonnement as "Actif" | "Inactif");
+    setAbonnement(normalizeAbonnement(client?.abonnement));
     applyEstimationForClient(val);
   };
 
@@ -220,11 +248,14 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                 <label className={formLabelClass}>Abonnement</label>
                 <select
                   value={abonnement}
-                  onChange={(e) => setAbonnement(e.target.value as "Actif" | "Inactif")}
+                  onChange={(e) => setAbonnement(e.target.value as AbonnementOffre)}
                   className={inputFieldClass}
                 >
-                  <option value="Actif">Actif</option>
-                  <option value="Inactif">Inactif</option>
+                  {ABONNEMENT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -241,14 +272,29 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                 />
               </div>
               <div>
-                <label className={formLabelClass}>Validité (optionnel)</label>
-                <input
-                  type="text"
-                  value={validite}
-                  onChange={(e) => setValidite(e.target.value)}
-                  placeholder="ex. 30 jours"
-                  className={inputFieldClass}
-                />
+                <label className={formLabelClass}>Validité</label>
+                <select
+                  value={validitePreset}
+                  onChange={(e) => {
+                    const v = e.target.value as "15j" | "30j" | "custom";
+                    setValiditePreset(v);
+                    if (v !== "custom") setValiditeCustom("");
+                  }}
+                  className={`${inputFieldClass} mb-2`}
+                >
+                  <option value="15j">15 jours</option>
+                  <option value="30j">30 jours</option>
+                  <option value="custom">Personnalisé</option>
+                </select>
+                {validitePreset === "custom" ? (
+                  <input
+                    type="text"
+                    value={validiteCustom}
+                    onChange={(e) => setValiditeCustom(e.target.value)}
+                    placeholder="ex. 45 jours, 2 mois…"
+                    className={inputFieldClass}
+                  />
+                ) : null}
               </div>
             </div>
             <div>

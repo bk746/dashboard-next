@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaEnvelope, FaSearch, FaChevronDown } from "react-icons/fa";
 import { Users } from "lucide-react";
 import type { Client } from "@/app/types";
+import { normalizeAbonnement } from "@/lib/abonnement";
 import { inputFieldClass, panelSurfaceClass, sectionIntroTitleClass, sectionIntroDescClass } from "@/app/components/appCardStyles";
 
 interface ClientsTableProps {
@@ -45,11 +46,9 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
           client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (client.secteurActivite ?? "").toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === "Tous les statuts" || client.statut === statusFilter;
-        const ab = client.abonnement ?? "Inactif";
+        const ab = normalizeAbonnement(client.abonnement);
         const matchesAbonnement =
-          abonnementFilter === "Tous" ||
-          (abonnementFilter === "Actif" && ab === "Actif") ||
-          (abonnementFilter === "Inactif" && ab === "Inactif");
+          abonnementFilter === "Tous" || abonnementFilter === ab;
         return matchesSearch && matchesStatus && matchesAbonnement;
       }),
     [clients, searchTerm, statusFilter, abonnementFilter]
@@ -111,10 +110,13 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
   };
 
   const getAbonnementBadgeColor = (abonnement?: string) => {
-    switch (abonnement) {
-      case "Actif":
+    const a = normalizeAbonnement(abonnement);
+    switch (a) {
+      case "Croissance":
+        return "bg-violet-600/90 text-white dark:bg-violet-500/80";
+      case "Performance":
         return "bg-emerald-600/90 text-white dark:bg-emerald-500/80";
-      case "Inactif":
+      case "Essentiel":
         return "bg-zinc-500 text-white";
       default:
         return "bg-zinc-500 text-white";
@@ -196,8 +198,9 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                     className={`${inputFieldClass} w-full appearance-none cursor-pointer px-4 py-2.5 pr-9 text-sm rounded-xl`}
                   >
                     <option value="Tous">Tous</option>
-                    <option value="Actif">Actif</option>
-                    <option value="Inactif">Inactif</option>
+                    <option value="Essentiel">Essentiel</option>
+                    <option value="Performance">Performance</option>
+                    <option value="Croissance">Croissance</option>
                   </select>
                   <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500" />
                 </div>
@@ -273,7 +276,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                             {client.statut}
                           </span>
                           <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${getAbonnementBadgeColor(client.abonnement)}`}>
-                            Abo. {client.abonnement || "Inactif"}
+                            Abo. {normalizeAbonnement(client.abonnement)}
                           </span>
                         </div>
                         <p className="mt-2 text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
@@ -366,7 +369,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                       </td>
                       <td className="p-4 align-middle">
                         <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getAbonnementBadgeColor(client.abonnement)}`}>
-                          {client.abonnement || "Inactif"}
+                          {normalizeAbonnement(client.abonnement)}
                         </span>
                       </td>
                       <td className="p-4">
