@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:icons": "cp src/images/favicondashboard.png public/icons/icon-192.png && cp src/images/favicondashboard.png public/icons/icon-512.png && cp src/images/favicondashboard.png public/favicon.png"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

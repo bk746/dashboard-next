@@ -4,6 +4,10 @@ import RootProviders from "@/components/RootProviders";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./globals.css";
 
+/** Icônes servies depuis /public/icons (même source que manifest PWA). Mettre à jour depuis src/images/favicondashboard.png si besoin. */
+const appIcon192 = "/icons/icon-192.png";
+const appIcon512 = "/icons/icon-512.png";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -27,7 +31,12 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    apple: "/icons/icon-192.png",
+    icon: [
+      { url: appIcon192, sizes: "192x192", type: "image/png" },
+      { url: appIcon512, sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: appIcon192, sizes: "192x192", type: "image/png" }],
+    shortcut: appIcon192,
   },
 };
 
