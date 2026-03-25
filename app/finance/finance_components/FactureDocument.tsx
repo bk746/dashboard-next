@@ -3,6 +3,7 @@
 import { FaTimes, FaPrint } from "react-icons/fa";
 import { useCompany } from "@/app/hooks/useCompany";
 import type { Client, Facture } from "@/app/types";
+import { overlayBackdropClass, overlayDocumentViewerClass, overlayCloseButtonClass } from "@/app/components/appCardStyles";
 
 interface FactureDocumentProps {
   facture: Facture;
@@ -13,19 +14,29 @@ interface FactureDocumentProps {
 export default function FactureDocument({ facture, client, onClose }: FactureDocumentProps) {
   const [company] = useCompany();
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-start md:items-center justify-center z-50 p-4 pt-20 md:pt-4 no-print">
-      <div className="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-3xl max-h-[85vh] md:max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-neutral-700">
-          <h2 className="text-white text-lg font-bold">Aperçu de la facture</h2>
+    <div className={`${overlayBackdropClass} no-print`} onClick={onClose} role="presentation">
+      <div
+        className={overlayDocumentViewerClass}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="facture-preview-title"
+      >
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-700/80 px-4 py-3 sm:px-5">
+          <h2 id="facture-preview-title" className="text-base font-semibold tracking-tight text-zinc-100">
+            Aperçu de la facture
+          </h2>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1A10AC] rounded-lg text-white hover:bg-[#1a0fc0] text-sm"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#5b7fb8] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4e6fa3]"
             >
-              <FaPrint /> Imprimer ou enregistrer en PDF
+              <FaPrint /> <span className="hidden sm:inline">Imprimer ou PDF</span>
+              <span className="sm:hidden">PDF</span>
             </button>
-            <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white">
-              <FaTimes className="text-xl" />
+            <button type="button" onClick={onClose} className={`${overlayCloseButtonClass} text-zinc-400 hover:bg-white/10 hover:text-white`} aria-label="Fermer">
+              <FaTimes className="h-5 w-5" />
             </button>
           </div>
         </div>

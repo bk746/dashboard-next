@@ -1,19 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaTimes, FaPlus, FaTrash } from "react-icons/fa";
 import type { Client, Devis, PrestationDevis } from "@/app/types";
+import {
+  buildPrestationsFromEstimation,
+  getLatestEstimationForClient,
+} from "@/app/estimation/estimation_utils";
+import {
+  overlayBackdropClass,
+  overlayPanelClass,
+  overlayHeaderClass,
+  overlayTitleClass,
+  overlayCloseButtonClass,
+  overlayScrollBodyClass,
+  overlayFooterClass,
+  inputFieldClass,
+  formLabelClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/app/components/appCardStyles";
 
 interface DevisFormProps {
   devis?: Devis | null;
   clients: Client[];
   onClose: () => void;
   onSave: (devis: Devis) => void;
+  /** Après enregistrement, ouvre le formulaire facture prérempli (bouton « Créer une facture à partir du devis », statut Accepté requis) */
+  onCreateFacture?: (devis: Devis) => void;
 }
 
 const defaultPrestation = (): PrestationDevis => ({ designation: "", prix: 0 });
 
-export default function DevisForm({ devis, clients, onClose, onSave }: DevisFormProps) {
+export default function DevisForm({ devis, clients, onClose, onSave, onCreateFacture }: DevisFormProps) {
   const [numeroDevis, setNumeroDevis] = useState("");
   const [entreprise, setEntreprise] = useState("");
   const [statut, setStatut] = useState<Devis["statut"]>("Brouillon");
@@ -21,6 +40,39 @@ export default function DevisForm({ devis, clients, onClose, onSave }: DevisForm
   const [validite, setValidite] = useState("");
   const [abonnement, setAbonnement] = useState<"Actif" | "Inactif">("Actif");
   const [prestations, setPrestations] = useState<PrestationDevis[]>([defaultPrestation()]);
+  const [estimationHint, setEstimationHint] = useState<string | null>(null);
+
+  const applyEstimationForClient = useCallback(
+    (entrepriseName: string) => {
+      if (devis) return;
+      const client = clients.find((c) => c.entreprise === entrepriseName);
+      if (!client) {
+        setEstimationHint(null);
+        return;
+      }
+      const est = getLatestEstimationForClient(client.id);
+      if (!est) {
+        setPrestations([defaultPrestation()]);
+        setEstimationHint(
+          "Aucune estimation enregistrée pour ce client — saisissez les prestations manuellement ou créez une estimation dans Finance → Estimation."
+        );
+        return;
+      }
+      const list = buildPrestationsFromEstimation(est);
+      if (list.length === 0) {
+        setPrestations([defaultPrestation()]);
+        setEstimationHint(
+          "Une estimation existe mais aucune ligne n'est cochée — complétez l'estimateur ou saisissez les prestations à la main."
+        );
+        return;
+      }
+      setPrestations(list);
+      const d = new Date(est.updatedAt).toLocaleDateString("fr-FR");
+      const lib = est.libelle ? ` « ${est.libelle} »` : "";
+      setEstimationHint(`Prestations importées depuis la dernière estimation du ${d}${lib}.`);
+    },
+    [clients, devis]
+  );
 
   useEffect(() => {
     if (devis) {
@@ -30,6 +82,7 @@ export default function DevisForm({ devis, clients, onClose, onSave }: DevisForm
       setDate(devis.date);
       setValidite(devis.validite ?? "");
       setAbonnement(devis.abonnement);
+      setEstimationHint(null);
       if (devis.prestations && devis.prestations.length > 0) {
         setPrestations(devis.prestations);
       } else {
@@ -41,16 +94,16 @@ export default function DevisForm({ devis, clients, onClose, onSave }: DevisForm
       const nextNumero = devisList.length + 1;
       setNumeroDevis(`DEV-${String(nextNumero).padStart(6, "0")}`);
       setPrestations([defaultPrestation()]);
+      setEstimationHint(null);
     }
   }, [devis]);
 
   const total = prestations.reduce((s, p) => s + p.prix, 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const buildDevisToSave = (): Devis | null => {
     const cleaned = prestations.filter((p) => p.designation.trim() !== "" || p.prix > 0);
-    if (cleaned.length === 0) return;
-    const devisToSave: Devis = {
+    if (cleaned.length === 0) return null;
+    return {
       id: devis?.id || Date.now().toString(),
       numeroDevis,
       entreprise,
@@ -61,7 +114,22 @@ export default function DevisForm({ devis, clients, onClose, onSave }: DevisForm
       validite: validite || undefined,
       abonnement,
     };
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const devisToSave = buildDevisToSave();
+    if (!devisToSave) return;
     onSave(devisToSave);
+    onClose();
+  };
+
+  const handleSaveAndCreateFacture = () => {
+    if (statut !== "Accepté" || !onCreateFacture) return;
+    const devisToSave = buildDevisToSave();
+    if (!devisToSave) return;
+    onSave(devisToSave);
+    onCreateFacture(devisToSave);
     onClose();
   };
 
@@ -69,6 +137,7 @@ export default function DevisForm({ devis, clients, onClose, onSave }: DevisForm
     setEntreprise(val);
     const client = clients.find((c) => c.entreprise === val);
     if (client?.abonnement) setAbonnement(client.abonnement as "Actif" | "Inactif");
+    applyEstimationForClient(val);
   };
 
   const addPrestation = () => setPrestations((prev) => [...prev, defaultPrestation()]);
@@ -80,144 +149,190 @@ export default function DevisForm({ devis, clients, onClose, onSave }: DevisForm
     setPrestations((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
   };
 
+  const title = devis ? "Modifier le devis" : "Nouveau devis";
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start md:items-center justify-center z-50 p-4 pt-20 md:pt-4">
-      <div className="bg-[#f6f6f6] border border-gray-300 rounded-xl w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-gray-300">
-          <h2 className="text-gray-500 text-xl font-bold">
-            {devis ? "Modifier le devis" : "Nouveau devis"}
+    <div className={overlayBackdropClass} onClick={onClose} role="presentation">
+      <div
+        className={overlayPanelClass}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="devis-form-title"
+      >
+        <div className={overlayHeaderClass}>
+          <h2 id="devis-form-title" className={overlayTitleClass}>
+            {title}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-600">
-            <FaTimes className="text-xl" />
+          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+            <FaTimes className="h-5 w-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Numéro de devis</label>
-            <input
-              type="text"
-              required
-              value={numeroDevis}
-              onChange={(e) => setNumeroDevis(e.target.value)}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Entreprise</label>
-            <select
-              required
-              value={entreprise}
-              onChange={(e) => handleEntrepriseChange(e.target.value)}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            >
-              <option value="">Sélectionner une entreprise</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.entreprise}>{c.entreprise}</option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className={overlayScrollBodyClass}>
             <div>
-              <label className="block text-gray-500 text-sm mb-2">Statut</label>
-              <select
-                value={statut}
-                onChange={(e) => setStatut(e.target.value as Devis["statut"])}
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-              >
-                <option value="Brouillon">Brouillon</option>
-                <option value="Envoyé">Envoyé</option>
-                <option value="Accepté">Accepté</option>
-                <option value="Refusé">Refusé</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-500 text-sm mb-2">Abonnement</label>
-              <select
-                value={abonnement}
-                onChange={(e) => setAbonnement(e.target.value as "Actif" | "Inactif")}
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-              >
-                <option value="Actif">Actif</option>
-                <option value="Inactif">Inactif</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-500 text-sm mb-2">Date</label>
+              <label className={formLabelClass}>Numéro de devis</label>
               <input
                 type="text"
                 required
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                placeholder="JJ/MM/AAAA"
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
+                value={numeroDevis}
+                onChange={(e) => setNumeroDevis(e.target.value)}
+                className={inputFieldClass}
               />
             </div>
             <div>
-              <label className="block text-gray-500 text-sm mb-2">Validité (optionnel)</label>
-              <input
-                type="text"
-                value={validite}
-                onChange={(e) => setValidite(e.target.value)}
-                placeholder="ex. 30 jours"
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-              />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-gray-500 text-sm">Prestations</label>
-              <button
-                type="button"
-                onClick={addPrestation}
-                className="inline-flex items-center gap-1.5 text-sm text-[#ED8600] hover:opacity-90"
+              <label className={formLabelClass}>Entreprise</label>
+              <select
+                required
+                value={entreprise}
+                onChange={(e) => handleEntrepriseChange(e.target.value)}
+                className={inputFieldClass}
               >
-                <FaPlus /> Ajouter une prestation
-              </button>
+                <option value="">Sélectionner une entreprise</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.entreprise}>
+                    {c.entreprise}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="space-y-3">
-              {prestations.map((p, index) => (
-                <div key={index} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                  <input
-                    type="text"
-                    value={p.designation}
-                    onChange={(e) => updatePrestation(index, "designation", e.target.value)}
-                    placeholder="ex. Refonte site vitrine, Site e-commerce..."
-                    className="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600] placeholder-gray-500"
-                  />
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      value={p.prix || ""}
-                      onChange={(e) => updatePrestation(index, "prix", Number(e.target.value) || 0)}
-                      placeholder="Prix €"
-                      className="w-28 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-                    />
-                    <span className="text-gray-500 text-sm">€</span>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={formLabelClass}>Statut</label>
+                <select
+                  value={statut}
+                  onChange={(e) => setStatut(e.target.value as Devis["statut"])}
+                  className={inputFieldClass}
+                >
+                  <option value="Brouillon">Brouillon</option>
+                  <option value="Envoyé">Envoyé</option>
+                  <option value="Accepté">Accepté</option>
+                  <option value="Refusé">Refusé</option>
+                </select>
+                {onCreateFacture ? (
+                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    Une facture ne peut être générée qu&apos;à partir d&apos;un devis au statut « Accepté ».
+                  </p>
+                ) : null}
+              </div>
+              <div>
+                <label className={formLabelClass}>Abonnement</label>
+                <select
+                  value={abonnement}
+                  onChange={(e) => setAbonnement(e.target.value as "Actif" | "Inactif")}
+                  className={inputFieldClass}
+                >
+                  <option value="Actif">Actif</option>
+                  <option value="Inactif">Inactif</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={formLabelClass}>Date</label>
+                <input
+                  type="text"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  placeholder="JJ/MM/AAAA"
+                  className={inputFieldClass}
+                />
+              </div>
+              <div>
+                <label className={formLabelClass}>Validité (optionnel)</label>
+                <input
+                  type="text"
+                  value={validite}
+                  onChange={(e) => setValidite(e.target.value)}
+                  placeholder="ex. 30 jours"
+                  className={inputFieldClass}
+                />
+              </div>
+            </div>
+            <div>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Prestations</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  {!devis && entreprise ? (
                     <button
                       type="button"
-                      onClick={() => removePrestation(index)}
-                      disabled={prestations.length <= 1}
-                      className="p-2 text-gray-500 hover:text-red-500 disabled:opacity-40"
+                      onClick={() => applyEstimationForClient(entreprise)}
+                      className="text-xs font-medium text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
                     >
-                      <FaTrash className="text-sm" />
+                      Réimporter depuis l&apos;estimation
                     </button>
-                  </div>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={addPrestation}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#ED8600] transition-opacity hover:opacity-90 dark:text-[#8fa9c9]"
+                  >
+                    <FaPlus /> Ajouter une prestation
+                  </button>
                 </div>
-              ))}
+              </div>
+              {!devis && estimationHint && (
+                <p className="mb-3 rounded-lg border border-[#ED8600]/20 bg-[#ED8600]/5 px-3 py-2 text-xs text-zinc-700 dark:border-[#8fa9c9]/25 dark:bg-[#8fa9c9]/10 dark:text-zinc-300">
+                  {estimationHint}
+                </p>
+              )}
+              <div className="space-y-3">
+                {prestations.map((p, index) => (
+                  <div key={index} className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="text"
+                      value={p.designation}
+                      onChange={(e) => updatePrestation(index, "designation", e.target.value)}
+                      placeholder="ex. Refonte site vitrine, Site e-commerce..."
+                      className={`${inputFieldClass} flex-1 placeholder:text-zinc-400`}
+                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        value={p.prix || ""}
+                        onChange={(e) => updatePrestation(index, "prix", Number(e.target.value) || 0)}
+                        placeholder="Prix €"
+                        className={`${inputFieldClass} w-28`}
+                      />
+                      <span className="text-sm text-zinc-500">€</span>
+                      <button
+                        type="button"
+                        onClick={() => removePrestation(index)}
+                        disabled={prestations.length <= 1}
+                        className="p-2 text-zinc-500 transition-colors hover:text-red-500 disabled:opacity-40"
+                      >
+                        <FaTrash className="text-sm" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Total : <span className="font-semibold tabular-nums">{total.toLocaleString("fr-FR")} €</span>
+              </p>
             </div>
-            <p className="text-gray-500 text-sm mt-2">
-              Total : <span className="text-gray-500 font-semibold">{total.toLocaleString("fr-FR")} €</span>
-            </p>
           </div>
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="px-6 py-2 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-200 w-full sm:w-auto">
+
+          <div className={overlayFooterClass}>
+            <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
               Annuler
             </button>
-            <button type="submit" className="px-6 py-2 bg-[#ED8600] rounded-lg text-white hover:opacity-90 w-full sm:w-auto">
-              {devis ? "Modifier" : "Créer"}
+            {onCreateFacture ? (
+              <button
+                type="button"
+                onClick={handleSaveAndCreateFacture}
+                disabled={statut !== "Accepté"}
+                title={statut !== "Accepté" ? "Passez le statut à « Accepté » pour créer une facture" : undefined}
+                className={`${secondaryButtonClass} w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                Créer une facture à partir du devis
+              </button>
+            ) : null}
+            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
+              {devis ? "Enregistrer" : "Créer le devis"}
             </button>
           </div>
         </form>

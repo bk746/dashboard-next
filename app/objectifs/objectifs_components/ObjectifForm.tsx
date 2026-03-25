@@ -2,6 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
+import {
+  overlayBackdropClass,
+  overlayPanelClass,
+  overlayHeaderClass,
+  overlayTitleClass,
+  overlayCloseButtonClass,
+  overlayScrollBodyClass,
+  overlayFooterClass,
+  inputFieldClass,
+  formLabelClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/app/components/appCardStyles";
 
 interface Objectif {
   id: string;
@@ -49,98 +62,96 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
     onClose();
   };
 
+  const title = objectif ? "Modifier l'objectif" : "Nouvel objectif";
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start md:items-center justify-center z-50 p-4 pt-20 md:pt-4">
-      <div className="bg-[#f6f6f6] border border-gray-300 rounded-xl w-full max-w-2xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-gray-300">
-          <h2 className="text-gray-500 text-xl font-bold">
-            {objectif ? "Modifier l'objectif" : "Nouvel objectif"}
+    <div className={overlayBackdropClass} onClick={onClose} role="presentation">
+      <div
+        className={overlayPanelClass}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="objectif-form-title"
+      >
+        <div className={overlayHeaderClass}>
+          <h2 id="objectif-form-title" className={overlayTitleClass}>
+            {title}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-600 transition-colors"
-          >
-            <FaTimes className="text-xl" />
+          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+            <FaTimes className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Libellé</label>
-            <input
-              type="text"
-              required
-              value={formData.libelle}
-              onChange={(e) => setFormData({ ...formData, libelle: e.target.value })}
-              placeholder="Ex: Objectif 200 000€"
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Type</label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as "Financier" | "Client" })}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            >
-              <option value="Financier">Financier</option>
-              <option value="Client">Client</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">
-              Objectif {formData.type === "Financier" ? "(€)" : ""}
-            </label>
-            <input
-              type="number"
-              required
-              min="0"
-              value={formData.objectif}
-              onChange={(e) => setFormData({ ...formData, objectif: parseInt(e.target.value) || 0 })}
-              placeholder={formData.type === "Financier" ? "Ex: 200000" : "Ex: 100"}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className={overlayScrollBodyClass}>
             <div>
-              <label className="block text-gray-500 text-sm mb-2">Date de début</label>
+              <label className={formLabelClass}>Libellé</label>
               <input
                 type="text"
                 required
-                value={formData.dateDebut}
-                onChange={(e) => setFormData({ ...formData, dateDebut: e.target.value })}
-                placeholder="DD/MM/YYYY"
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
+                value={formData.libelle}
+                onChange={(e) => setFormData({ ...formData, libelle: e.target.value })}
+                placeholder="Ex: Objectif 200 000€"
+                className={inputFieldClass}
               />
             </div>
 
             <div>
-              <label className="block text-gray-500 text-sm mb-2">Date de fin</label>
+              <label className={formLabelClass}>Type</label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as "Financier" | "Client" })}
+                className={inputFieldClass}
+              >
+                <option value="Financier">Financier</option>
+                <option value="Client">Client</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={formLabelClass}>Objectif {formData.type === "Financier" ? "(€)" : ""}</label>
               <input
-                type="text"
-                value={formData.dateFin}
-                onChange={(e) => setFormData({ ...formData, dateFin: e.target.value })}
-                placeholder="DD/MM/YYYY"
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
+                type="number"
+                required
+                min="0"
+                value={formData.objectif}
+                onChange={(e) => setFormData({ ...formData, objectif: parseInt(e.target.value, 10) || 0 })}
+                placeholder={formData.type === "Financier" ? "Ex: 200000" : "Ex: 100"}
+                className={inputFieldClass}
               />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={formLabelClass}>Date de début</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.dateDebut}
+                  onChange={(e) => setFormData({ ...formData, dateDebut: e.target.value })}
+                  placeholder="DD/MM/YYYY"
+                  className={inputFieldClass}
+                />
+              </div>
+
+              <div>
+                <label className={formLabelClass}>Date de fin</label>
+                <input
+                  type="text"
+                  value={formData.dateFin}
+                  onChange={(e) => setFormData({ ...formData, dateFin: e.target.value })}
+                  placeholder="DD/MM/YYYY"
+                  className={inputFieldClass}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-200 transition-colors w-full sm:w-auto"
-            >
+          <div className={overlayFooterClass}>
+            <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
               Annuler
             </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-[#ED8600] rounded-lg text-white hover:opacity-90 transition-colors w-full sm:w-auto"
-            >
+            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
               {objectif ? "Modifier" : "Créer"}
             </button>
           </div>

@@ -1,31 +1,80 @@
+import Link from "next/link";
 import { FaBullseye } from "react-icons/fa";
+import {
+  dashboardCardKpi,
+  kpiLabelClass,
+  kpiValueClass,
+  kpiIconClass,
+  primaryButtonClass,
+} from "@/app/components/appCardStyles";
 
 interface ObjectifAnnuelCardProps {
-  caActuel: number;
+  caAnneeCours: number;
   objectif: number;
   progression: number;
+  /** Libellé de l’objectif financier suivi */
+  objectifLibelle?: string;
 }
 
-export default function ObjectifAnnuelCard({ caActuel, objectif, progression }: ObjectifAnnuelCardProps) {
+export default function ObjectifAnnuelCard({
+  caAnneeCours,
+  objectif,
+  progression,
+  objectifLibelle,
+}: ObjectifAnnuelCardProps) {
   const percentage = Math.min(progression, 100);
   const isCompleted = progression >= 100;
+  const hasObjectif = objectif > 0;
+
+  if (!hasObjectif) {
+    return (
+      <div className={dashboardCardKpi}>
+        <div className="flex flex-col gap-3 md:gap-1.5 flex-1 min-w-0">
+          <p className={kpiLabelClass}>Objectif financier</p>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            Aucun objectif de type « Financier » n&apos;est défini. Créez-en un pour suivre votre progression annuelle.
+          </p>
+          <Link href="/objectifs" className={`${primaryButtonClass} mt-2 w-full text-center sm:w-auto`}>
+            Définir un objectif
+          </Link>
+        </div>
+        <div className="hidden sm:flex flex-shrink-0 items-start">
+          <FaBullseye className={kpiIconClass} aria-hidden />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-2xl md:rounded-xl p-6 md:p-5 h-full flex justify-between overflow-hidden transition-all duration-300 ease-out bg-white dark:bg-black md:bg-gradient-to-br md:from-[#f6f6f6] md:via-[#f6f6f6] md:to-[#ED8600] dark:md:from-black dark:md:via-black dark:md:to-blue-800 border border-neutral-300 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] md:shadow-2xl dark:md:shadow-none hover:scale-[1.01] md:hover:scale-[1.03]">
+    <div className={dashboardCardKpi}>
       <div className="flex flex-col gap-3 md:gap-1.5 flex-1 min-w-0">
-        <p className="text-gray-500 dark:text-gray-400 md:text-[#ED8600] dark:md:text-blue-800 text-xs md:text-lg font-medium md:font-bold uppercase md:normal-case tracking-widest md:tracking-normal">Objectif annuel</p>
-        <p className="text-gray-800 dark:text-white md:text-gray-500 dark:md:text-gray-400 text-3xl md:text-[clamp(28px,3vw,40px)] font-bold md:font-semibold tracking-tight tabular-nums">{objectif > 0 ? caActuel.toLocaleString("fr-FR") : 0} €</p>
-        <p className="text-gray-400 dark:text-gray-500 md:text-gray-500 text-xs md:text-sm mt-1 md:mt-2">sur {objectif > 0 ? objectif.toLocaleString("fr-FR") : 0} €</p>
-        <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2 mt-2">
+        <p className={kpiLabelClass}>Objectif financier</p>
+        {objectifLibelle ? (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2" title={objectifLibelle}>
+            {objectifLibelle}
+          </p>
+        ) : null}
+        <p className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm">CA encaissé sur l&apos;année civile en cours</p>
+        <p className={kpiValueClass}>{caAnneeCours.toLocaleString("fr-FR")} €</p>
+        <p className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm mt-1 md:mt-2">
+          sur {objectif.toLocaleString("fr-FR")} €
+        </p>
+        <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 mt-2 overflow-hidden">
           <div
-            className={`h-2 rounded-full transition-all duration-500 ${isCompleted ? "bg-green-500 dark:bg-green-500" : "bg-[#ED8600] dark:bg-blue-800"}`}
+            className={`h-full rounded-full transition-all duration-500 ${
+              isCompleted
+                ? "bg-emerald-500/80 dark:bg-emerald-500/70"
+                : "bg-[#ED8600] dark:bg-[#5b7fb8]"
+            }`}
             style={{ width: `${percentage}%` }}
           />
         </div>
-        {isCompleted && <p className="text-green-600 dark:text-green-400 text-xs text-right mt-1">100% atteint ✅</p>}
+        {isCompleted && (
+          <p className="text-emerald-700 dark:text-emerald-400/90 text-xs text-right mt-1">100% atteint</p>
+        )}
       </div>
       <div className="hidden sm:flex flex-shrink-0 items-start">
-        <FaBullseye className="h-10 w-10 sm:h-11 sm:w-11 text-[#ED8600]/80 dark:text-blue-800/80" />
+        <FaBullseye className={kpiIconClass} aria-hidden />
       </div>
     </div>
   );

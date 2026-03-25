@@ -1,26 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Client, Depense, Devis, Facture } from "@/app/types";
+import { useJsonBucket } from "@/hooks/useJsonBucket";
+import {
+  pageShellClass,
+  pageEyebrowClass,
+  pageTitleClass,
+  pageSubtitleClass,
+  pageDividerClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  segmentedBarClass,
+  segmentedTabActiveClass,
+  segmentedTabInactiveClass,
+  sectionIntroTitleClass,
+  sectionIntroDescClass,
+} from "@/app/components/appCardStyles";
 import RevenueEncaisseCard from "./finance_components/RevenueEncaisseCard";
 import EnAttenteCard from "./finance_components/EnAttenteCard";
 import EnRetardCard from "./finance_components/EnRetardCard";
 import DepenseCard from "./finance_components/DepenseCard";
+import SyntheseNetCard from "./finance_components/SyntheseNetCard";
 import DepenseForm from "./finance_components/DepenseForm";
+import DepensesTable from "./finance_components/DepensesTable";
 import FacturesTable from "./finance_components/FacturesTable";
 import FactureForm from "./finance_components/FactureForm";
 import DevisTable from "./finance_components/DevisTable";
 import DevisForm from "./finance_components/DevisForm";
 import DevisDocument from "./finance_components/DevisDocument";
 import FactureDocument from "./finance_components/FactureDocument";
+import DevisKpiStrip from "./finance_components/DevisKpiStrip";
+import {
+  filterFacturesByPeriod,
+  filterDevisByPeriod,
+  filterDepensesForDisplay,
+  computeDepenseTotals,
+  isFactureEnRetard,
+} from "./utils";
 
 type Tab = "devis" | "factures";
 
 export default function Finance() {
-  const [tab, setTab] = useState<Tab>("factures");
-  const [clients, setClients] = useState<Client[]>([]);
-  const [devis, setDevis] = useState<Devis[]>([]);
-  const [factures, setFactures] = useState<Facture[]>([]);
+  const [tab, setTab] = useState<Tab>("devis");
+  const [periodScope, setPeriodScope] = useState<"month" | "all">("month");
+  const [clients, setClients, ready] = useJsonBucket<Client[]>("clients", []);
+  const [devis, setDevis] = useJsonBucket<Devis[]>("devis", []);
+  const [factures, setFactures] = useJsonBucket<Facture[]>("factures", []);
   const [showFactureForm, setShowFactureForm] = useState(false);
   const [showDevisForm, setShowDevisForm] = useState(false);
   const [editingFacture, setEditingFacture] = useState<Facture | null>(null);
@@ -28,131 +54,70 @@ export default function Finance() {
   const [editingDevis, setEditingDevis] = useState<Devis | null>(null);
   const [viewingDevis, setViewingDevis] = useState<Devis | null>(null);
   const [viewingFacture, setViewingFacture] = useState<Facture | null>(null);
-  const [depenses, setDepenses] = useState<Depense[]>([]);
+  const [depenses, setDepenses] = useJsonBucket<Depense[]>("depenses", []);
   const [showDepenseForm, setShowDepenseForm] = useState(false);
   const [editingDepense, setEditingDepense] = useState<Depense | null>(null);
-  const [isInitialLoadClients, setIsInitialLoadClients] = useState(true);
-  const [isInitialLoadFactures, setIsInitialLoadFactures] = useState(true);
-  const [isInitialLoadDevis, setIsInitialLoadDevis] = useState(true);
-  const [isInitialLoadDepenses, setIsInitialLoadDepenses] = useState(true);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("clients");
-    if (saved) {
-      try {
-        setClients(JSON.parse(saved));
-      } catch (e) {
-        console.error("Erreur chargement clients:", e);
-      }
-    }
-    setIsInitialLoadClients(false);
-  }, []);
+    if (!ready) return;
+    const next = clients.map((c) => ({
+      ...c,
+      caTotal: factures
+        .filter((f) => f.entreprise === c.entreprise && f.statut === "Payé")
+        .reduce((s, f) => s + f.prix, 0),
+    }));
+    const same =
+      next.length === clients.length &&
+      next.every((c, i) => c.caTotal === clients[i]?.caTotal);
+    if (same) return;
+    setClients(next);
+  }, [factures, clients, ready, setClients]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("factures");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setFactures(parsed);
-        if (parsed.length > 0) {
-          const savedClients = localStorage.getItem("clients");
-          if (savedClients) {
-            const all = JSON.parse(savedClients);
-            const updated = all.map((c: Client) => ({
-              ...c,
-              caTotal: parsed
-                .filter((f: Facture) => f.entreprise === c.entreprise)
-                .reduce((s: number, f: Facture) => s + f.prix, 0),
-            }));
-            setClients(updated);
-            localStorage.setItem("clients", JSON.stringify(updated));
-          }
-        }
-      } catch (e) {
-        console.error("Erreur chargement factures:", e);
-      }
-    }
-    setIsInitialLoadFactures(false);
-  }, []);
+  const facturesInPeriod = useMemo(() => filterFacturesByPeriod(factures, periodScope), [factures, periodScope]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("devis");
-    if (saved) {
-      try {
-        setDevis(JSON.parse(saved));
-      } catch (e) {
-        console.error("Erreur chargement devis:", e);
-      }
-    }
-    setIsInitialLoadDevis(false);
-  }, []);
+  const revenueEncaisse = useMemo(
+    () => facturesInPeriod.filter((f) => f.statut === "Payé").reduce((s, f) => s + f.prix, 0),
+    [facturesInPeriod]
+  );
 
-  useEffect(() => {
-    if (!isInitialLoadFactures && typeof window !== "undefined") {
-      localStorage.setItem("factures", JSON.stringify(factures));
-    }
-  }, [factures, isInitialLoadFactures]);
+  const enAttente = useMemo(
+    () => facturesInPeriod.filter((f) => f.statut === "Non payé").reduce((s, f) => s + f.prix, 0),
+    [facturesInPeriod]
+  );
 
-  useEffect(() => {
-    if (!isInitialLoadDevis && typeof window !== "undefined") {
-      localStorage.setItem("devis", JSON.stringify(devis));
-    }
-  }, [devis, isInitialLoadDevis]);
+  const enRetard = useMemo(
+    () => factures.filter((f) => isFactureEnRetard(f)).reduce((s, f) => s + f.prix, 0),
+    [factures]
+  );
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("depenses");
-    if (saved) {
-      try {
-        setDepenses(JSON.parse(saved));
-      } catch (e) {
-        console.error("Erreur chargement dépenses:", e);
-      }
-    }
-    setIsInitialLoadDepenses(false);
-  }, []);
+  const depenseTotals = useMemo(() => computeDepenseTotals(depenses, periodScope), [depenses, periodScope]);
 
-  useEffect(() => {
-    if (!isInitialLoadDepenses && typeof window !== "undefined") {
-      localStorage.setItem("depenses", JSON.stringify(depenses));
-    }
-  }, [depenses, isInitialLoadDepenses]);
+  const soldeNet = revenueEncaisse - depenseTotals.total;
 
-  const updateClientsCaTotal = (facturesList: Facture[]) => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("clients");
-    if (!saved) return;
-    try {
-      const all = JSON.parse(saved);
-      const updated = all.map((c: Client) => ({
-        ...c,
-        caTotal: facturesList
-          .filter((f) => f.entreprise === c.entreprise)
-          .reduce((s, f) => s + f.prix, 0),
-      }));
-      setClients(updated);
-      localStorage.setItem("clients", JSON.stringify(updated));
-    } catch (e) {
-      console.error("Erreur mise à jour CA clients:", e);
-    }
-  };
+  const facturesForTable = useMemo(() => facturesInPeriod, [facturesInPeriod]);
 
-  const revenueEncaisse = factures.filter((f) => f.statut === "Payé").reduce((s, f) => s + f.prix, 0);
-  const enAttente = factures.filter((f) => f.statut === "Non payé").reduce((s, f) => s + f.prix, 0);
-  const enRetard = 0;
+  const devisForTable = useMemo(() => filterDevisByPeriod(devis, periodScope), [devis, periodScope]);
+
+  const depensesForTable = useMemo(() => filterDepensesForDisplay(depenses, periodScope), [depenses, periodScope]);
+
+  const periodLabelLong = periodScope === "month" ? "Mois en cours" : "Tout historique";
+
+  const hintRevenue =
+    periodScope === "month" ? "Factures payées — émises ce mois" : "Factures payées — toutes périodes";
+
+  const hintAttente =
+    periodScope === "month" ? "Factures impayées — émises ce mois" : "Factures impayées — toutes périodes";
+
+  const hintDepense =
+    periodScope === "month"
+      ? "Récurrents (mois) + occasionnels datés ce mois"
+      : "Somme de toutes les lignes (récurrent + occasionnel)";
 
   const handleSaveFacture = (facture: Facture) => {
     const updated = editingFacture
       ? factures.map((f) => (f.id === facture.id ? facture : f))
       : [...factures, facture];
     setFactures(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("factures", JSON.stringify(updated));
-    }
-    updateClientsCaTotal(updated);
     setEditingFacture(null);
     setFactureFromDevis(null);
     setShowFactureForm(false);
@@ -160,31 +125,19 @@ export default function Finance() {
 
   const handleDeleteFacture = (id: string) => {
     if (!confirm("Supprimer cette facture ?")) return;
-    const updated = factures.filter((f) => f.id !== id);
-    setFactures(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("factures", JSON.stringify(updated));
-    }
-    updateClientsCaTotal(updated);
+    setFactures(factures.filter((f) => f.id !== id));
   };
 
   const handleSaveDevis = (d: Devis) => {
     const updated = editingDevis ? devis.map((x) => (x.id === d.id ? d : x)) : [...devis, d];
     setDevis(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("devis", JSON.stringify(updated));
-    }
     setEditingDevis(null);
     setShowDevisForm(false);
   };
 
   const handleDeleteDevis = (id: string) => {
     if (!confirm("Supprimer ce devis ?")) return;
-    const updated = devis.filter((d) => d.id !== id);
-    setDevis(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("devis", JSON.stringify(updated));
-    }
+    setDevis(devis.filter((d) => d.id !== id));
   };
 
   const handleCreateFactureFromDevis = (d: Devis) => {
@@ -198,168 +151,179 @@ export default function Finance() {
       ? depenses.map((d) => (d.id === dep.id ? dep : d))
       : [...depenses, dep];
     setDepenses(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("depenses", JSON.stringify(updated));
-    }
     setEditingDepense(null);
     setShowDepenseForm(false);
   };
 
   const handleDeleteDepense = (id: string) => {
     if (!confirm("Supprimer cette dépense ?")) return;
-    const updated = depenses.filter((d) => d.id !== id);
-    setDepenses(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("depenses", JSON.stringify(updated));
-    }
+    setDepenses(depenses.filter((d) => d.id !== id));
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] dark:bg-black p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+    <div className={pageShellClass}>
       <div className="md:max-w-[1600px] md:mx-auto">
         <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-gray-400 dark:text-gray-500 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Trésorerie</p>
-              <h1 className="text-[#ED8600] dark:text-blue-800 font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Finance</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-[15px] mt-0.5">Devis et factures</p>
+              <p className={pageEyebrowClass}>Trésorerie</p>
+              <h1 className={pageTitleClass}>Finance</h1>
+              <p className={pageSubtitleClass}>
+                {tab === "factures"
+                  ? "Indicateurs, synthèse nette et factures — les nouvelles factures se créent depuis un devis accepté."
+                  : "Créez un devis, puis une facture depuis le formulaire (statut Accepté) ou depuis la liste."}
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
+                type="button"
                 onClick={() => {
                   setEditingDevis(null);
                   setShowDevisForm(true);
                 }}
-                className="px-4 sm:px-5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:border-gray-300 font-medium text-sm shadow-sm transition-all duration-200"
+                className={`${primaryButtonClass} w-full sm:w-auto !px-4 sm:!px-6 text-sm`}
               >
-                Nouveau devis
+                Créer un devis
               </button>
               <button
-                onClick={() => {
-                  setEditingFacture(null);
-                  setFactureFromDevis(null);
-                  setShowFactureForm(true);
-                }}
-                className="px-4 sm:px-6 py-2.5 bg-[#ED8600] dark:bg-blue-800 rounded-xl text-white font-medium text-sm shadow-lg shadow-[#ED8600]/25 dark:shadow-blue-800/25 hover:opacity-95 transition-all duration-200"
-              >
-                Nouvelle facture
-              </button>
-              <button
+                type="button"
                 onClick={() => {
                   setEditingDepense(null);
                   setShowDepenseForm(true);
                 }}
-                className="px-4 sm:px-5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 hover:border-gray-300 font-medium text-sm shadow-sm transition-all duration-200"
+                className={secondaryButtonClass}
               >
                 Nouvelle dépense
               </button>
             </div>
           </div>
-          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent hidden md:block" />
-          <div className="flex gap-0 mt-6 md:mt-6 border-b border-gray-200 dark:border-gray-700 -mb-px">
-            <button
-              onClick={() => setTab("devis")}
-              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${tab === "devis" ? "bg-transparent text-[#ED8600] dark:text-blue-800 border-[#ED8600] dark:border-blue-800" : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50"}`}
-            >
-              Devis
-            </button>
-            <button
-              onClick={() => setTab("factures")}
-              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${tab === "factures" ? "bg-transparent text-[#ED8600] dark:text-blue-800 border-[#ED8600] dark:border-blue-800" : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50"}`}
-            >
-              Factures
-            </button>
+          <div className={pageDividerClass} aria-hidden />
+          <div
+            className="mt-6 flex flex-col gap-2 sm:mt-7 sm:flex-row sm:items-center sm:justify-between"
+            role="tablist"
+            aria-label="Type de document"
+          >
+            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Afficher</p>
+            <div className={segmentedBarClass}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "devis"}
+                onClick={() => setTab("devis")}
+                className={tab === "devis" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+              >
+                Devis
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "factures"}
+                onClick={() => setTab("factures")}
+                className={tab === "factures" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+              >
+                Factures
+              </button>
+            </div>
           </div>
+
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-0">
+            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Période (KPI, tableaux, synthèse)</p>
+            <div className={segmentedBarClass} role="group" aria-label="Période">
+              <button
+                type="button"
+                onClick={() => setPeriodScope("month")}
+                className={periodScope === "month" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+              >
+                Mois en cours
+              </button>
+              <button
+                type="button"
+                onClick={() => setPeriodScope("all")}
+                className={periodScope === "all" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+              >
+                Tout
+              </button>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
+            Période sélectionnée : <span className="font-medium text-zinc-700 dark:text-zinc-300">{periodLabelLong}</span>
+            . Les cartes « En retard » et les indicateurs devis (pipeline / acceptés) restent calculés sur tout le
+            portefeuille.
+          </p>
         </header>
 
-      {tab === "factures" && (
-        <>
-          <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Indicateurs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-6">
-              <RevenueEncaisseCard revenueEncaisse={revenueEncaisse} />
-              <EnAttenteCard enAttente={enAttente} />
-              <EnRetardCard enRetard={enRetard} />
-              <DepenseCard depenses={depenses} />
-            </div>
-          </section>
-          {depenses.length > 0 && (
-            <div className="px-4 sm:px-6 md:px-0 pb-4 md:pb-6">
-              <div className="border border-gray-200 dark:border-gray-700 md:rounded-2xl md:shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:md:shadow-none bg-white dark:bg-black md:bg-white overflow-hidden">
-                <div className="p-4 md:p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                  <h3 className="text-gray-600 dark:text-gray-400 font-semibold text-sm md:text-base">Liste des dépenses</h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-300 dark:border-gray-700">
-                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Désignation</th>
-                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Montant</th>
-                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Type</th>
-                        <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {depenses.map((d) => (
-                        <tr key={d.id} className="border-b border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800">
-                          <td className="p-4 text-gray-500 dark:text-gray-400 text-sm">{d.libelle}</td>
-                          <td className="p-4 text-gray-500 dark:text-gray-400 text-sm">{d.montant.toLocaleString("fr-FR")} €</td>
-                          <td className="p-4">
-                            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${d.type === "Récurrent" ? "bg-amber-200 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200" : "bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300"}`}>
-                              {d.type}
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            <button
-                              onClick={() => { setEditingDepense(d); setShowDepenseForm(true); }}
-                              className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm mr-2"
-                            >
-                              Modifier
-                            </button>
-                            <button
-                              onClick={() => handleDeleteDepense(d.id)}
-                              className="text-red-500 hover:text-red-600 text-sm"
-                            >
-                              Supprimer
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+        {tab === "factures" && (
+          <>
+            <section className="mb-6 px-4 sm:px-6 md:mb-8 md:px-0" aria-label="Indicateurs">
+              <div className="mb-4">
+                <h2 className={sectionIntroTitleClass}>Vue d&apos;ensemble</h2>
+                <p className={sectionIntroDescClass}>
+                  Encaissements et impayés selon la période, retards (toutes périodes), dépenses et synthèse nette
+                  (encaissé − charges).
+                </p>
               </div>
-            </div>
-          )}
-          <section className="px-4 sm:px-6 md:px-0" aria-label="Liste des factures">
-            <FacturesTable
-              factures={factures}
-              onDelete={handleDeleteFacture}
-              onEdit={(f) => {
-                setEditingFacture(f);
-                setFactureFromDevis(null);
-                setShowFactureForm(true);
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5 xl:gap-4">
+                <RevenueEncaisseCard revenueEncaisse={revenueEncaisse} periodHint={hintRevenue} />
+                <EnAttenteCard enAttente={enAttente} periodHint={hintAttente} />
+                <EnRetardCard enRetard={enRetard} />
+                <DepenseCard
+                  total={depenseTotals.total}
+                  totalRecurrent={depenseTotals.totalRecurrent}
+                  totalOccasionnel={depenseTotals.totalOccasionnel}
+                  periodHint={hintDepense}
+                />
+                <SyntheseNetCard net={soldeNet} periodLabel={periodLabelLong} />
+              </div>
+            </section>
+
+            <DepensesTable
+              depenses={depensesForTable}
+              totalInDatabase={depenses.length}
+              onEdit={(d) => {
+                setEditingDepense(d);
+                setShowDepenseForm(true);
               }}
-              onView={(f) => setViewingFacture(f)}
+              onDelete={handleDeleteDepense}
+              onAdd={() => {
+                setEditingDepense(null);
+                setShowDepenseForm(true);
+              }}
             />
-          </section>
-        </>
-      )}
 
-      {tab === "devis" && (
-        <section className="px-4 sm:px-6 md:px-0" aria-label="Devis">
-          <DevisTable
-          devis={devis}
-          onDelete={handleDeleteDevis}
-          onEdit={(d) => {
-            setEditingDevis(d);
-            setShowDevisForm(true);
-          }}
-          onCreateFacture={handleCreateFactureFromDevis}
-          onView={(d) => setViewingDevis(d)}
-          />
-        </section>
-      )}
+            <section className="px-4 sm:px-6 md:px-0" aria-label="Liste des factures">
+              <FacturesTable
+                factures={facturesForTable}
+                totalInDatabase={factures.length}
+                onDelete={handleDeleteFacture}
+                onEdit={(f) => {
+                  setEditingFacture(f);
+                  setFactureFromDevis(null);
+                  setShowFactureForm(true);
+                }}
+                onView={(f) => setViewingFacture(f)}
+              />
+            </section>
+          </>
+        )}
 
+        {tab === "devis" && (
+          <>
+            <DevisKpiStrip devis={devis} />
+            <section className="px-4 sm:px-6 md:px-0" aria-label="Devis">
+              <DevisTable
+                devis={devisForTable}
+                totalInDatabase={devis.length}
+                onDelete={handleDeleteDevis}
+                onEdit={(d) => {
+                  setEditingDevis(d);
+                  setShowDevisForm(true);
+                }}
+                onCreateFacture={handleCreateFactureFromDevis}
+                onView={(d) => setViewingDevis(d)}
+              />
+            </section>
+          </>
+        )}
       </div>
 
       {showFactureForm && (
@@ -385,6 +349,7 @@ export default function Finance() {
             setEditingDevis(null);
           }}
           onSave={handleSaveDevis}
+          onCreateFacture={handleCreateFactureFromDevis}
         />
       )}
 
@@ -407,7 +372,10 @@ export default function Finance() {
       {showDepenseForm && (
         <DepenseForm
           depense={editingDepense}
-          onClose={() => { setShowDepenseForm(false); setEditingDepense(null); }}
+          onClose={() => {
+            setShowDepenseForm(false);
+            setEditingDepense(null);
+          }}
           onSave={handleSaveDepense}
         />
       )}

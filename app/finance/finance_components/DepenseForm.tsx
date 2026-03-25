@@ -3,6 +3,19 @@
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import type { Depense } from "@/app/types";
+import {
+  overlayBackdropClass,
+  overlayPanelNarrowClass,
+  overlayHeaderClass,
+  overlayTitleClass,
+  overlayCloseButtonClass,
+  overlayScrollBodyClass,
+  overlayFooterClass,
+  inputFieldClass,
+  formLabelClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/app/components/appCardStyles";
 
 interface DepenseFormProps {
   depense?: Depense | null;
@@ -40,78 +53,83 @@ export default function DepenseForm({ depense, onClose, onSave }: DepenseFormPro
     onClose();
   };
 
+  const title = depense ? "Modifier la dépense" : "Nouvelle dépense";
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start md:items-center justify-center z-50 p-4 pt-20 md:pt-4">
-      <div className="bg-[#f6f6f6] border border-gray-300 rounded-xl w-full max-w-md max-h-[85vh] md:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-gray-300">
-          <h2 className="text-gray-500 text-xl font-bold">
-            {depense ? "Modifier la dépense" : "Nouvelle dépense"}
+    <div className={overlayBackdropClass} onClick={onClose} role="presentation">
+      <div
+        className={overlayPanelNarrowClass}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="depense-form-title"
+      >
+        <div className={overlayHeaderClass}>
+          <h2 id="depense-form-title" className={overlayTitleClass}>
+            {title}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-600">
-            <FaTimes className="text-xl" />
+          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+            <FaTimes className="h-5 w-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Désignation</label>
-            <input
-              type="text"
-              required
-              value={libelle}
-              onChange={(e) => setLibelle(e.target.value)}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Montant (€)</label>
-            <input
-              type="number"
-              required
-              min="0"
-              step="0.01"
-              value={montant || ""}
-              onChange={(e) => setMontant(Number(e.target.value) || 0)}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-500 text-sm mb-2">Type</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as "Récurrent" | "Occasionnel")}
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
-            >
-              <option value="Occasionnel">Occasionnel (une fois)</option>
-              <option value="Récurrent">Récurrent (tous les mois)</option>
-            </select>
-            <p className="text-gray-500 text-xs mt-1">
-              {type === "Récurrent" ? "Dépense qui revient chaque mois." : "Dépense ponctuelle, non répétée."}
-            </p>
-          </div>
-          {type === "Occasionnel" && (
+
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className={overlayScrollBodyClass}>
             <div>
-              <label className="block text-gray-500 text-sm mb-2">Date (optionnel)</label>
+              <label className={formLabelClass}>Désignation</label>
               <input
                 type="text"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                placeholder="JJ/MM/AAAA"
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:border-[#ED8600]"
+                required
+                value={libelle}
+                onChange={(e) => setLibelle(e.target.value)}
+                className={inputFieldClass}
               />
             </div>
-          )}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-200 w-full sm:w-auto"
-            >
+            <div>
+              <label className={formLabelClass}>Montant (€)</label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={montant || ""}
+                onChange={(e) => setMontant(Number(e.target.value) || 0)}
+                className={inputFieldClass}
+              />
+            </div>
+            <div>
+              <label className={formLabelClass}>Type</label>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as "Récurrent" | "Occasionnel")}
+                className={inputFieldClass}
+              >
+                <option value="Occasionnel">Occasionnel (une fois)</option>
+                <option value="Récurrent">Récurrent (tous les mois)</option>
+              </select>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                {type === "Récurrent" ? "Dépense qui revient chaque mois." : "Dépense ponctuelle, non répétée."}
+              </p>
+            </div>
+            {type === "Occasionnel" && (
+              <div>
+                <label className={formLabelClass}>Date (optionnel)</label>
+                <input
+                  type="text"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  placeholder="JJ/MM/AAAA"
+                  className={inputFieldClass}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className={overlayFooterClass}>
+            <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
               Annuler
             </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-[#ED8600] rounded-lg text-white hover:opacity-90 w-full sm:w-auto"
-            >
+            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
               {depense ? "Modifier" : "Enregistrer"}
             </button>
           </div>

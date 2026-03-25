@@ -11,7 +11,7 @@ export interface Client {
   statut: "Actif" | "Inactif" | "Prospect";
   abonnement?: "Actif" | "Inactif";
   secteurActivite?: string;
-  /** Calculé côté finance à partir des factures, pas saisi dans le formulaire client */
+  /** CA encaissé : somme des factures payées (recalculé depuis Finance), pas saisi au formulaire client */
   caTotal?: number;
   /** Non saisi dans le formulaire client */
   projets?: { enCours: number; actifs: number; termines: number };
@@ -73,4 +73,28 @@ export interface Depense {
   montant: number;
   type: "Récurrent" | "Occasionnel";
   date?: string; // pour occasionnel, date de la dépense
+}
+
+/** Surcharges tarifaires par ligne (estimateur) */
+export interface EstimationTarifOverride {
+  price?: number;
+  pricePerUnit?: number;
+  priceMin?: number;
+  priceMax?: number;
+}
+
+/** Estimation enregistrée, liée à un client (localStorage) */
+export interface EstimationSaved {
+  id: string;
+  clientId: string;
+  /** Libellé optionnel (ex. nom de projet) */
+  libelle?: string;
+  createdAt: string;
+  updatedAt: string;
+  selected: Record<string, boolean>;
+  qty: Record<string, number>;
+  ranges: Record<string, number>;
+  maintenanceId: string | null;
+  overrides: Record<string, EstimationTarifOverride>;
+  maintOverrides: Record<string, number>;
 }

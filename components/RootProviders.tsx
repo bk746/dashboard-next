@@ -1,0 +1,42 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { AuthProvider } from "@/context/AuthContext";
+import { DataSyncProvider } from "@/context/DataSyncContext";
+import CacheBuster from "@/app/components/CacheBuster";
+import MobileNav from "@/app/components/MobileNav";
+import RequireAuth from "@/components/RequireAuth";
+import Sidebar from "@/app/components/Sidebar";
+
+export default function RootProviders({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isPublicAuth = pathname === "/login" || pathname === "/auth/callback";
+
+  if (isPublicAuth) {
+    return (
+      <AuthProvider>
+        <DataSyncProvider>
+          <div className="min-h-screen bg-[#0a0a0c]">{children}</div>
+        </DataSyncProvider>
+      </AuthProvider>
+    );
+  }
+
+  return (
+    <AuthProvider>
+      <DataSyncProvider>
+        <RequireAuth>
+          <div className="flex min-h-screen bg-[#0a0a0c]">
+            <MobileNav />
+            <Sidebar />
+            <main className="flex-1 w-full md:ml-[280px] min-h-screen pt-20 md:pt-0 relative z-0 overflow-auto bg-[#0a0a0c]">
+              <div className="h-auto md:min-h-screen">
+                <CacheBuster>{children}</CacheBuster>
+              </div>
+            </main>
+          </div>
+        </RequireAuth>
+      </DataSyncProvider>
+    </AuthProvider>
+  );
+}

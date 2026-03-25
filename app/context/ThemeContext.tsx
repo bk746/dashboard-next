@@ -1,89 +1,41 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 
-const STORAGE_KEY = "theme";
-type Theme = "light" | "dark";
-
+/** Thème unique : sombre sur tout le site (plus de bascule clair / sombre). */
 interface ThemeContextType {
-  theme: Theme;
-  isDark: boolean;
-  setTheme: (theme: Theme) => void;
+  theme: "dark";
+  isDark: true;
+  setTheme: (_t: "dark") => void;
   toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (stored === "dark" || stored === "light") return stored;
-  } catch {}
-  return "light";
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setThemeState(getInitialTheme());
-    setMounted(true);
+    const root = document.documentElement;
+    root.classList.add("dark");
+    try {
+      localStorage.setItem("theme", "dark");
+    } catch {
+      /* ignore */
+    }
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-    try {
-      localStorage.setItem(STORAGE_KEY, theme);
-    } catch {}
-  }, [theme, mounted]);
-
-  const setTheme = (value: Theme) => {
-    setThemeState(value);
-    if (typeof document !== "undefined") {
-      const root = document.documentElement;
-      if (value === "dark") root.classList.add("dark");
-      else root.classList.remove("dark");
-      try {
-        localStorage.setItem(STORAGE_KEY, value);
-      } catch {}
-    }
-  };
-
-  const toggleTheme = () => {
-    setThemeState((t) => {
-      const next = t === "light" ? "dark" : "light";
-      if (typeof document !== "undefined") {
-        const root = document.documentElement;
-        if (next === "dark") root.classList.add("dark");
-        else root.classList.remove("dark");
-        try {
-          localStorage.setItem(STORAGE_KEY, next);
-        } catch {}
-      }
-      return next;
-    });
-  };
-
-  return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        isDark: theme === "dark",
-        setTheme,
-        toggleTheme,
-      }}
-    >
-      {children}
-    </ThemeContext.Provider>
+  const value = useMemo<ThemeContextType>(
+    () => ({
+      theme: "dark",
+      isDark: true,
+      setTheme: () => {
+        document.documentElement.classList.add("dark");
+      },
+      toggleTheme: () => {},
+    }),
+    []
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

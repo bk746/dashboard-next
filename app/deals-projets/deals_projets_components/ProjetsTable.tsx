@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { FaSearch, FaChevronDown, FaEllipsisV } from "react-icons/fa";
+import { FolderKanban } from "lucide-react";
 import type { Projet } from "@/app/types";
+import {
+  inputFieldClass,
+  panelSurfaceClass,
+  sectionIntroTitleClass,
+  sectionIntroDescClass,
+  segmentedBarClass,
+  segmentedTabActiveClass,
+  segmentedTabInactiveClass,
+} from "@/app/components/appCardStyles";
 
 interface ProjetsTableProps {
   projets: Projet[];
@@ -10,137 +21,452 @@ interface ProjetsTableProps {
   onEdit: (projet: Projet) => void;
 }
 
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function parseDateFin(dateStr: string): Date | null {
+  if (!dateStr?.trim()) return null;
+  const parts = dateStr.trim().split("/");
+  if (parts.length !== 3) return null;
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const year = parseInt(parts[2], 10);
+  if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+  const d = new Date(year, month, day);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+type Urgency = "retard" | "urgent" | "semaine" | "mois" | "plus" | "sans";
+
+function getEcheanceInfo(dateFinStr: string): {
+  urgency: Urgency;
+  badgeLabel: string;
+  detail: string;
+  dateFin: Date | null;
+} {
+  const dateFin = parseDateFin(dateFinStr);
+  if (!dateFin) {
+    return { urgency: "sans", badgeLabel: "Sans date", detail: "", dateFin: null };
+  }
+  const today = startOfDay(new Date());
+  const end = startOfDay(dateFin);
+  const diffDays = Math.round((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+
+  if (diffDays < 0) {
+    return {
+      urgency: "retard",
+      badgeLabel: "En retard",
+      detail: `${Math.abs(diffDays)} j.`,
+      dateFin,
+    };
+  }
+  if (diffDays === 0) {
+    return { urgency: "urgent", badgeLabel: "Aujourd'hui", detail: "J", dateFin };
+  }
+  if (diffDays <= 7) {
+    return { urgency: "urgent", badgeLabel: "Urgent", detail: `dans ${diffDays} j.`, dateFin };
+  }
+  if (diffDays <= 14) {
+    return { urgency: "semaine", badgeLabel: "Cette semaine", detail: `dans ${diffDays} j.`, dateFin };
+  }
+  if (diffDays <= 31) {
+    return { urgency: "mois", badgeLabel: "Ce mois", detail: `dans ${diffDays} j.`, dateFin };
+  }
+  return { urgency: "plus", badgeLabel: "Plus tard", detail: `dans ${diffDays} j.`, dateFin };
+}
+
+function urgencyBadgeClass(u: Urgency): string {
+  switch (u) {
+    case "retard":
+      return "bg-rose-500/90 text-white dark:bg-rose-500/80";
+    case "urgent":
+      return "bg-orange-500/90 text-white dark:bg-orange-500/75";
+    case "semaine":
+      return "bg-amber-500/75 text-amber-950 dark:bg-amber-500/70 dark:text-amber-950";
+    case "mois":
+      return "bg-emerald-600/85 text-white dark:bg-emerald-500/75";
+    case "plus":
+      return "bg-zinc-400 text-white dark:bg-zinc-500";
+    default:
+      return "bg-zinc-400/80 text-white dark:bg-zinc-500";
+  }
+}
+
+function sortProjetsForSuivi(list: Projet[]): Projet[] {
+  const today = startOfDay(new Date()).getTime();
+  return [...list].sort((a, b) => {
+    const da = parseDateFin(a.dateFin);
+    const db = parseDateFin(b.dateFin);
+    const ta = da ? da.getTime() : NaN;
+    const tb = db ? db.getTime() : NaN;
+
+    const tier = (t: number) => {
+      if (Number.isNaN(t)) return 2;
+      return t < today ? 0 : 1;
+    };
+    const tierA = tier(ta);
+    const tierB = tier(tb);
+    if (tierA !== tierB) return tierA - tierB;
+    if (tierA === 2 && tierB === 2) return a.nom.localeCompare(b.nom, "fr");
+    if (tierA === 0 && tierB === 0) return ta - tb;
+    return ta - tb;
+  });
+}
+
 export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Tous les statuts");
+  const [vueScope, setVueScope] = useState<"encours" | "tous">("encours");
 
-  const filteredProjets = projets.filter((projet) => {
-    const matchesSearch =
-      projet.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      projet.entreprise.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      projet.responsable.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "Tous les statuts" || projet.statut === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    if (vueScope === "encours" && statusFilter === "Terminé") {
+      setStatusFilter("Tous les statuts");
+    }
+  }, [vueScope, statusFilter]);
+
+  const projetsEnCoursCount = useMemo(() => projets.filter((p) => p.statut !== "Terminé").length, [projets]);
+
+  const filteredProjets = useMemo(() => {
+    let list = projets;
+    if (vueScope === "encours") {
+      list = list.filter((p) => p.statut !== "Terminé");
+    }
+    list = list.filter((projet) => {
+      const matchesSearch =
+        projet.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        projet.entreprise.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        projet.responsable.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "Tous les statuts" || projet.statut === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    return sortProjetsForSuivi(list);
+  }, [projets, searchTerm, statusFilter, vueScope]);
+
+  const isFilteredEmpty = projets.length > 0 && filteredProjets.length === 0;
+  const isDatabaseEmpty = projets.length === 0;
+  const onlyTermines =
+    projets.length > 0 &&
+    projets.every((p) => p.statut === "Terminé") &&
+    vueScope === "encours" &&
+    !searchTerm &&
+    statusFilter === "Tous les statuts";
 
   const getStatutBadgeColor = (statut: string) => {
     switch (statut) {
       case "Actif":
-        return "bg-green-600 text-white";
+        return "bg-emerald-600/90 text-white dark:bg-emerald-500/80";
       case "Prospect":
-        return "bg-orange-600 text-white";
+        return "bg-amber-600/90 text-white dark:bg-amber-500/75";
       case "Terminé":
-        return "bg-gray-600 text-white";
+        return "bg-zinc-500 text-white";
       default:
-        return "bg-gray-600 text-white";
+        return "bg-zinc-500 text-white";
     }
+  };
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("Tous les statuts");
+    setVueScope("encours");
   };
 
   return (
     <div className="pb-4 sm:pb-6 md:pb-10">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-4">
-        <div className="flex-1 relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm" />
-          <input
-            type="text"
-            placeholder="🔍 Rechercher un projet..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800 focus:ring-1 focus:ring-[#ED8600]/20 dark:focus:ring-blue-800/20 transition-colors"
-          />
-        </div>
-        <div className="relative">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="appearance-none px-4 py-2.5 pr-8 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800 cursor-pointer text-sm"
-          >
-            <option value="Tous les statuts">Tous les statuts</option>
-            <option value="Actif">Actif</option>
-            <option value="Prospect">Prospect</option>
-            <option value="Terminé">Terminé</option>
-          </select>
-          <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none" />
-        </div>
+      <div className="mb-4">
+        <h2 className={sectionIntroTitleClass}>Suivi des projets</h2>
+        <p className={sectionIntroDescClass}>
+          {projets.length === 0 ? (
+            "Créez un projet pour suivre valeur, dates et responsable."
+          ) : (
+            <>
+              {projetsEnCoursCount} projet{projetsEnCoursCount > 1 ? "s" : ""} en cours (hors terminés) sur {projets.length}. Tri
+              par défaut : échéance la plus proche (retards en premier). Les factures sont dans{" "}
+              <Link href="/finance" className="font-medium text-[#ED8600] underline-offset-2 hover:underline dark:text-[#8fa9c9]">
+                Finance
+              </Link>
+              .
+            </>
+          )}
+        </p>
       </div>
 
-      <div className="border border-gray-200 dark:border-gray-700 rounded-xl md:rounded-2xl bg-white dark:bg-black overflow-hidden md:shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:md:shadow-none">
+      <div className={`${panelSurfaceClass} overflow-hidden`}>
+        <div className="border-b border-zinc-100 bg-zinc-50/90 px-4 py-4 dark:border-white/[0.06] dark:bg-white/[0.03] sm:px-5">
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="mb-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">Vue</p>
+              <div className={segmentedBarClass} role="tablist" aria-label="Portée de la liste">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={vueScope === "encours"}
+                  onClick={() => setVueScope("encours")}
+                  className={vueScope === "encours" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+                >
+                  En cours
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={vueScope === "tous"}
+                  onClick={() => setVueScope("tous")}
+                  className={vueScope === "tous" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+                >
+                  Tous
+                </button>
+              </div>
+                <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
+                  « En cours » exclut les projets au statut Terminé. Tri par défaut : échéance la plus proche (retards en premier).
+                </p>
+            </div>
+
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="min-w-0 flex-1">
+                <label htmlFor="projets-search" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Rechercher
+                </label>
+                <div className="relative">
+                  <FaSearch
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 dark:text-zinc-500"
+                    aria-hidden
+                  />
+                  <input
+                    id="projets-search"
+                    type="search"
+                    autoComplete="off"
+                    placeholder="Nom, entreprise ou responsable…"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={`${inputFieldClass} pl-10 py-2.5 rounded-xl`}
+                  />
+                </div>
+              </div>
+              <div className="w-full shrink-0 lg:w-52">
+                <label htmlFor="projets-filter-statut" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Statut
+                </label>
+                <div className="relative">
+                  <select
+                    id="projets-filter-statut"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className={`${inputFieldClass} w-full appearance-none cursor-pointer px-4 py-2.5 pr-9 text-sm rounded-xl`}
+                  >
+                    <option value="Tous les statuts">Tous les statuts</option>
+                    <option value="Actif">Actif</option>
+                    <option value="Prospect">Prospect</option>
+                    {vueScope === "tous" && <option value="Terminé">Terminé</option>}
+                  </select>
+                  <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-300 dark:border-gray-700">
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Nom du projet</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Entreprise</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Statut</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Valeur</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Date début</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Date fin</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Responsable</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold">Commentaire</th>
-                <th className="text-left p-4 text-gray-500 dark:text-gray-400 text-sm font-semibold"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProjets.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="p-8 text-center text-gray-500 dark:text-gray-400">
-                    Aucun projet trouvé
-                  </td>
-                </tr>
-              ) : (
-                filteredProjets.map((projet) => (
-                  <tr key={projet.id} className="border-b border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
-                    <td className="p-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">{projet.nom}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">{projet.entreprise}</span>
-                    </td>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center">
-                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium ${getStatutBadgeColor(projet.statut)}`}>
+          {isDatabaseEmpty ? (
+            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+              <div className="mb-4 rounded-2xl bg-zinc-100 p-5 dark:bg-white/[0.06]">
+                <FolderKanban className="h-11 w-11 text-zinc-400 dark:text-zinc-500" strokeWidth={1.25} aria-hidden />
+              </div>
+              <p className="text-base font-semibold text-zinc-800 dark:text-zinc-100">Aucun projet enregistré</p>
+              <p className="mt-2 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
+                Créez un projet avec <span className="font-medium text-zinc-700 dark:text-zinc-300">Nouveau projet</span> — vous pourrez lier une facture pour préremplir montant et entreprise.
+              </p>
+            </div>
+          ) : onlyTermines ? (
+            <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+              <p className="text-base font-medium text-zinc-800 dark:text-zinc-200">Aucun projet en cours</p>
+              <p className="mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+                Tous vos projets sont au statut <span className="font-medium text-zinc-700 dark:text-zinc-300">Terminé</span>. Passez à la vue « Tous » pour les consulter, ou créez un nouveau deal.
+              </p>
+              <button
+                type="button"
+                onClick={() => setVueScope("tous")}
+                className="mt-5 text-sm font-medium text-[#ED8600] underline-offset-4 hover:underline dark:text-[#8fa9c9]"
+              >
+                Afficher tous les projets
+              </button>
+            </div>
+          ) : isFilteredEmpty ? (
+            <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+              <p className="text-base font-medium text-zinc-800 dark:text-zinc-200">Aucun résultat</p>
+              <p className="mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+                Aucun projet ne correspond à votre recherche ou au filtre de statut.
+              </p>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="mt-5 text-sm font-medium text-[#ED8600] underline-offset-4 hover:underline dark:text-[#8fa9c9]"
+              >
+                Réinitialiser recherche et filtres
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Mobile : cartes */}
+              <div className="md:hidden divide-y divide-zinc-100 dark:divide-white/[0.06]">
+                {filteredProjets.map((projet) => {
+                  const ech = getEcheanceInfo(projet.dateFin);
+                  return (
+                    <div key={projet.id} className="px-4 py-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{projet.nom}</p>
+                          <p className="text-sm text-zinc-600 dark:text-zinc-400">{projet.entreprise}</p>
+                        </div>
+                        <span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${getStatutBadgeColor(projet.statut)}`}>
                           {projet.statut}
                         </span>
                       </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">{projet.valeur.toLocaleString("fr-FR")} €</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">{projet.dateDebut}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">{projet.dateFin}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">{projet.responsable}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm max-w-xs truncate block" title={projet.commentaire || ""}>
-                        {projet.commentaire || "-"}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${urgencyBadgeClass(ech.urgency)}`}>
+                          {ech.badgeLabel}
+                        </span>
+                        {ech.detail ? (
+                          <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{ech.detail}</span>
+                        ) : null}
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">Fin {projet.dateFin || "—"}</span>
+                      </div>
+                      <p className="mt-2 text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
+                        {projet.valeur.toLocaleString("fr-FR")} €
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{projet.responsable}</p>
+                      <div className="mt-3 flex gap-3">
                         <button
+                          type="button"
                           onClick={() => onEdit(projet)}
-                          className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2"
+                          className="text-sm font-medium text-[#ED8600] dark:text-[#8fa9c9]"
                         >
-                          <FaEllipsisV className="text-sm" />
+                          Modifier
                         </button>
                         <button
+                          type="button"
                           onClick={() => onDelete(projet.id)}
-                          className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors text-sm"
+                          className="text-sm text-red-600 dark:text-red-400"
                         >
                           Supprimer
                         </button>
                       </div>
-                    </td>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop : tableau */}
+              <table className="hidden md:table w-full">
+                <thead>
+                  <tr className="border-b border-zinc-200/90 bg-zinc-50/50 dark:border-white/[0.06] dark:bg-white/[0.02]">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Projet
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Entreprise
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Statut
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Valeur
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Début
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Fin
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Échéance
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Responsable
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Commentaire
+                    </th>
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filteredProjets.map((projet) => {
+                    const ech = getEcheanceInfo(projet.dateFin);
+                    return (
+                      <tr
+                        key={projet.id}
+                        className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-zinc-50/80 dark:border-white/[0.04] dark:hover:bg-white/[0.03]"
+                      >
+                        <td className="p-4">
+                          <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{projet.nom}</span>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm text-zinc-700 dark:text-zinc-300">{projet.entreprise}</span>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatutBadgeColor(projet.statut)}`}>
+                            {projet.statut}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
+                            {projet.valeur.toLocaleString("fr-FR")} €
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">{projet.dateDebut}</span>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">{projet.dateFin}</span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-col gap-1">
+                            <span className={`inline-flex w-fit rounded-full px-2.5 py-0.5 text-xs font-medium ${urgencyBadgeClass(ech.urgency)}`}>
+                              {ech.badgeLabel}
+                            </span>
+                            {ech.detail ? (
+                              <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{ech.detail}</span>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm text-zinc-700 dark:text-zinc-300">{projet.responsable}</span>
+                        </td>
+                        <td className="p-4">
+                          <span className="block max-w-[200px] truncate text-sm text-zinc-600 dark:text-zinc-400" title={projet.commentaire || ""}>
+                            {projet.commentaire || "—"}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onEdit(projet)}
+                              className="p-2 text-zinc-500 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                              aria-label="Modifier"
+                            >
+                              <FaEllipsisV className="text-sm" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDelete(projet.id)}
+                              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -2,14 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { useCompany } from "@/app/hooks/useCompany";
-import { useTheme } from "@/app/context/ThemeContext";
 import type { CompanySettings } from "@/app/config/company";
+import {
+  pageShellClass,
+  pageEyebrowClass,
+  pageTitleClass,
+  pageSubtitleClass,
+  pageDividerClass,
+  panelSurfaceClass,
+  inputFieldClass,
+  formLabelClass,
+  sectionHeadingClass,
+  primaryButtonClass,
+  sectionIntroDescClass,
+} from "@/app/components/appCardStyles";
 
 export default function Parametres() {
   const [company, setCompany] = useCompany();
   const [form, setForm] = useState<CompanySettings>(company);
   const [saved, setSaved] = useState(false);
-  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     setForm(company);
@@ -27,177 +38,152 @@ export default function Parametres() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] dark:bg-black p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+    <div className={pageShellClass}>
       <div className="md:max-w-[900px] md:mx-auto">
-        <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
-          <p className="text-gray-400 dark:text-gray-500 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Compte</p>
-          <h1 className="text-[#ED8600] dark:text-blue-800 font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Paramètres</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-[15px] mt-0.5">
-            Modifiez vos informations personnelles et entreprise.
+        <header className="px-4 sm:px-6 md:px-0 mb-7 md:mb-10">
+          <p className={pageEyebrowClass}>Compte</p>
+          <h1 className={pageTitleClass}>Paramètres</h1>
+          <p className={pageSubtitleClass}>Modifiez vos informations personnelles et entreprise.</p>
+          <p className={`${sectionIntroDescClass} mt-2 max-w-2xl`}>
+            Ces données peuvent être réutilisées sur vos factures et devis lorsque vous les générez depuis l&apos;application.
           </p>
-          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent hidden md:block" />
+          <div className={pageDividerClass} aria-hidden />
         </header>
 
-        {/* Apparence / Mode sombre */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-xl md:rounded-2xl p-6 md:p-8 bg-white dark:bg-black md:shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-none mb-6 mx-4 sm:mx-6 md:mx-0">
-          <h3 className="text-gray-600 dark:text-gray-400 font-semibold text-base md:text-[15px] mb-4">Apparence</h3>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-800 dark:text-white font-medium">Mode sombre</p>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Activer ou désactiver le thème sombre sur tout le site</p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isDark}
-              onClick={toggleTheme}
-              className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-800 focus:ring-offset-2 dark:focus:ring-offset-black ${
-                isDark ? "bg-blue-800" : "bg-[#ED8600]"
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  isDark ? "translate-x-5" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-6 px-4 sm:px-6 md:px-0">
-          <div className="border border-gray-200 dark:border-gray-700 rounded-xl md:rounded-2xl p-6 md:p-8 bg-white dark:bg-black md:shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-none">
-            <h3 className="text-gray-600 dark:text-gray-400 font-semibold text-base md:text-[15px] mb-4">Infos personnelles</h3>
+          <div className={`${panelSurfaceClass} p-6 md:p-8`}>
+            <h3 className={sectionHeadingClass}>Infos personnelles</h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Dénomination / Nom</label>
+                <label className={formLabelClass}>Dénomination / Nom</label>
                 <input
                   type="text"
                   value={form.denomination}
                   onChange={(e) => update("denomination", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">SIREN</label>
+                  <label className={formLabelClass}>SIREN</label>
                   <input
                     type="text"
                     value={form.siren}
                     onChange={(e) => update("siren", e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                    className={inputFieldClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">SIRET</label>
+                  <label className={formLabelClass}>SIRET</label>
                   <input
                     type="text"
                     value={form.siret}
                     onChange={(e) => update("siret", e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                    className={inputFieldClass}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Code APE</label>
+                <label className={formLabelClass}>Code APE</label>
                 <input
                   type="text"
                   value={form.codeApe}
                   onChange={(e) => update("codeApe", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Forme juridique</label>
+                <label className={formLabelClass}>Forme juridique</label>
                 <input
                   type="text"
                   value={form.formeJuridique}
                   onChange={(e) => update("formeJuridique", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Adresse</label>
+                <label className={formLabelClass}>Adresse</label>
                 <input
                   type="text"
                   value={form.adresse}
                   onChange={(e) => update("adresse", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Code postal</label>
+                  <label className={formLabelClass}>Code postal</label>
                   <input
                     type="text"
                     value={form.codePostal}
                     onChange={(e) => update("codePostal", e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                    className={inputFieldClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Ville</label>
+                  <label className={formLabelClass}>Ville</label>
                   <input
                     type="text"
                     value={form.ville}
                     onChange={(e) => update("ville", e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                    className={inputFieldClass}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Pays</label>
+                <label className={formLabelClass}>Pays</label>
                 <input
                   type="text"
                   value={form.pays}
                   onChange={(e) => update("pays", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Email</label>
+                <label className={formLabelClass}>Email</label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Téléphone</label>
+                <label className={formLabelClass}>Téléphone</label>
                 <input
                   type="text"
                   value={form.telephone}
                   onChange={(e) => update("telephone", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div>
-                <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">TVA (mention légale)</label>
+                <label className={formLabelClass}>TVA (mention légale)</label>
                 <input
                   type="text"
                   value={form.tva}
                   onChange={(e) => update("tva", e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                  className={inputFieldClass}
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Date d’immatriculation</label>
+                  <label className={formLabelClass}>Date d&apos;immatriculation</label>
                   <input
                     type="text"
                     value={form.dateImmatriculation}
                     onChange={(e) => update("dateImmatriculation", e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                    className={inputFieldClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-500 dark:text-gray-400 text-sm mb-2">Département</label>
+                  <label className={formLabelClass}>Département</label>
                   <input
                     type="text"
                     value={form.departement}
                     onChange={(e) => update("departement", e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-black border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-300 focus:outline-none focus:border-[#ED8600] dark:focus:border-blue-800"
+                    className={inputFieldClass}
                   />
                 </div>
               </div>
@@ -205,10 +191,7 @@ export default function Parametres() {
           </div>
 
           <div className="flex items-center gap-4 pt-2">
-            <button
-              type="submit"
-              className="px-6 py-2.5 bg-[#ED8600] dark:bg-blue-800 rounded-xl text-white font-medium shadow-lg shadow-[#ED8600]/25 dark:shadow-blue-800/25 hover:opacity-95 transition-all duration-200"
-            >
+            <button type="submit" className={primaryButtonClass}>
               Enregistrer
             </button>
             {saved && (

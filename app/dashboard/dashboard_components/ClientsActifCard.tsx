@@ -1,27 +1,50 @@
 import { FaUsers } from "react-icons/fa";
+import {
+  dashboardCardKpi,
+  kpiLabelClass,
+  kpiValueClass,
+  kpiIconClass,
+  badgePositiveClass,
+  badgeNegativeClass,
+} from "@/app/components/appCardStyles";
 
 interface ClientsActifCardProps {
   clientsActifs: number;
-  variation: number;
+  /** Écart du nombre de clients actifs ayant une activité datée ce mois vs le mois précédent (champ « dernière activité ») */
+  deltaActiviteVsMoisPrec: number;
 }
 
-export default function ClientsActifCard({ clientsActifs, variation }: ClientsActifCardProps) {
-  const isPositive = variation >= 0;
+export default function ClientsActifCard({ clientsActifs, deltaActiviteVsMoisPrec }: ClientsActifCardProps) {
+  const isPositive = deltaActiviteVsMoisPrec > 0;
+  const absDelta = Math.abs(deltaActiviteVsMoisPrec);
+  const label = absDelta <= 1 ? "client" : "clients";
 
   return (
-    <div className="rounded-2xl md:rounded-xl p-6 md:p-5 h-full flex justify-between overflow-hidden transition-all duration-300 ease-out bg-white dark:bg-black md:bg-gradient-to-br md:from-[#f6f6f6] md:via-[#f6f6f6] md:to-[#ED8600] dark:md:from-black dark:md:via-black dark:md:to-blue-800 border border-neutral-300 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] md:shadow-2xl dark:md:shadow-none hover:scale-[1.01] md:hover:scale-[1.03]">
+    <div className={dashboardCardKpi}>
       <div className="flex flex-col gap-3 md:gap-1.5 flex-1 min-w-0">
-        <p className="text-gray-500 dark:text-gray-400 md:text-[#ED8600] dark:md:text-blue-800 text-xs md:text-lg font-medium md:font-bold uppercase md:normal-case tracking-widest md:tracking-normal">Clients actifs</p>
-        <p className="text-gray-800 dark:text-white md:text-gray-500 dark:md:text-gray-400 text-3xl md:text-[clamp(28px,3vw,40px)] font-bold md:font-semibold tracking-tight tabular-nums">{clientsActifs}</p>
-        <div className="flex items-center gap-2 mt-1 md:mt-2">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${isPositive ? "bg-green-700 dark:bg-green-600 text-white" : "bg-red-700 dark:bg-red-600 text-white"}`}>
-            {isPositive ? "+" : ""}{variation} client{variation !== 1 && variation !== -1 ? "s" : ""}
-          </span>
-          <span className="text-gray-400 dark:text-gray-500 md:text-gray-500 text-xs md:text-sm">vs mois dernier</span>
+        <p className={kpiLabelClass}>Clients actifs</p>
+        <p className={kpiValueClass}>{clientsActifs}</p>
+        <p className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm leading-snug">
+          Total au statut « Actif ». Ci-dessous : mouvement d&apos;activité (dernière date) vs le mois dernier.
+        </p>
+        <div className="flex flex-wrap items-center gap-2 mt-1 md:mt-2">
+          {deltaActiviteVsMoisPrec === 0 ? (
+            <span className="text-zinc-500 dark:text-zinc-400 text-xs md:text-sm">
+              Même niveau d&apos;activité qu&apos;au mois précédent
+            </span>
+          ) : (
+            <>
+              <span className={isPositive ? badgePositiveClass : badgeNegativeClass}>
+                {isPositive ? "+" : "−"}
+                {absDelta} {label}
+              </span>
+              <span className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm">activité vs mois précédent</span>
+            </>
+          )}
         </div>
       </div>
       <div className="hidden sm:flex flex-shrink-0 items-start">
-        <FaUsers className="h-10 w-10 sm:h-11 sm:w-11 text-[#ED8600]/80 dark:text-blue-800/80" />
+        <FaUsers className={kpiIconClass} aria-hidden />
       </div>
     </div>
   );

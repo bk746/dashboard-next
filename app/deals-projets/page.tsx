@@ -1,101 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import {
+  pageShellClass,
+  pageEyebrowClass,
+  pageTitleClass,
+  pageSubtitleClass,
+  pageDividerClass,
+  primaryButtonClass,
+  sectionIntroTitleClass,
+  sectionIntroDescClass,
+} from "@/app/components/appCardStyles";
 import ValeurTotalCard from "./deals_projets_components/ValeurTotalCard";
 import ProjetsActifsCard from "./deals_projets_components/ProjetsActifsCard";
 import ProchaineEcheanceCard from "./deals_projets_components/ProchaineEcheanceCard";
 import ProjetsTable from "./deals_projets_components/ProjetsTable";
 import ProjetForm from "./deals_projets_components/ProjetForm";
 import type { Client, Facture, Projet } from "@/app/types";
+import { useJsonBucket } from "@/hooks/useJsonBucket";
 
 export default function DealsProjets() {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [projets, setProjets] = useState<Projet[]>([]);
-  const [factures, setFactures] = useState<Facture[]>([]);
+  const [clients] = useJsonBucket<Client[]>("clients", []);
+  const [projets, setProjets] = useJsonBucket<Projet[]>("projets", []);
+  const [factures] = useJsonBucket<Facture[]>("factures", []);
   const [showForm, setShowForm] = useState(false);
   const [editingProjet, setEditingProjet] = useState<Projet | null>(null);
-  const [isInitialLoadClients, setIsInitialLoadClients] = useState(true);
-  const [isInitialLoadProjets, setIsInitialLoadProjets] = useState(true);
-
-  // Charger les clients depuis localStorage au montage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedClients = localStorage.getItem("clients");
-      if (savedClients) {
-        try {
-          const parsedClients = JSON.parse(savedClients);
-          setClients(parsedClients);
-        } catch (error) {
-          console.error("Erreur lors du chargement des clients:", error);
-        }
-      }
-      setIsInitialLoadClients(false);
-    }
-  }, []);
-
-  // Charger les factures depuis localStorage (pour lier projet ↔ facture)
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedFactures = localStorage.getItem("factures");
-      if (savedFactures) {
-        try {
-          setFactures(JSON.parse(savedFactures));
-        } catch (error) {
-          console.error("Erreur lors du chargement des factures:", error);
-        }
-      }
-    }
-  }, []);
-
-  // Charger les projets depuis localStorage au montage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedProjets = localStorage.getItem("projets");
-      if (savedProjets) {
-        try {
-          const parsedProjets = JSON.parse(savedProjets);
-          setProjets(parsedProjets);
-        } catch (error) {
-          console.error("Erreur lors du chargement des projets:", error);
-        }
-      }
-      setIsInitialLoadProjets(false);
-    }
-  }, []);
-
-  // Sauvegarder les projets dans localStorage à chaque modification (sauf au chargement initial)
-  useEffect(() => {
-    if (!isInitialLoadProjets && typeof window !== "undefined") {
-      localStorage.setItem("projets", JSON.stringify(projets));
-    }
-  }, [projets, isInitialLoadProjets]);
 
   const handleSaveProjet = (projet: Projet) => {
-    let updatedProjets: Projet[];
-    if (editingProjet) {
-      // Modifier un projet existant
-      updatedProjets = projets.map((p) => (p.id === projet.id ? projet : p));
-    } else {
-      // Ajouter un nouveau projet
-      updatedProjets = [...projets, projet];
-    }
+    const updatedProjets = editingProjet
+      ? projets.map((p) => (p.id === projet.id ? projet : p))
+      : [...projets, projet];
     setProjets(updatedProjets);
-    // Sauvegarder immédiatement
-    if (typeof window !== "undefined") {
-      localStorage.setItem("projets", JSON.stringify(updatedProjets));
-    }
     setEditingProjet(null);
     setShowForm(false);
   };
 
   const handleDeleteProjet = (id: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
-      const updatedProjets = projets.filter((p) => p.id !== id);
-      setProjets(updatedProjets);
-      // Sauvegarder immédiatement
-      if (typeof window !== "undefined") {
-        localStorage.setItem("projets", JSON.stringify(updatedProjets));
-      }
+      setProjets(projets.filter((p) => p.id !== id));
     }
   };
 
@@ -109,14 +51,15 @@ export default function DealsProjets() {
     setShowForm(true);
   };
 
-  // Calculer les statistiques
-  const valeurTotal = projets.reduce((sum, projet) => sum + projet.valeur, 0);
-  const projetsActifs = projets.filter((p) => p.statut === "Actif").length;
+  // Statistiques : pipeline = tout projet non terminé (suivi opérationnel)
+  const projetsPipeline = projets.filter((p) => p.statut !== "Terminé");
+  const valeurTotal = projetsPipeline.reduce((sum, projet) => sum + projet.valeur, 0);
+  const projetsEnCours = projetsPipeline.length;
 
-  // Prochaine échéance : date de fin la plus courte >= aujourd'hui
+  // Prochaine échéance : parmi les projets en cours uniquement, date de fin >= aujourd'hui
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const projetsAvecDateFin = projets
+  const projetsAvecDateFin = projetsPipeline
     .filter((p) => p.dateFin && p.dateFin.trim() !== "")
     .map((p) => {
       const parts = p.dateFin.trim().split("/");
@@ -135,28 +78,31 @@ export default function DealsProjets() {
   const prochaineEcheance = echeancesFutures.length > 0 ? echeancesFutures[0].dateFinStr : null;
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] dark:bg-black p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+    <div className={pageShellClass}>
       <div className="md:max-w-[1600px] md:mx-auto">
-        <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
+        <header className="px-4 sm:px-6 md:px-0 mb-7 md:mb-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-gray-400 dark:text-gray-500 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Pipeline</p>
-              <h1 className="text-[#ED8600] dark:text-blue-800 font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Deals / Projets</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-[15px] mt-0.5">Gestion et suivi de vos projets</p>
+              <p className={pageEyebrowClass}>Pipeline</p>
+              <h1 className={pageTitleClass}>Deals / Projets</h1>
+              <p className={pageSubtitleClass}>Pipeline, montants et échéances de vos deals.</p>
             </div>
-            <button
-              onClick={handleNewProjet}
-              className="px-4 sm:px-6 py-2.5 bg-[#ED8600] dark:bg-blue-800 rounded-xl text-white font-medium text-sm sm:text-base w-full sm:w-auto shadow-lg shadow-[#ED8600]/25 dark:shadow-blue-800/25 hover:opacity-95 transition-all duration-200"
-            >
+            <button type="button" onClick={handleNewProjet} className={primaryButtonClass}>
               Nouveau projet
             </button>
           </div>
-          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent hidden md:block" />
+          <div className={pageDividerClass} aria-hidden />
         </header>
         <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Indicateurs">
+          <div className="mb-4">
+            <h2 className={sectionIntroTitleClass}>Vue d&apos;ensemble</h2>
+            <p className={sectionIntroDescClass}>
+              Montants et volume du pipeline (hors terminés), plus la prochaine échéance à venir.
+            </p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
             <ValeurTotalCard valeurTotal={valeurTotal} />
-            <ProjetsActifsCard projetsActifs={projetsActifs} />
+            <ProjetsActifsCard projetsEnCours={projetsEnCours} />
             <ProchaineEcheanceCard prochaineEcheance={prochaineEcheance} />
           </div>
         </section>

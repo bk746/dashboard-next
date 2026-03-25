@@ -1,24 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  COMPANY_DEFAULT,
-  getCompany,
-  saveCompany,
-  type CompanySettings,
-} from "@/app/config/company";
+import { useMemo } from "react";
+import { COMPANY_DEFAULT, type CompanySettings } from "@/app/config/company";
+import { useJsonBucket } from "@/hooks/useJsonBucket";
 
 export function useCompany(): [CompanySettings, (data: CompanySettings) => void] {
-  const [company, setCompanyState] = useState<CompanySettings>(COMPANY_DEFAULT);
-
-  useEffect(() => {
-    setCompanyState(getCompany());
-  }, []);
-
-  const setCompany = (data: CompanySettings) => {
-    saveCompany(data);
-    setCompanyState(data);
-  };
-
-  return [company, setCompany];
+  const [raw, setRaw] = useJsonBucket<CompanySettings>("companySettings", COMPANY_DEFAULT);
+  const merged = useMemo(() => ({ ...COMPANY_DEFAULT, ...raw }), [raw]);
+  const setCompany = (data: CompanySettings) => setRaw(data);
+  return [merged, setCompany];
 }

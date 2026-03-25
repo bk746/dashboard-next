@@ -1,4 +1,5 @@
 import { FaBullseye } from "react-icons/fa";
+import { appCardKpiColumn, kpiLabelClass, kpiValueClass, kpiIconClass } from "@/app/components/appCardStyles";
 
 interface ObjectifCardProps {
   type: "Financier" | "Client";
@@ -12,33 +13,39 @@ export default function ObjectifCard({ type, objectif, actuel, libelle }: Object
   const isCompleted = progression >= 100;
 
   return (
-    <div className="rounded-2xl md:rounded-xl p-6 md:p-5 h-full flex flex-col justify-between overflow-hidden transition-all duration-300 ease-out
-      bg-white dark:bg-black md:bg-linear-to-br md:from-[#f6f6f6] md:via-[#f6f6f6] md:to-[#ED8600] dark:md:from-black dark:md:via-black dark:md:to-blue-800 border border-neutral-300 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] md:shadow-2xl md:shadow-[#0000002b] dark:md:shadow-none hover:scale-[1.01] md:hover:scale-103">
+    <div className={appCardKpiColumn}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex flex-col gap-3 md:gap-1.5 flex-1 min-w-0">
-          <p className="text-gray-500 dark:text-gray-400 md:text-[#ED8600] dark:md:text-blue-800 text-xs md:text-lg font-medium md:font-bold uppercase md:normal-case tracking-widest md:tracking-normal">Objectif {type}</p>
-          <p className="text-gray-800 dark:text-white md:text-gray-500 dark:md:text-gray-400 text-3xl md:text-[clamp(28px,3vw,40px)] font-bold md:font-semibold tracking-tight tabular-nums">
+          <p className={kpiLabelClass}>Objectif {type}</p>
+          <p className={kpiValueClass}>
             {objectif.toLocaleString("fr-FR")} {type === "Financier" ? "€" : ""}
           </p>
-          <p className="text-gray-400 dark:text-gray-500 md:text-gray-500 text-sm">
-            Actuel: {actuel.toLocaleString("fr-FR")} {type === "Financier" ? "€" : ""} / {objectif.toLocaleString("fr-FR")} {type === "Financier" ? "€" : ""}
+          <p className="text-zinc-500 dark:text-zinc-500 text-sm">
+            Actuel: {actuel.toLocaleString("fr-FR")} {type === "Financier" ? "€" : ""} / {objectif.toLocaleString("fr-FR")}{" "}
+            {type === "Financier" ? "€" : ""}
           </p>
         </div>
         <div className="hidden sm:flex flex-shrink-0 items-start">
-          <FaBullseye className="h-10 w-10 sm:h-11 sm:w-11 text-[#ED8600]/80 dark:text-blue-800/80" />
+          <FaBullseye className={kpiIconClass} aria-hidden />
         </div>
       </div>
 
       <div className="w-full">
-        <div className="w-full bg-gray-100 dark:bg-gray-800 md:bg-gray-300 rounded-full h-2.5 md:h-3 mt-2 overflow-hidden">
+        <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2.5 md:h-3 mt-2 overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-700 md:duration-500 ${isCompleted ? "bg-emerald-500" : "bg-[#ED8600] dark:bg-blue-800"}`}
+            className={`h-full rounded-full transition-all duration-700 md:duration-500 ${
+              isCompleted ? "bg-emerald-500/80 dark:bg-emerald-500/70" : "bg-[#ED8600] dark:bg-[#5b7fb8]"
+            }`}
             style={{ width: `${progression}%` }}
           />
         </div>
         <div className="flex items-center justify-between mt-2">
-          <p className="text-gray-400 dark:text-gray-500 md:text-gray-500 text-xs md:text-sm">{libelle}</p>
-          <p className={`text-xs md:text-sm font-medium ${isCompleted ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"}`}>
+          <p className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm">{libelle}</p>
+          <p
+            className={`text-xs md:text-sm font-medium ${
+              isCompleted ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-500 dark:text-zinc-400"
+            }`}
+          >
             {isCompleted ? "100% - Objectif réussi" : `${progression.toFixed(1)}%`}
           </p>
         </div>

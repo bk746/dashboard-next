@@ -1,231 +1,241 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
+import Link from "next/link";
+import type { Facture, Client, Objectif } from "@/app/types";
+import { useJsonBucket } from "@/hooks/useJsonBucket";
+import { isDateInMonth, isDateInCalendarYear } from "@/app/finance/utils";
+import {
+  pageShellClass,
+  pageEyebrowClass,
+  pageTitleClass,
+  pageSubtitleClass,
+  pageDividerClass,
+  sectionIntroTitleClass,
+  sectionIntroDescClass,
+  panelSurfaceClass,
+  primaryButtonClass,
+} from "@/app/components/appCardStyles";
 import CACard from "./dashboard_components/CACard";
 import ClientsActifCard from "./dashboard_components/ClientsActifCard";
 import ObjectifAnnuelCard from "./dashboard_components/ObjectifAnnuelCard";
 import EvolutionCACard from "./dashboard_components/EvolutionCACard";
 import NouveauxClientsCard from "./dashboard_components/NouveauxClientsCard";
+import DashboardQuickLinks from "./dashboard_components/DashboardQuickLinks";
+import DashboardFinanceHint from "./dashboard_components/DashboardFinanceHint";
 
-interface Facture {
-  statut: string;
-  prix: number;
-  date: string;
-}
-
-interface Client {
-  statut: string;
-  derniereActivite: string;
-}
-
-interface Objectif {
-  type: string;
-  objectif: number;
+function countActifsWithActiviteInMonth(clients: Client[], year: number, month: number): number {
+  return clients.filter((c) => {
+    if (c.statut !== "Actif") return false;
+    return isDateInMonth(c.derniereActivite, year, month);
+  }).length;
 }
 
 export default function Dashboard() {
-  const [factures, setFactures] = useState<Facture[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [objectifs, setObjectifs] = useState<Objectif[]>([]);
+  const [factures] = useJsonBucket<Facture[]>("factures", []);
+  const [clients] = useJsonBucket<Client[]>("clients", []);
+  const [objectifs] = useJsonBucket<Objectif[]>("objectifs", []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Charger les factures
-      const savedFactures = localStorage.getItem("factures");
-      if (savedFactures) {
-        try {
-          setFactures(JSON.parse(savedFactures));
-        } catch (error) {
-          console.error("Erreur lors du chargement des factures:", error);
-        }
-      }
+  const currentDate = useMemo(() => new Date(), []);
+  const y = currentDate.getFullYear();
+  const m = currentDate.getMonth();
 
-      // Charger les clients
-      const savedClients = localStorage.getItem("clients");
-      if (savedClients) {
-        try {
-          setClients(JSON.parse(savedClients));
-        } catch (error) {
-          console.error("Erreur lors du chargement des clients:", error);
-        }
-      }
+  const caMoisEncaisse = useMemo(
+    () =>
+      factures
+        .filter((f) => f.statut === "Payé" && isDateInMonth(f.date, y, m))
+        .reduce((sum, f) => sum + f.prix, 0),
+    [factures, y, m]
+  );
 
-      // Charger les objectifs
-      const savedObjectifs = localStorage.getItem("objectifs");
-      if (savedObjectifs) {
-        try {
-          setObjectifs(JSON.parse(savedObjectifs));
-        } catch (error) {
-          console.error("Erreur lors du chargement des objectifs:", error);
-        }
-      }
+  const prevMonthDate = useMemo(() => new Date(y, m - 1, 1), [y, m]);
+  const py = prevMonthDate.getFullYear();
+  const pm = prevMonthDate.getMonth();
 
-      // Écouter les changements de localStorage
-      const handleStorageChange = () => {
-        const facturesData = localStorage.getItem("factures");
-        if (facturesData) {
+  const caMoisPrecedent = useMemo(
+    () =>
+      factures
+        .filter((f) => f.statut === "Payé" && isDateInMonth(f.date, py, pm))
+        .reduce((sum, f) => sum + f.prix, 0),
+    [factures, py, pm]
+  );
+
+  const variationCAPct = useMemo(() => {
+    if (caMoisPrecedent <= 0) return null;
+    return ((caMoisEncaisse - caMoisPrecedent) / caMoisPrecedent) * 100;
+  }, [caMoisEncaisse, caMoisPrecedent]);
+
+  const clientsActifs = useMemo(() => clients.filter((c) => c.statut === "Actif").length, [clients]);
+
+  const activiteActifsCeMois = useMemo(() => countActifsWithActiviteInMonth(clients, y, m), [clients, y, m]);
+
+  const activiteActifsMoisPrec = useMemo(() => countActifsWithActiviteInMonth(clients, py, pm), [clients, py, pm]);
+
+  const deltaActiviteVsMoisPrec = activiteActifsCeMois - activiteActifsMoisPrec;
+
+  const objectifFinancier = useMemo(
+    () => objectifs.find((o) => o.type === "Financier"),
+    [objectifs]
+  );
+
+  const objectifAnnuelValue = objectifFinancier?.objectif ?? 0;
+
+  const caAnneeCours = useMemo(
+    () =>
+      factures
+        .filter((f) => f.statut === "Payé" && isDateInCalendarYear(f.date, y))
+        .reduce((sum, f) => sum + f.prix, 0),
+    [factures, y]
+  );
+
+  const progressionObjectif =
+    objectifAnnuelValue > 0 ? (caAnneeCours / objectifAnnuelValue) * 100 : 0;
+
+  const montantImpayes = useMemo(
+    () => factures.filter((f) => f.statut === "Non payé").reduce((s, f) => s + f.prix, 0),
+    [factures]
+  );
+
+  const nbFacturesImpayees = useMemo(() => factures.filter((f) => f.statut === "Non payé").length, [factures]);
+
+  const evolutionCAData = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => {
+      const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i), 1);
+      const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i) + 1, 0);
+      const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+
+      const revenue = factures
+        .filter((f) => {
+          if (f.statut !== "Payé") return false;
           try {
-            setFactures(JSON.parse(facturesData));
-          } catch (error) {
-            console.error("Erreur lors du chargement des factures:", error);
+            const factureDate = new Date(f.date.split("/").reverse().join("-"));
+            return factureDate >= monthDate && factureDate <= monthEnd;
+          } catch {
+            return false;
           }
-        }
+        })
+        .reduce((sum, facture) => sum + facture.prix, 0);
 
-        const clientsData = localStorage.getItem("clients");
-        if (clientsData) {
-          try {
-            setClients(JSON.parse(clientsData));
-          } catch (error) {
-            console.error("Erreur lors du chargement des clients:", error);
-          }
-        }
-
-        const objectifsData = localStorage.getItem("objectifs");
-        if (objectifsData) {
-          try {
-            setObjectifs(JSON.parse(objectifsData));
-          } catch (error) {
-            console.error("Erreur lors du chargement des objectifs:", error);
-          }
-        }
+      return {
+        month: monthNames[monthDate.getMonth()],
+        revenue: revenue || 0,
       };
+    });
+  }, [factures, currentDate]);
 
-      window.addEventListener("storage", handleStorageChange);
-      window.addEventListener("facturesUpdated", handleStorageChange);
-      window.addEventListener("clientsUpdated", handleStorageChange);
-      window.addEventListener("objectifsUpdated", handleStorageChange);
+  const activiteClientsData = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => {
+      const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i), 1);
+      const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i) + 1, 0);
+      const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
 
-      return () => {
-        window.removeEventListener("storage", handleStorageChange);
-        window.removeEventListener("facturesUpdated", handleStorageChange);
-        window.removeEventListener("clientsUpdated", handleStorageChange);
-        window.removeEventListener("objectifsUpdated", handleStorageChange);
-      };
-    }
-  }, []);
-
-  // Calculer le CA actuel (factures payées)
-  const caActuel = factures
-    .filter((f) => f.statut === "Payé")
-    .reduce((sum, facture) => sum + facture.prix, 0);
-
-  // Calculer le CA du mois précédent
-  const currentDate = new Date();
-  const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-  const caMoisPrecedent = factures
-    .filter((f) => {
-      if (f.statut !== "Payé") return false;
-      try {
-        const factureDate = new Date(f.date.split("/").reverse().join("-"));
-        return factureDate >= lastMonth && factureDate < new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      } catch {
-        return false;
-      }
-    })
-    .reduce((sum, facture) => sum + facture.prix, 0);
-  
-  const variationCA = caMoisPrecedent > 0 ? ((caActuel - caMoisPrecedent) / caMoisPrecedent) * 100 : 0;
-
-  // Calculer les clients actifs
-  const clientsActifs = clients.filter((c) => c.statut === "Actif").length;
-  
-  // Calculer les clients actifs du mois précédent
-  const clientsActifsMoisPrecedent = clients.filter((c) => {
-    if (c.statut !== "Actif") return false;
-    try {
-      const clientDate = new Date(c.derniereActivite.split("/").reverse().join("-"));
-      return clientDate >= lastMonth && clientDate < new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    } catch {
-      return false;
-    }
-  }).length;
-  
-  const variationClients = clientsActifs - clientsActifsMoisPrecedent;
-
-  // Calculer l'objectif annuel (premier objectif financier trouvé)
-  const objectifAnnuel = objectifs.find((o) => o.type === "Financier");
-  const objectifAnnuelValue = objectifAnnuel?.objectif || 0;
-  const progressionObjectif = objectifAnnuelValue > 0 ? (caActuel / objectifAnnuelValue) * 100 : 0;
-
-  // Calculer l'évolution du CA par mois
-  const evolutionCAData = Array.from({ length: 12 }, (_, i) => {
-    const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i), 1);
-    const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i) + 1, 0);
-    const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-    
-    const revenue = factures
-      .filter((f) => {
-        if (f.statut !== "Payé") return false;
+      const count = clients.filter((c) => {
         try {
-          const factureDate = new Date(f.date.split("/").reverse().join("-"));
-          return factureDate >= monthDate && factureDate <= monthEnd;
+          const clientDate = new Date(c.derniereActivite.split("/").reverse().join("-"));
+          return clientDate >= monthDate && clientDate <= monthEnd;
         } catch {
           return false;
         }
-      })
-      .reduce((sum, facture) => sum + facture.prix, 0);
+      }).length;
 
-    return {
-      month: monthNames[monthDate.getMonth()],
-      revenue: revenue || 0,
-    };
-  });
+      return {
+        month: monthNames[monthDate.getMonth()],
+        clients: count || 0,
+      };
+    });
+  }, [clients, currentDate]);
 
-  // Calculer les nouveaux clients par mois
-  const nouveauxClientsData = Array.from({ length: 12 }, (_, i) => {
-    const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i), 1);
-    const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i) + 1, 0);
-    const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-    
-    const nouveauxClients = clients.filter((c) => {
-      try {
-        const clientDate = new Date(c.derniereActivite.split("/").reverse().join("-"));
-        return clientDate >= monthDate && clientDate <= monthEnd;
-      } catch {
-        return false;
-      }
-    }).length;
-
-    return {
-      month: monthNames[monthDate.getMonth()],
-      clients: nouveauxClients || 0,
-    };
-  });
+  const hasNoData = factures.length === 0 && clients.length === 0;
 
   return (
-    <div className="min-h-screen w-full bg-[#f6f6f6] md:bg-[#f8f8f7] dark:bg-black p-3 sm:p-4 md:p-8 md:px-10 lg:px-12">
+    <div className={pageShellClass}>
       <div className="md:max-w-[1600px] md:mx-auto">
         <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
           <div>
-            <p className="text-gray-400 dark:text-gray-500 text-xs uppercase tracking-[0.2em] font-medium mb-1 md:block">Tableau de bord</p>
-            <h1 className="text-[#ED8600] dark:text-blue-800 font-bold text-2xl sm:text-xl md:text-[28px] tracking-tight">Dashboard</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-[15px] mt-0.5">Vue d'ensemble de votre activité</p>
+            <p className={pageEyebrowClass}>Tableau de bord</p>
+            <h1 className={pageTitleClass}>Dashboard</h1>
+            <p className={pageSubtitleClass}>
+              Indicateurs cohérents mois à mois, objectif sur l&apos;année en cours, tendances sur 12 mois.
+            </p>
           </div>
-          <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent hidden md:block" />
+          <div className={pageDividerClass} aria-hidden />
         </header>
 
-        <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Indicateurs">
+        <div className="mb-6 space-y-4 px-4 sm:px-6 md:px-0">
+          <DashboardQuickLinks />
+          <DashboardFinanceHint montantImpayes={montantImpayes} nbFacturesImpayees={nbFacturesImpayees} />
+        </div>
+
+        {hasNoData ? (
+          <div className="px-4 sm:px-6 md:px-0 mb-8">
+            <div className={`${panelSurfaceClass} p-8 text-center`}>
+              <p className="text-zinc-800 dark:text-zinc-200 font-medium">Votre tableau de bord est vide</p>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
+                Ajoutez des clients, des factures et des objectifs pour voir les graphiques et les tendances.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <Link href="/finance" className={primaryButtonClass}>
+                  Aller à Finance
+                </Link>
+                <Link href="/clients" className="text-sm font-medium text-[#ED8600] dark:text-[#8fa9c9] py-2.5 px-4">
+                  Clients
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {factures.length === 0 ? (
+              <div className="px-4 sm:px-6 md:px-0 mb-6">
+                <p className="text-sm text-amber-800 dark:text-amber-200/90 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+                  Aucune facture enregistrée : le CA et les graphiques d&apos;encaissement restent à zéro.{" "}
+                  <Link href="/finance" className="font-medium underline underline-offset-2">
+                    Créer une facture dans Finance
+                  </Link>
+                  .
+                </p>
+              </div>
+            ) : null}
+
+            <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Indicateurs">
+          <div className="mb-4">
+            <h2 className={sectionIntroTitleClass}>Indicateurs clés</h2>
+            <p className={sectionIntroDescClass}>
+              CA du mois en cours vs mois précédent, volume de clients actifs et mouvement d&apos;activité (dernière
+              date), progression vers le premier objectif financier sur l&apos;année civile (CA encaissé cumulé).
+            </p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
-            <CACard caActuel={caActuel} variation={variationCA} />
-            <ClientsActifCard clientsActifs={clientsActifs} variation={variationClients} />
+            <CACard caMoisEncaisse={caMoisEncaisse} variationPct={variationCAPct} />
+            <ClientsActifCard clientsActifs={clientsActifs} deltaActiviteVsMoisPrec={deltaActiviteVsMoisPrec} />
             <ObjectifAnnuelCard
-              caActuel={caActuel}
+              caAnneeCours={caAnneeCours}
               objectif={objectifAnnuelValue}
               progression={progressionObjectif}
+              objectifLibelle={objectifFinancier?.libelle}
             />
           </div>
         </section>
 
         <section className="px-4 sm:px-6 md:px-0" aria-label="Graphiques">
+          <div className="mb-4">
+            <h2 className={sectionIntroTitleClass}>Tendances</h2>
+            <p className={sectionIntroDescClass}>
+              Encaissements par mois et répartition de l&apos;activité client (champ « dernière activité ») sur 12 mois
+              glissants.
+            </p>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
-            <div className="lg:col-span-2 min-h-[400px] sm:min-h-[480px]">
+            <div className="lg:col-span-2 min-h-[380px] sm:min-h-[440px]">
               <EvolutionCACard data={evolutionCAData} />
             </div>
-            <div className="min-h-[400px] sm:min-h-[480px]">
-              <NouveauxClientsCard data={nouveauxClientsData} />
+            <div className="min-h-[380px] sm:min-h-[440px]">
+              <NouveauxClientsCard data={activiteClientsData} />
             </div>
           </div>
         </section>
+          </>
+        )}
       </div>
     </div>
   );

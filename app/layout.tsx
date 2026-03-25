@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import MobileNav from "./components/MobileNav";
-import Sidebar from "./components/Sidebar";
-import CacheBuster from "./components/CacheBuster";
+import RootProviders from "@/components/RootProviders";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./globals.css";
 
@@ -34,10 +32,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f97316",
+  themeColor: "#0a0a0c",
 };
 
-// Éviter la mise en cache statique des pages
 export const dynamic = "force-dynamic";
 
 export default function RootLayout({
@@ -46,30 +43,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-[#f6f6f6] dark:bg-black" suppressHydrationWarning>
+    <html lang="fr" className="dark bg-[#0a0a0c]" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f6f6f6] dark:bg-black text-gray-900 dark:text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0c] text-white`}
       >
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
+            __html: `(function(){try{document.documentElement.classList.add('dark');localStorage.setItem('theme','dark');}catch(e){}})();`,
           }}
         />
         <ThemeProvider>
-          <div className="flex min-h-screen bg-[#f6f6f6] dark:bg-black">
-            {/* Mobile Navigation */}
-            <MobileNav />
-
-            {/* Desktop Sidebar */}
-            <Sidebar />
-
-            {/* Main Content */}
-            <main className="flex-1 w-full md:ml-[280px] min-h-screen pt-20 md:pt-0 relative z-0 overflow-auto bg-[#f6f6f6] md:bg-[#f8f8f7] dark:bg-black">
-              <div className="h-auto md:min-h-screen">
-                <CacheBuster>{children}</CacheBuster>
-              </div>
-            </main>
-          </div>
+          <RootProviders>{children}</RootProviders>
         </ThemeProvider>
       </body>
     </html>
