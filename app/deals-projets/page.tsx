@@ -10,6 +10,7 @@ import {
   primaryButtonClass,
   sectionIntroTitleClass,
   sectionIntroDescClass,
+  staggerCardsGridClass,
 } from "@/app/components/appCardStyles";
 import ValeurTotalCard from "./deals_projets_components/ValeurTotalCard";
 import ProjetsActifsCard from "./deals_projets_components/ProjetsActifsCard";
@@ -100,7 +101,9 @@ export default function DealsProjets() {
               Montants et volume du pipeline (hors terminés), plus la prochaine échéance à venir.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
+          <div
+            className={`grid ${staggerCardsGridClass} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6`}
+          >
             <ValeurTotalCard valeurTotal={valeurTotal} />
             <ProjetsActifsCard projetsEnCours={projetsEnCours} />
             <ProchaineEcheanceCard prochaineEcheance={prochaineEcheance} />

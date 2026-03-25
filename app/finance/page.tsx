@@ -16,6 +16,7 @@ import {
   segmentedTabInactiveClass,
   sectionIntroTitleClass,
   sectionIntroDescClass,
+  staggerCardsGridClass,
 } from "@/app/components/appCardStyles";
 import RevenueEncaisseCard from "./finance_components/RevenueEncaisseCard";
 import EnAttenteCard from "./finance_components/EnAttenteCard";
@@ -262,7 +263,9 @@ export default function Finance() {
                   (encaissé − charges).
                 </p>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5 xl:gap-4">
+              <div
+                className={`grid ${staggerCardsGridClass} grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5 xl:gap-4`}
+              >
                 <RevenueEncaisseCard revenueEncaisse={revenueEncaisse} periodHint={hintRevenue} />
                 <EnAttenteCard enAttente={enAttente} periodHint={hintAttente} />
                 <EnRetardCard enRetard={enRetard} />

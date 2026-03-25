@@ -15,6 +15,7 @@ import {
   sectionIntroDescClass,
   panelSurfaceClass,
   primaryButtonClass,
+  staggerCardsGridClass,
 } from "@/app/components/appCardStyles";
 import CACard from "./dashboard_components/CACard";
 import ClientsActifCard from "./dashboard_components/ClientsActifCard";
@@ -205,7 +206,9 @@ export default function Dashboard() {
               date), progression vers le premier objectif financier sur l&apos;année civile (CA encaissé cumulé).
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
+          <div
+            className={`grid ${staggerCardsGridClass} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6`}
+          >
             <CACard caMoisEncaisse={caMoisEncaisse} variationPct={variationCAPct} />
             <ClientsActifCard clientsActifs={clientsActifs} deltaActiviteVsMoisPrec={deltaActiviteVsMoisPrec} />
             <ObjectifAnnuelCard

@@ -3,13 +3,14 @@
  */
 
 export const appCardBase =
-  "rounded-xl sm:rounded-2xl border border-neutral-200/90 dark:border-white/[0.06] " +
+  "motion-card rounded-xl sm:rounded-2xl border border-neutral-200/90 dark:border-white/[0.06] " +
   "bg-white dark:bg-[#12131a] " +
   "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] " +
   "dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] " +
-  "transition-[box-shadow,border-color] duration-200 ease-out " +
-  "hover:border-neutral-300/90 dark:hover:border-white/[0.09] " +
-  "hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]";
+  "transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform " +
+  "hover:-translate-y-1 hover:border-neutral-300/90 dark:hover:border-white/[0.09] " +
+  "hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] " +
+  "motion-reduce:transition-none motion-reduce:hover:translate-y-0";
 
 export const appCardKpi = `${appCardBase} p-6 md:p-5 h-full flex justify-between overflow-hidden`;
 
@@ -79,9 +80,16 @@ export const secondaryButtonClass =
 
 /** Panneaux (tableaux, listes, sections formulaire) */
 export const panelSurfaceClass =
-  "border border-neutral-200/90 dark:border-white/[0.06] rounded-xl md:rounded-2xl " +
+  "motion-card border border-neutral-200/90 dark:border-white/[0.06] rounded-xl md:rounded-2xl " +
   "bg-white dark:bg-[#12131a] " +
-  "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]";
+  "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] " +
+  "transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform " +
+  "hover:-translate-y-px hover:border-neutral-300/80 dark:hover:border-white/[0.09] " +
+  "hover:shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_10px_36px_rgba(0,0,0,0.42)] " +
+  "motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+
+/** Grille où les cartes KPI s’animent en cascade (optionnel). */
+export const staggerCardsGridClass = "stagger-cards";
 
 export const inputFieldClass =
   "w-full px-4 py-2 rounded-lg border border-zinc-300 dark:border-white/[0.1] " +

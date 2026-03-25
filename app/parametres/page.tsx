@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useCompany } from "@/app/hooks/useCompany";
 import type { CompanySettings } from "@/app/config/company";
+import ChangePinPanel from "@/app/parametres/ChangePinPanel";
 import {
   pageShellClass,
   pageEyebrowClass,
@@ -15,9 +16,15 @@ import {
   sectionHeadingClass,
   primaryButtonClass,
   sectionIntroDescClass,
+  segmentedBarClass,
+  segmentedTabActiveClass,
+  segmentedTabInactiveClass,
 } from "@/app/components/appCardStyles";
 
+type Tab = "entreprise" | "code";
+
 export default function Parametres() {
+  const [tab, setTab] = useState<Tab>("entreprise");
   const [company, setCompany] = useCompany();
   const [form, setForm] = useState<CompanySettings>(company);
   const [saved, setSaved] = useState(false);
@@ -48,8 +55,40 @@ export default function Parametres() {
             Ces données peuvent être réutilisées sur vos factures et devis lorsque vous les générez depuis l&apos;application.
           </p>
           <div className={pageDividerClass} aria-hidden />
+          <div
+            className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+            role="tablist"
+            aria-label="Sections paramètres"
+          >
+            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Afficher</p>
+            <div className={segmentedBarClass}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "entreprise"}
+                onClick={() => setTab("entreprise")}
+                className={tab === "entreprise" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+              >
+                Entreprise
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === "code"}
+                onClick={() => setTab("code")}
+                className={tab === "code" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+              >
+                Code d&apos;accès
+              </button>
+            </div>
+          </div>
         </header>
 
+        {tab === "code" ? (
+          <div className="space-y-6 px-4 sm:px-6 md:px-0">
+            <ChangePinPanel />
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-6 px-4 sm:px-6 md:px-0">
           <div className={`${panelSurfaceClass} p-6 md:p-8`}>
             <h3 className={sectionHeadingClass}>Infos personnelles</h3>
@@ -199,6 +238,7 @@ export default function Parametres() {
             )}
           </div>
         </form>
+        )}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import {
   sectionIntroTitleClass,
   sectionIntroDescClass,
   panelSurfaceClass,
+  staggerCardsGridClass,
 } from "@/app/components/appCardStyles";
 import ProgressionTotalCard from "./objectifs_components/ProgressionTotalCard";
 import ObjectifCard from "./objectifs_components/ObjectifCard";
@@ -99,7 +100,9 @@ export default function Objectifs() {
               Une carte par objectif : suivez la barre de progression par rapport au CA facturé ou au nombre de clients.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6">
+          <div
+            className={`grid ${staggerCardsGridClass} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6`}
+          >
             {objectifs.map((objectif) => {
               const actuel = objectif.type === "Financier" ? caActuel : clientsActuels;
               return (

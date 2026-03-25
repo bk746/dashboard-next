@@ -26,6 +26,68 @@ body {
   min-height: 100vh;
 }
 
+/* Cartes — entrée douce + grille en cascade */
+.motion-card {
+  animation: motion-card-fade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes motion-card-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-cards > *:nth-child(1) {
+  animation-delay: 0.03s;
+}
+.stagger-cards > *:nth-child(2) {
+  animation-delay: 0.07s;
+}
+.stagger-cards > *:nth-child(3) {
+  animation-delay: 0.11s;
+}
+.stagger-cards > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.stagger-cards > *:nth-child(5) {
+  animation-delay: 0.19s;
+}
+.stagger-cards > *:nth-child(6) {
+  animation-delay: 0.23s;
+}
+.stagger-cards > *:nth-child(7) {
+  animation-delay: 0.27s;
+}
+.stagger-cards > *:nth-child(8) {
+  animation-delay: 0.31s;
+}
+.stagger-cards > *:nth-child(9) {
+  animation-delay: 0.35s;
+}
+.stagger-cards > *:nth-child(10) {
+  animation-delay: 0.39s;
+}
+.stagger-cards > *:nth-child(11) {
+  animation-delay: 0.43s;
+}
+.stagger-cards > *:nth-child(12) {
+  animation-delay: 0.47s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-card {
+    animation: none;
+  }
+  .stagger-cards > * {
+    animation-delay: 0s !important;
+  }
+}
+
 @media print {
   body * {
     visibility: hidden;
