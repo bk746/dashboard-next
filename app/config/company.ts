@@ -20,17 +20,48 @@ export interface CompanySettings {
   departement: string;
 }
 
+/** Anciennes valeurs remplacées automatiquement par « Vallerio Studio » (affichage + fusion). */
+const LEGACY_DENOMINATIONS = new Set(["Keryan Bouzerda", "Vallerio Sution"]);
+
+export function normalizeCompanyDenomination(denomination: string): string {
+  if (LEGACY_DENOMINATIONS.has(denomination)) return "Vallerio Studio";
+  return denomination;
+}
+
+const LEGACY_EMAIL = "keryanbouzerda9@gmail.com";
+
+export function normalizeCompanyEmail(email: string): string {
+  if (email === LEGACY_EMAIL) return "hello@valleriostudio.fr";
+  return email;
+}
+
+/** Ancienne rue supprimée : affichage ville + CP uniquement (74000 Annecy). */
+const LEGACY_STREET_LINE = "17 ALL Paul Gauguin";
+
+export function formatCompanyAddressLine(c: CompanySettings): string {
+  const street = c.adresse.trim();
+  const cityLine = `${c.codePostal} ${c.ville}`.trim();
+  const parts = [street, cityLine].filter(Boolean);
+  return `${parts.join(", ")} – ${c.pays}`;
+}
+
+/** Si l’ancienne adresse était encore enregistrée, on la retire et on aligne le CP. */
+export function migrateLegacyCompanyStreet(c: CompanySettings): CompanySettings {
+  if (c.adresse.trim() !== LEGACY_STREET_LINE) return c;
+  return { ...c, adresse: "", codePostal: "74000" };
+}
+
 export const COMPANY_DEFAULT: CompanySettings = {
-  denomination: "Keryan Bouzerda",
+  denomination: "Vallerio Studio",
   siren: "101 354 413",
   siret: "101 354 413 00011",
   codeApe: "62.01Z",
   formeJuridique: "Entrepreneur individuel",
-  adresse: "17 ALL Paul Gauguin",
-  codePostal: "74600",
+  adresse: "",
+  codePostal: "74000",
   ville: "Annecy",
   pays: "FRANCE",
-  email: "keryanbouzerda9@gmail.com",
+  email: "hello@valleriostudio.fr",
   telephone: "07 81 99 07 61",
   tva: "TVA non applicable, art. 293 B du CGI",
   dateImmatriculation: "23/02/2026",
@@ -45,7 +76,13 @@ function loadFromStorage(): CompanySettings | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<CompanySettings>;
-    return { ...COMPANY_DEFAULT, ...parsed };
+    const merged = { ...COMPANY_DEFAULT, ...parsed };
+    const withNorm = {
+      ...merged,
+      denomination: normalizeCompanyDenomination(merged.denomination),
+      email: normalizeCompanyEmail(merged.email),
+    };
+    return migrateLegacyCompanyStreet(withNorm);
   } catch {
     return null;
   }

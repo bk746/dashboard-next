@@ -118,6 +118,8 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
         return "bg-emerald-600/90 text-white dark:bg-emerald-500/80";
       case "Essentiel":
         return "bg-zinc-500 text-white";
+      case "Aucun":
+        return "border border-zinc-400/60 bg-transparent text-zinc-500 dark:border-white/20 dark:text-zinc-400";
       default:
         return "bg-zinc-500 text-white";
     }
@@ -198,8 +200,9 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                     className={`${inputFieldClass} w-full appearance-none cursor-pointer px-4 py-2.5 pr-9 text-sm rounded-xl`}
                   >
                     <option value="Tous">Tous</option>
-                    <option value="Essentiel">Essentiel</option>
                     <option value="Performance">Performance</option>
+                    <option value="Essentiel">Essentiel</option>
+                    <option value="Aucun">Aucun</option>
                     <option value="Croissance">Croissance</option>
                   </select>
                   <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500" />

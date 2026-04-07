@@ -30,12 +30,21 @@ export default function LoginPage() {
         <div className="max-w-md mx-auto px-4 py-16">
           <h1 className={pageTitleClass}>Connexion</h1>
           <p className={pageSubtitleClass}>
-            Supabase n&apos;est pas configuré. Ajoutez{" "}
+            Supabase n&apos;est pas configuré sur ce déploiement. En production, ajoutez dans{" "}
+            <strong className="font-medium text-zinc-800 dark:text-zinc-200">Vercel</strong> → votre projet →{" "}
+            <strong className="font-medium text-zinc-800 dark:text-zinc-200">Settings → Environment Variables</strong>{" "}
+            les clés{" "}
             <code className="text-xs font-mono">NEXT_PUBLIC_SUPABASE_URL</code> et{" "}
-            <code className="text-xs font-mono">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> dans{" "}
-            <code className="text-xs font-mono">.env.local</code>, puis créez la table (voir{" "}
-            <code className="text-xs font-mono">supabase/migrations/001_data_buckets.sql</code>
-            ).
+            <code className="text-xs font-mono">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (copiées depuis Supabase →
+            Project Settings → API), puis faites un <strong className="font-medium">Redeploy</strong>. En local,
+            utilisez <code className="text-xs font-mono">.env.local</code>. Créez aussi la table{" "}
+            <code className="text-xs font-mono">data_buckets</code> (fichier{" "}
+            <code className="text-xs font-mono">supabase/migrations/001_data_buckets.sql</code> dans l&apos;éditeur
+            SQL Supabase).
+          </p>
+          <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+            Une seule app Vercel doit être liée au repo : évitez d&apos;importer le même projet plusieurs fois, sinon
+            les variables ne sont pas recopiées.
           </p>
           <button type="button" className={`${primaryButtonClass} mt-6`} onClick={() => router.push("/dashboard")}>
             Continuer en local

@@ -10,6 +10,20 @@ export interface EstimationItem {
   label: string;
   /** À quoi correspond cette ligne (affiché sous le libellé) */
   description?: string;
+  /**
+   * Si cette ligne est cochée et facturée, ces libellés apparaissent en plus dans le devis
+   * (lignes à 0 € « Inclus — … ») pour détailer le forfait.
+   */
+  devisInclusions?: string[];
+  /**
+   * Couvert par le forfait « Site vitrine (1 à 5 pages) » : affichage « inclus » et pas de double facturation
+   * si ce forfait est coché.
+   */
+  includedWithVitrineForfait?: boolean;
+  /**
+   * Option à 0 € avec case à cocher : si cochée, apparaît au devis avec statut « Inclus » (sans doubler le total).
+   */
+  inclusAuDevis?: boolean;
   price?: number;
   pricePerUnit?: number;
   unitLabel?: string;
@@ -41,9 +55,17 @@ export const estimationCategories: EstimationCategory[] = [
       {
         id: "vitrine-1-5",
         label: "Site vitrine (1 à 5 pages)",
-        description: "Structure classique : accueil, offre, à propos, contact, etc. Contenu fourni par le client sauf option rédaction.",
+        description:
+          "Structure classique : accueil, offre, à propos, contact, etc. Forfait incluant formulaire simple, optimisation des performances, sauvegarde sécurisée, mise en ligne et formation. Contenu fourni par le client sauf option rédaction.",
         kind: "fixed",
         price: 2000,
+        devisInclusions: [
+          "Formulaire de contact simple",
+          "Optimisation des performances",
+          "Sauvegarde sécurisée",
+          "Mise en ligne",
+          "Formation à l’administration du site",
+        ],
       },
       {
         id: "page-extra",
@@ -172,11 +194,13 @@ export const estimationCategories: EstimationCategory[] = [
     description: "Niveau de personnalisation visuelle et d’expérience utilisateur.",
     items: [
       {
-        id: "design-standard",
-        label: "Design sur base thème / gabarit",
-        description: "Personnalisation couleurs, typo et blocs existants — rapide à produire.",
-        kind: "included",
-        note: "inclus",
+        id: "design-personnalise",
+        label: "Design personnalisé",
+        description:
+          "Interface et identité visuelle créées pour votre projet — pas de thème WordPress / gabarit générique, mise en page et composants sur mesure.",
+        kind: "fixed",
+        price: 0,
+        inclusAuDevis: true,
       },
       {
         id: "design-surmesure",
@@ -256,6 +280,7 @@ export const estimationCategories: EstimationCategory[] = [
         description: "Nom, email, message — envoi par email ou enregistrement basique.",
         kind: "fixed",
         price: 100,
+        includedWithVitrineForfait: true,
       },
       {
         id: "form-qualifie",
@@ -290,8 +315,9 @@ export const estimationCategories: EstimationCategory[] = [
         id: "ga",
         label: "Mesure d’audience (GA4 ou équivalent)",
         description: "Installation du tag, événements de base, lien avec la propriété du client.",
-        kind: "included",
-        note: "inclus",
+        kind: "fixed",
+        price: 0,
+        inclusAuDevis: true,
       },
       {
         id: "pixel-meta",
@@ -342,6 +368,7 @@ export const estimationCategories: EstimationCategory[] = [
         description: "Compression, formats modernes, cache, correctifs LCP/CLS, aligné avec un bon score Lighthouse.",
         kind: "fixed",
         price: 450,
+        includedWithVitrineForfait: true,
       },
       {
         id: "seo-essentiel",
@@ -395,6 +422,7 @@ export const estimationCategories: EstimationCategory[] = [
         description: "Copies planifiées pour restaurer en cas de erreur ou piratage.",
         kind: "fixed",
         price: 100,
+        includedWithVitrineForfait: true,
       },
       {
         id: "sec-avance",
@@ -402,6 +430,7 @@ export const estimationCategories: EstimationCategory[] = [
         description: "En-têtes HTTP, limitation tentatives, bonnes pratiques OWASP pour le stack utilisé.",
         kind: "fixed",
         price: 300,
+        includedWithVitrineForfait: true,
       },
       {
         id: "rgpd-basique",
@@ -474,6 +503,7 @@ export const estimationCategories: EstimationCategory[] = [
         description: "Achat ou rattachement du domaine, zone DNS, mise en production sur l’hébergeur cible.",
         kind: "fixed",
         price: 120,
+        includedWithVitrineForfait: true,
       },
       {
         id: "email-pro",
@@ -496,6 +526,7 @@ export const estimationCategories: EstimationCategory[] = [
         description: "Visio : navigation admin, mise à jour des textes, bonnes pratiques.",
         kind: "fixed",
         price: 150,
+        includedWithVitrineForfait: true,
       },
       {
         id: "doc-livrable",

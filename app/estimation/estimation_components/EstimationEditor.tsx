@@ -229,7 +229,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
   }, []);
 
   const { lines, totalOneShot, maintenanceMonthly } = useMemo(() => {
-    const lines: { id: string; label: string; amount: number }[] = [];
+    const lines: { id: string; label: string; amount: number; inclusRecap?: boolean }[] = [];
     let total = 0;
 
     for (const cat of categoriesMerged) {
@@ -241,10 +241,26 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
           item.kind === "range"
             ? (ranges[item.id] ?? defaultRangeValue(item))
             : 0;
-        const amount = lineAmount(item, true, q, r);
+        const amount = lineAmount(item, true, q, r, !!selected["vitrine-1-5"]);
+
+        if (item.inclusAuDevis && item.kind === "fixed" && (item.price ?? 0) === 0) {
+          lines.push({ id: item.id, label: item.label, amount: 0, inclusRecap: true });
+          continue;
+        }
+
         if (amount > 0) {
           lines.push({ id: item.id, label: item.label, amount });
           total += amount;
+          if (item.devisInclusions?.length) {
+            item.devisInclusions.forEach((inc, i) => {
+              lines.push({
+                id: `${item.id}-inc-${i}`,
+                label: inc,
+                amount: 0,
+                inclusRecap: true,
+              });
+            });
+          }
         }
       }
     }
@@ -470,7 +486,10 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
                   </p>
                 )}
                 <ul className="space-y-3">
-                  {cat.items.map((item) => (
+                  {cat.items.map((item) => {
+                    const hintOpts = { vitrineForfaitSelected: !!selected["vitrine-1-5"] };
+                    const priceHint = formatHint(item, hintOpts);
+                    return (
                     <li key={item.id}>
                       {item.kind === "included" ? (
                         <div className="rounded-lg border border-dashed border-zinc-200/90 dark:border-white/[0.08] bg-zinc-50/80 dark:bg-white/[0.03] px-3 py-2.5 text-sm">
@@ -506,8 +525,14 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
                                   {item.description}
                                 </p>
                               )}
-                              <span className="mt-1 block text-xs font-medium text-zinc-600 dark:text-zinc-500 tabular-nums">
-                                {formatHint(item)}
+                              <span
+                                className={`mt-1 block text-xs font-medium tabular-nums ${
+                                  priceHint === "inclus"
+                                    ? "text-emerald-700 dark:text-emerald-400"
+                                    : "text-zinc-600 dark:text-zinc-500"
+                                }`}
+                              >
+                                {priceHint}
                               </span>
                             </span>
                           </label>
@@ -570,7 +595,8 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
                         </div>
                       )}
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </section>
             ))}
@@ -678,9 +704,13 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
                 <ul className="max-h-[min(50vh,420px)] overflow-y-auto space-y-2 text-sm border-b border-zinc-100 dark:border-white/[0.06] pb-3 mb-3">
                   {lines.map((l) => (
                     <li key={l.id} className="flex justify-between gap-3 text-zinc-600 dark:text-zinc-400">
-                      <span className="min-w-0 flex-1">{l.label}</span>
+                      <span
+                        className={`min-w-0 flex-1 ${l.inclusRecap ? "pl-2 border-l border-zinc-200 dark:border-white/[0.08] text-zinc-500" : ""}`}
+                      >
+                        {l.label}
+                      </span>
                       <span className="shrink-0 tabular-nums text-zinc-800 dark:text-zinc-200">
-                        {eur.format(l.amount)}
+                        {l.inclusRecap ? "Inclus" : eur.format(l.amount)}
                       </span>
                     </li>
                   ))}

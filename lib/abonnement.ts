@@ -1,17 +1,21 @@
 import type { AbonnementOffre } from "@/app/types";
 
-/** Offres affichées dans les formulaires (client, devis, facture). */
+/**
+ * Offres : Performance, Essentiel, Aucun, Croissance (même ordre partout : client, devis, facture).
+ */
 export const ABONNEMENT_OPTIONS: { value: AbonnementOffre; label: string }[] = [
-  { value: "Essentiel", label: "Essentiel" },
   { value: "Performance", label: "Performance" },
+  { value: "Essentiel", label: "Essentiel" },
+  { value: "Aucun", label: "Aucun" },
   { value: "Croissance", label: "Croissance" },
 ];
 
 export function normalizeAbonnement(raw: string | undefined): AbonnementOffre {
-  if (raw === "Essentiel" || raw === "Performance" || raw === "Croissance") return raw;
+  if (raw === "Aucun" || raw === "Essentiel" || raw === "Performance" || raw === "Croissance") return raw;
   if (raw === "Actif") return "Performance";
   if (raw === "Inactif") return "Essentiel";
-  return "Essentiel";
+  if (raw === undefined || raw === "") return "Aucun";
+  return "Aucun";
 }
 
 /** KPI : clients sur une offre « supérieure » (hors seul Essentiel). */

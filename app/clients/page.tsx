@@ -118,7 +118,12 @@ export default function Clients() {
           <ClientsTable clients={clients} onDelete={handleDeleteClient} onEdit={handleEditClient} />
         </section>
         {showForm && (
-          <ClientForm client={editingClient} onClose={() => setShowForm(false)} onSave={handleSaveClient} />
+          <ClientForm
+            key={editingClient?.id ?? "nouveau-client"}
+            client={editingClient}
+            onClose={() => setShowForm(false)}
+            onSave={handleSaveClient}
+          />
         )}
       </div>
     </div>

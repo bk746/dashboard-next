@@ -40,7 +40,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
     telephone: "",
     email: "",
     statut: "Actif",
-    abonnement: "Essentiel",
+    abonnement: "Aucun",
     secteurActivite: "",
     derniereActivite: new Date().toLocaleDateString("fr-FR"),
   });
@@ -56,6 +56,17 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
         abonnement: normalizeAbonnement(client.abonnement),
         secteurActivite: client.secteurActivite ?? "",
         derniereActivite: client.derniereActivite,
+      });
+    } else {
+      setFormData({
+        entreprise: "",
+        patron: "",
+        telephone: "",
+        email: "",
+        statut: "Actif",
+        abonnement: "Aucun",
+        secteurActivite: "",
+        derniereActivite: new Date().toLocaleDateString("fr-FR"),
       });
     }
   }, [client]);
@@ -157,8 +168,11 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
               </div>
 
               <div>
-                <label className={formLabelClass}>Abonnement</label>
+                <label className={formLabelClass} htmlFor="client-abonnement">
+                  Offre d&apos;abonnement
+                </label>
                 <select
+                  id="client-abonnement"
                   value={formData.abonnement}
                   onChange={(e) =>
                     setFormData({

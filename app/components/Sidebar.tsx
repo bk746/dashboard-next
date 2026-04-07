@@ -13,6 +13,7 @@ import {
   Settings,
   Calculator,
   LogOut,
+  LogIn,
   type LucideIcon,
 } from "lucide-react";
 
@@ -162,19 +163,38 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Pied : paramètres */}
-      <div className="p-3 border-t border-zinc-100 dark:border-white/[0.06] mt-auto space-y-1">
-        {cloud && user ? (
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-600 dark:text-zinc-500 transition-colors duration-200 hover:bg-zinc-100 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-          >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-200/80 bg-zinc-50 text-zinc-500 transition-colors group-hover:border-zinc-300 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-500 dark:group-hover:border-white/[0.1] dark:group-hover:text-zinc-300">
-              <LogOut className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-            </span>
-            <span>Déconnexion</span>
-          </button>
+      {/* Pied : compte + paramètres */}
+      <div className="p-3 border-t border-zinc-100 dark:border-white/[0.06] mt-auto space-y-2">
+        {!cloud ? (
+          <div className="rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2.5">
+            <p className="text-[11px] font-medium leading-snug text-amber-800 dark:text-amber-200/95">
+              Pas de sync cloud : variables Supabase absentes sur ce déploiement (Vercel → Environment
+              Variables).
+            </p>
+            <Link
+              href="/login"
+              className="mt-2 flex items-center gap-2 text-xs font-semibold text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+            >
+              <LogIn className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              Connexion &amp; aide
+            </Link>
+          </div>
+        ) : user ? (
+          <>
+            <p className="truncate px-3 text-[11px] text-zinc-500 dark:text-zinc-400" title={user.email ?? ""}>
+              {user.email}
+            </p>
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-600 dark:text-zinc-500 transition-colors duration-200 hover:bg-zinc-100 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-200/80 bg-zinc-50 text-zinc-500 transition-colors group-hover:border-zinc-300 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-500 dark:group-hover:border-white/[0.1] dark:group-hover:text-zinc-300">
+                <LogOut className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+              </span>
+              <span>Déconnexion</span>
+            </button>
+          </>
         ) : null}
         <Link
           href="/parametres"

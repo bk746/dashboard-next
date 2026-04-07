@@ -109,6 +109,7 @@ body {
     padding: 24px !important;
     box-shadow: none !important;
   }
+  /* Ne pas mettre .no-print sur un ancêtre de .devis-print-area / .facture-print-area : display:none supprime tout l’arbre à l’impression. */
   .no-print {
     display: none !important;
   }

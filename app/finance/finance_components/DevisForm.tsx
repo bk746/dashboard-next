@@ -41,7 +41,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
   const [date, setDate] = useState(new Date().toLocaleDateString("fr-FR"));
   const [validitePreset, setValiditePreset] = useState<"15j" | "30j" | "custom">("15j");
   const [validiteCustom, setValiditeCustom] = useState("");
-  const [abonnement, setAbonnement] = useState<AbonnementOffre>("Essentiel");
+  const [abonnement, setAbonnement] = useState<AbonnementOffre>("Aucun");
   const [prestations, setPrestations] = useState<PrestationDevis[]>([defaultPrestation()]);
   const [estimationHint, setEstimationHint] = useState<string | null>(null);
 
@@ -113,7 +113,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
       setNumeroDevis(generateDevisNumero(nums));
       setValiditePreset("15j");
       setValiditeCustom("");
-      setAbonnement("Essentiel");
+      setAbonnement("Aucun");
       setPrestations([defaultPrestation()]);
       setEstimationHint(null);
     }

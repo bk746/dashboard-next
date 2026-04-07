@@ -33,7 +33,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
     statut: "Non payé",
     date: new Date().toLocaleDateString("fr-FR"),
     prix: 0,
-    abonnement: "Essentiel",
+    abonnement: "Aucun",
   });
 
   useEffect(() => {

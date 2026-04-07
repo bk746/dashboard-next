@@ -57,6 +57,8 @@ export default function FacturesTable({ factures, totalInDatabase, onDelete, onE
         return "bg-emerald-600/90 text-white dark:bg-emerald-500/80";
       case "Essentiel":
         return "bg-zinc-500 text-white";
+      case "Aucun":
+        return "border border-zinc-400/60 bg-transparent text-zinc-500 dark:border-white/20 dark:text-zinc-400";
       default:
         return "bg-zinc-500 text-white";
     }

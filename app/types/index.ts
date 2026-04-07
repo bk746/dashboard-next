@@ -2,8 +2,8 @@
  * Types métier pour le dashboard.
  */
 
-/** Offre d’abonnement (client, devis, facture). */
-export type AbonnementOffre = "Essentiel" | "Performance" | "Croissance";
+/** Offre d’abonnement (client, devis, facture). « Aucun » = pas d’offre liée. */
+export type AbonnementOffre = "Aucun" | "Essentiel" | "Performance" | "Croissance";
 
 export interface Client {
   id: string;
@@ -34,6 +34,8 @@ export interface Facture {
 export interface PrestationDevis {
   designation: string;
   prix: number;
+  /** Ligne détail « inclus dans le forfait » : libellé seul, colonne montant affiche « Inclus ». */
+  inclusForfait?: boolean;
 }
 
 export interface Devis {

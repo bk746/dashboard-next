@@ -10,6 +10,9 @@ import { writeBucket } from "@/lib/syncBridge";
 
 export const ESTIMATIONS_STORAGE_KEY = "estimations";
 
+/** Préfixe des lignes de devis détaillant ce qui est inclus dans un forfait (montant 0 €). */
+export const DEVIS_INCLUS_PREFIX = "Inclus — ";
+
 export function mergeItem(base: EstimationItem, allOverrides: Record<string, EstimationTarifOverride>): EstimationItem {
   const o = allOverrides[base.id];
   if (!o) return base;
@@ -31,7 +34,16 @@ export function withMergedCategories(
   }));
 }
 
-export function formatHint(item: EstimationItem): string {
+export function formatHint(
+  item: EstimationItem,
+  opts?: { vitrineForfaitSelected?: boolean }
+): string {
+  if (opts?.vitrineForfaitSelected && item.includedWithVitrineForfait) {
+    return "inclus";
+  }
+  if (item.inclusAuDevis && item.kind === "fixed" && (item.price ?? 0) === 0) {
+    return "inclus";
+  }
   switch (item.kind) {
     case "fixed":
       return item.price != null ? `${item.price} €` : "";
@@ -54,9 +66,11 @@ export function lineAmount(
   item: EstimationItem,
   selected: boolean,
   qty: number,
-  rangeVal: number
+  rangeVal: number,
+  vitrineForfaitSelected?: boolean
 ): number {
   if (!selected || item.kind === "included") return 0;
+  if (item.includedWithVitrineForfait && vitrineForfaitSelected) return 0;
   if (item.kind === "fixed") return item.price ?? 0;
   if (item.kind === "perUnit") return (item.pricePerUnit ?? 0) * qty;
   if (item.kind === "range") return rangeVal;
@@ -89,7 +103,7 @@ export function computeTotalsForEstimation(est: EstimationSaved): {
         item.kind === "range"
           ? (est.ranges[item.id] ?? defaultRangeValue(item))
           : 0;
-      total += lineAmount(item, true, q, r);
+      total += lineAmount(item, true, q, r, !!est.selected["vitrine-1-5"]);
     }
   }
 
@@ -155,7 +169,21 @@ export function buildPrestationsFromEstimation(est: EstimationSaved): Prestation
         item.kind === "range"
           ? (est.ranges[item.id] ?? defaultRangeValue(item))
           : 0;
-      const amount = lineAmount(item, true, q, r);
+      const amount = lineAmount(item, true, q, r, !!est.selected["vitrine-1-5"]);
+
+      if (
+        item.inclusAuDevis &&
+        item.kind === "fixed" &&
+        (item.price ?? 0) === 0
+      ) {
+        lines.push({
+          designation: item.label,
+          prix: 0,
+          inclusForfait: true,
+        });
+        continue;
+      }
+
       if (amount <= 0) continue;
 
       let designation = item.label;
@@ -164,6 +192,12 @@ export function buildPrestationsFromEstimation(est: EstimationSaved): Prestation
       }
 
       lines.push({ designation, prix: Math.round(amount) });
+
+      if (item.devisInclusions?.length) {
+        for (const inc of item.devisInclusions) {
+          lines.push({ designation: inc, prix: 0, inclusForfait: true });
+        }
+      }
     }
   }
 

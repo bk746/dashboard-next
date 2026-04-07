@@ -133,9 +133,12 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
   const showSplash = splashPhase === "splash" || splashPhase === "exit";
   const needSetup = !hasPin;
 
+  /** Ne pas monter le dashboard tant que le code / Face ID n’a pas validé — évite tout flash du contenu. */
+  const showApp = unlocked;
+
   return (
     <>
-      {children}
+      {showApp ? children : null}
       {showSplash && (
         <div
           className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-500 ease-out ${

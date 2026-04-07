@@ -1,8 +1,9 @@
 "use client";
 
-import { FaTimes, FaPrint } from "react-icons/fa";
+import { FaTimes, FaPrint, FaEnvelope } from "react-icons/fa";
 import { useCompany } from "@/app/hooks/useCompany";
 import type { Client, Facture } from "@/app/types";
+import { formatCompanyAddressLine, type CompanySettings } from "@/app/config/company";
 import { overlayBackdropClass, overlayDocumentViewerClass, overlayCloseButtonClass } from "@/app/components/appCardStyles";
 
 interface FactureDocumentProps {
@@ -11,10 +12,28 @@ interface FactureDocumentProps {
   onClose: () => void;
 }
 
+function buildFactureMailto(facture: Facture, client: Client | null | undefined, company: CompanySettings): string {
+  const subject = `Facture ${facture.numeroFacture} – ${facture.entreprise}`;
+  const body = [
+    "Bonjour,",
+    "",
+    `Veuillez trouver notre facture n° ${facture.numeroFacture} en date du ${facture.date}.`,
+    `Montant total TTC : ${facture.prix.toLocaleString("fr-FR")} €`,
+    `Statut : ${facture.statut}`,
+    "",
+    "Cordialement,",
+    company.denomination,
+  ].join("\n");
+  const dest = client?.email?.trim();
+  const base = dest ? `mailto:${encodeURIComponent(dest)}` : "mailto:";
+  return `${base}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export default function FactureDocument({ facture, client, onClose }: FactureDocumentProps) {
   const [company] = useCompany();
+  const mailtoHref = buildFactureMailto(facture, client, company);
   return (
-    <div className={`${overlayBackdropClass} no-print`} onClick={onClose} role="presentation">
+    <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
         className={overlayDocumentViewerClass}
         onClick={(e) => e.stopPropagation()}
@@ -26,7 +45,7 @@ export default function FactureDocument({ facture, client, onClose }: FactureDoc
           <h2 id="facture-preview-title" className="text-base font-semibold tracking-tight text-zinc-100">
             Aperçu de la facture
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => window.print()}
@@ -35,6 +54,14 @@ export default function FactureDocument({ facture, client, onClose }: FactureDoc
               <FaPrint /> <span className="hidden sm:inline">Imprimer ou PDF</span>
               <span className="sm:hidden">PDF</span>
             </button>
+            <a
+              href={mailtoHref}
+              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+            >
+              <FaEnvelope aria-hidden />
+              <span className="hidden sm:inline">Envoyer par mail</span>
+              <span className="sm:hidden">Mail</span>
+            </a>
             <button type="button" onClick={onClose} className={`${overlayCloseButtonClass} text-zinc-400 hover:bg-white/10 hover:text-white`} aria-label="Fermer">
               <FaTimes className="h-5 w-5" />
             </button>
@@ -43,13 +70,11 @@ export default function FactureDocument({ facture, client, onClose }: FactureDoc
         <div className="overflow-y-auto p-4 flex-1">
           <div className="facture-print-area bg-white text-black rounded-lg shadow-xl p-8 md:p-10 mx-auto" style={{ maxWidth: "210mm" }}>
             <div className="border-b border-neutral-300 pb-6 mb-6">
-              <h1 className="text-xl font-bold text-[#1A10AC]">{company.denomination}</h1>
+              <h1 className="text-xl font-bold text-[#7c3aed] print:text-[#7c3aed]">{company.denomination}</h1>
               <p className="text-sm text-neutral-600 mt-1">
                 {company.formeJuridique} – SIRET {company.siret}
               </p>
-              <p className="text-sm text-neutral-600">
-                {company.adresse}, {company.codePostal} {company.ville} – {company.pays}
-              </p>
+              <p className="text-sm text-neutral-600">{formatCompanyAddressLine(company)}</p>
               <p className="text-sm text-neutral-600">{company.email} – {company.telephone}</p>
               <p className="text-sm text-neutral-500 mt-1">{company.tva}</p>
             </div>
