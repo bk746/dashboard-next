@@ -289,8 +289,15 @@ export default function ProspectsTable({
                               <Building2 className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <h3 className="truncate text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                                {p.entreprise}
+                              <h3 className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                                <span className="truncate">{p.entreprise}</span>
+                                {p.urgent ? (
+                                  <span
+                                    className="h-2 w-2 shrink-0 rounded-full bg-red-500 shadow-[0_0_0_1px_rgba(0,0,0,0.08)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
+                                    title="Urgent — site critique"
+                                    aria-label="Urgent — site critique"
+                                  />
+                                ) : null}
                               </h3>
                               {(p.contactNom || p.email) && (
                                 <p className="mt-0.5 truncate text-sm text-zinc-500 dark:text-zinc-400">

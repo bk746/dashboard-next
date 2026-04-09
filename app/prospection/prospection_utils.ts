@@ -218,6 +218,7 @@ export function besoinRelanceAppelSemaine(p: Prospect): boolean {
 export interface ProspectRdvPlanningRow {
   prospectId: string;
   entreprise: string;
+  urgent?: boolean;
   rdvId: string;
   /** ISO datetime */
   debut: string;
@@ -239,6 +240,7 @@ export function listeRendezVousAVenir(prospects: Prospect[]): ProspectRdvPlannin
         rows.push({
           prospectId: p.id,
           entreprise: p.entreprise,
+          urgent: p.urgent,
           rdvId: r.id,
           debut: r.debut,
           titre: r.titre,
@@ -273,6 +275,7 @@ export function emptyProspect(): Prospect {
     contactNom: "",
     email: "",
     siteWeb: "",
+    urgent: false,
     telephone: "",
     etapeContact: "audit_envoye",
     reponseClient: "en_attente",

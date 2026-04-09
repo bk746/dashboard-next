@@ -162,6 +162,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
     onSave({
       ...sansDatesSiAucun,
       siteWeb: siteTrim || undefined,
+      urgent: !!sansStatut.urgent,
       rdv: rdvActif ? sansStatut.rdv : [],
       reponseClient: (sansStatut.reponseClient ?? "en_attente") as ProspectReponseClient,
       etapeContact: sansStatut.etapeContact as ProspectEtapeContact,
@@ -283,6 +284,23 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                 ) : siteWebSaisi ? (
                   <p className="mt-2 text-xs text-zinc-500">Adresse web non reconnue — vérifiez le format.</p>
                 ) : null}
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-200/90 bg-zinc-50/50 px-4 py-3 dark:border-white/[0.1] dark:bg-white/[0.03]">
+                  <input
+                    type="checkbox"
+                    checked={form.urgent ?? false}
+                    onChange={(e) => setForm({ ...form, urgent: e.target.checked })}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#2563eb] focus:ring-[#2563eb] dark:border-zinc-600 dark:bg-zinc-900"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">Urgent — site critique</span>
+                    <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                      À traiter en priorité (repère rouge à côté du nom dans la liste).
+                    </span>
+                  </span>
+                </label>
               </div>
 
               <div>

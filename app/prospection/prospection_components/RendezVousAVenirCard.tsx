@@ -75,7 +75,16 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium text-zinc-900 dark:text-zinc-100">{row.entreprise}</span>
+                        <span className="flex min-w-0 items-center gap-2 font-medium text-zinc-900 dark:text-zinc-100">
+                          <span className="truncate">{row.entreprise}</span>
+                          {row.urgent ? (
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full bg-red-500"
+                              title="Urgent — site critique"
+                              aria-label="Urgent — site critique"
+                            />
+                          ) : null}
+                        </span>
                         {today && (
                           <span className="rounded-full bg-[#ED8600]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#b45309] dark:bg-[#5b7fb8]/25 dark:text-[#b8cce8]">
                             Aujourd&apos;hui

@@ -128,6 +128,8 @@ export interface Prospect {
   email?: string;
   /** URL du site (affichée sous l’e-mail, lien cliquable). */
   siteWeb?: string;
+  /** Site critique : affiché avec un repère rouge à côté du nom. */
+  urgent?: boolean;
   telephone?: string;
   etapeContact: ProspectEtapeContact;
   reponseClient: ProspectReponseClient;
