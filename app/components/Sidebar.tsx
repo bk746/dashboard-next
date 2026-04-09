@@ -12,6 +12,7 @@ import {
   Target,
   Settings,
   Calculator,
+  ClipboardList,
   LogOut,
   LogIn,
   type LucideIcon,
@@ -25,6 +26,7 @@ type NavItem =
 const menuItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/clients", label: "Clients", icon: Users },
+  { href: "/prospection", label: "Prospection", icon: ClipboardList },
   {
     href: "/finance",
     label: "Finance",

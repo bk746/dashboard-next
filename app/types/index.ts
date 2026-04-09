@@ -89,6 +89,64 @@ export interface EstimationTarifOverride {
 }
 
 /** Estimation enregistrée, liée à un client (localStorage) */
+/** Pipeline commercial — prospection (hors fiche client classique). */
+/** Où vous en êtes dans les échanges (un seul choix). */
+export type ProspectEtapeContact = "aucun" | "audit_envoye" | "mail_envoye" | "appel_passe";
+
+/** Réponse du prospect — par défaut « en attente » tant que vous ne validez ni ne refusez. */
+export type ProspectReponseClient = "en_attente" | "valide" | "refuse";
+
+export type ProspectNoteType =
+  | "mail"
+  | "appel"
+  | "audit"
+  | "relance_mail"
+  | "relance_appel"
+  | "rdv"
+  | "autre";
+
+export interface ProspectNote {
+  id: string;
+  /** ISO */
+  createdAt: string;
+  type: ProspectNoteType;
+  contenu: string;
+}
+
+export interface ProspectRdv {
+  id: string;
+  /** ISO datetime */
+  debut: string;
+  titre?: string;
+  note?: string;
+}
+
+export interface Prospect {
+  id: string;
+  entreprise: string;
+  contactNom?: string;
+  email?: string;
+  telephone?: string;
+  etapeContact: ProspectEtapeContact;
+  reponseClient: ProspectReponseClient;
+  /** @deprecated Ancien champ — migré automatiquement vers etapeContact / reponseClient */
+  statut?: string;
+  /** Date à laquelle l’audit personnalisé a été envoyé (relances J+3 mail, J+7 appel). Format yyyy-mm-dd */
+  dateAuditPersoEnvoye?: string;
+  /** Date du mail correspondant à l’étape « Mail envoyé » (pas forcément la relance J+3). Format yyyy-mm-dd */
+  dateMailEnvoye?: string;
+  /** Date de l’appel correspondant à l’étape « Appel passé ». Format yyyy-mm-dd */
+  dateAppelPasse?: string;
+  relanceMailJ3Fait: boolean;
+  /** Date d’envoi du mail de relance (J+3) — sert au délai d’1 semaine avant l’appel. Format yyyy-mm-dd */
+  dateRelanceMailEnvoye?: string;
+  relanceAppelSemaineFait: boolean;
+  notes: ProspectNote[];
+  rdv: ProspectRdv[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface EstimationSaved {
   id: string;
   clientId: string;

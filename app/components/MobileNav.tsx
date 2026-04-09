@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Calculator,
+  ClipboardList,
   LogIn,
   LogOut,
   type LucideIcon,
@@ -23,6 +24,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/client";
 const mainItems: { href: string; label: string; icon: LucideIcon; indent?: boolean }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/clients", label: "Clients", icon: Users },
+  { href: "/prospection", label: "Prospection", icon: ClipboardList },
   { href: "/finance", label: "Finance", icon: Wallet },
   { href: "/estimation", label: "Estimation", icon: Calculator, indent: true },
   { href: "/deals-projets", label: "Deals / Projets", icon: Briefcase },

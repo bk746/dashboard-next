@@ -1,6 +1,7 @@
 /** Clés synchronisées avec Supabase (table `data_buckets`) + localStorage. */
 export const DATA_BUCKET_KEYS = [
   "clients",
+  "prospection",
   "factures",
   "devis",
   "depenses",
