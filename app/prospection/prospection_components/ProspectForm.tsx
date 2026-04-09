@@ -10,6 +10,7 @@ import {
   ETAPES_CONTACT,
   migrateProspect,
   patchDatesForEtapeContact,
+  prospectSiteHref,
   REPONSES_CLIENT,
 } from "@/app/prospection/prospection_utils";
 import {
@@ -157,8 +158,10 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
             dateAppelPasse: undefined,
           }
         : sansStatut;
+    const siteTrim = sansStatut.siteWeb?.trim();
     onSave({
       ...sansDatesSiAucun,
+      siteWeb: siteTrim || undefined,
       rdv: rdvActif ? sansStatut.rdv : [],
       reponseClient: (sansStatut.reponseClient ?? "en_attente") as ProspectReponseClient,
       etapeContact: sansStatut.etapeContact as ProspectEtapeContact,
@@ -177,6 +180,9 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
 
   const libelleEtapeCourante =
     ETAPES_CONTACT.find((s) => s.value === form.etapeContact)?.label ?? "cette étape";
+
+  const siteHrefPreview = prospectSiteHref(form.siteWeb);
+  const siteWebSaisi = (form.siteWeb ?? "").trim();
 
   const setDateEtape = (iso: string | undefined) => {
     const v = iso?.trim() || undefined;
@@ -251,6 +257,32 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className={inputFieldClass}
                 />
+              </div>
+              <div className="md:col-span-2">
+                <label className={formLabelClass}>Site web</label>
+                <input
+                  type="text"
+                  inputMode="url"
+                  autoComplete="url"
+                  placeholder="ex. monsite.fr ou https://…"
+                  value={form.siteWeb ?? ""}
+                  onChange={(e) => setForm({ ...form, siteWeb: e.target.value })}
+                  className={inputFieldClass}
+                />
+                {siteHrefPreview ? (
+                  <p className="mt-2 text-sm">
+                    <a
+                      href={siteHrefPreview}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all font-medium text-[#c26500] underline underline-offset-2 hover:text-[#a55500] dark:text-[#a8c0e0] dark:hover:text-[#c5d4ec]"
+                    >
+                      {siteHrefPreview}
+                    </a>
+                  </p>
+                ) : siteWebSaisi ? (
+                  <p className="mt-2 text-xs text-zinc-500">Adresse web non reconnue — vérifiez le format.</p>
+                ) : null}
               </div>
 
               <div>

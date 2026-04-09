@@ -11,6 +11,7 @@ import {
   dateEtapeEnCours,
   estReponseClosee,
   ETAPES_CONTACT,
+  prospectSiteHref,
 } from "@/app/prospection/prospection_utils";
 import { formLabelClass, inputFieldClass, panelSurfaceClass } from "@/app/components/appCardStyles";
 
@@ -57,7 +58,8 @@ export default function ProspectsTable({
         (p) =>
           p.entreprise.toLowerCase().includes(q) ||
           (p.contactNom ?? "").toLowerCase().includes(q) ||
-          (p.email ?? "").toLowerCase().includes(q)
+          (p.email ?? "").toLowerCase().includes(q) ||
+          (p.siteWeb ?? "").toLowerCase().includes(q)
       );
     }
     switch (filtrePriorite) {
@@ -258,6 +260,7 @@ export default function ProspectsTable({
                 const et = libelleEtape(p.etapeContact);
                 const dateAction = dateEtapeEnCours(p);
                 const rep = p.reponseClient ?? "en_attente";
+                const siteHref = prospectSiteHref(p.siteWeb);
                 const cardTint =
                   rep === "valide"
                     ? "border-emerald-400/40 bg-gradient-to-br from-emerald-100/90 to-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:from-emerald-950/50 dark:to-[#12131a] dark:shadow-none"
@@ -292,6 +295,19 @@ export default function ProspectsTable({
                               {(p.contactNom || p.email) && (
                                 <p className="mt-0.5 truncate text-sm text-zinc-500 dark:text-zinc-400">
                                   {[p.contactNom, p.email].filter(Boolean).join(" · ")}
+                                </p>
+                              )}
+                              {siteHref && (
+                                <p className="mt-1 min-w-0">
+                                  <a
+                                    href={siteHref}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="inline-block max-w-full truncate text-sm font-medium text-[#c26500] underline underline-offset-2 hover:text-[#a55500] dark:text-[#a8c0e0] dark:hover:text-[#c5d4ec]"
+                                  >
+                                    {siteHref}
+                                  </a>
                                 </p>
                               )}
                               <div className="mt-3 flex flex-wrap items-center gap-2 sm:hidden">

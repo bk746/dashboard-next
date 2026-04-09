@@ -126,6 +126,8 @@ export interface Prospect {
   entreprise: string;
   contactNom?: string;
   email?: string;
+  /** URL du site (affichée sous l’e-mail, lien cliquable). */
+  siteWeb?: string;
   telephone?: string;
   etapeContact: ProspectEtapeContact;
   reponseClient: ProspectReponseClient;

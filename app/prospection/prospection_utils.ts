@@ -250,6 +250,21 @@ export function listeRendezVousAVenir(prospects: Prospect[]): ProspectRdvPlannin
   return rows;
 }
 
+/** URL absolue http(s) pour ouvrir le site du prospect, ou null si invalide / vide. */
+export function prospectSiteHref(raw: string | undefined | null): string | null {
+  const t = raw?.trim();
+  if (!t) return null;
+  let s = t.replace(/\s/g, "");
+  if (!/^https?:\/\//i.test(s)) s = `https://${s}`;
+  try {
+    const u = new URL(s);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    return u.href;
+  } catch {
+    return null;
+  }
+}
+
 export function emptyProspect(): Prospect {
   const now = new Date().toISOString();
   return {
@@ -257,6 +272,7 @@ export function emptyProspect(): Prospect {
     entreprise: "",
     contactNom: "",
     email: "",
+    siteWeb: "",
     telephone: "",
     etapeContact: "audit_envoye",
     reponseClient: "en_attente",
