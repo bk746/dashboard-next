@@ -17,6 +17,7 @@ import { formLabelClass, inputFieldClass, panelSurfaceClass } from "@/app/compon
 
 export type FiltreProspection =
   | "tous"
+  | "urgent"
   | "audit_a_envoyer"
   | "relance_mail"
   | "relance_appel"
@@ -63,6 +64,9 @@ export default function ProspectsTable({
       );
     }
     switch (filtrePriorite) {
+      case "urgent":
+        list = list.filter((p) => !!p.urgent);
+        break;
       case "audit_a_envoyer":
         list = list.filter((p) => auditPasEncoreEnvoye(p));
         break;
@@ -90,6 +94,7 @@ export default function ProspectsTable({
 
   const counts = useMemo(() => {
     return {
+      urgent: prospects.filter((p) => !!p.urgent).length,
       audit_a_envoyer: prospects.filter((p) => auditPasEncoreEnvoye(p)).length,
       relance_mail: prospects.filter((p) => besoinRelanceMailJ3(p)).length,
       relance_appel: prospects.filter((p) => besoinRelanceAppelSemaine(p)).length,
@@ -164,6 +169,10 @@ export default function ProspectsTable({
               className={inputFieldClass}
             >
               <option value="tous">Toutes les fiches</option>
+              <option value="urgent">
+                Urgent uniquement (site critique)
+                {counts.urgent ? ` — ${counts.urgent}` : ""}
+              </option>
               <option value="audit_a_envoyer">
                 Audits à dater (sans date d’envoi){counts.audit_a_envoyer ? ` — ${counts.audit_a_envoyer}` : ""}
               </option>
@@ -176,7 +185,7 @@ export default function ProspectsTable({
               <option value="audit_actif">Suivi audit en cours (pas clos)</option>
             </select>
             <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-500">
-              Raccourci vers les dossiers qui demandent une action — sans changer réponse ni étape.
+              Raccourci vers les dossiers qui demandent une action (y compris urgence) — sans changer réponse ni étape.
             </p>
           </div>
         </div>
