@@ -27,6 +27,7 @@ interface FactureFormProps {
 }
 
 export default function FactureForm({ facture, fromDevis, clients, onClose, onSave }: FactureFormProps) {
+  const [hasAcompte, setHasAcompte] = useState(false);
   const [formData, setFormData] = useState<Omit<Facture, "id">>({
     numeroFacture: "",
     entreprise: "",
@@ -34,10 +35,13 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
     date: new Date().toLocaleDateString("fr-FR"),
     prix: 0,
     abonnement: "Aucun",
+    montantAcompte: 0,
   });
 
   useEffect(() => {
     if (facture) {
+      const ac = facture.statut === "Payé" ? 0 : (facture.montantAcompte ?? 0);
+      setHasAcompte(ac > 0);
       setFormData({
         numeroFacture: facture.numeroFacture,
         entreprise: facture.entreprise,
@@ -45,11 +49,13 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
         date: facture.date,
         prix: facture.prix,
         abonnement: normalizeAbonnement(facture.abonnement),
+        montantAcompte: ac,
       });
     } else if (fromDevis) {
       const savedFactures = localStorage.getItem("factures");
       const factures = savedFactures ? JSON.parse(savedFactures) : [];
       const nextNumero = factures.length + 1;
+      setHasAcompte(false);
       setFormData({
         numeroFacture: `FAC-${String(nextNumero).padStart(6, "0")}`,
         entreprise: fromDevis.entreprise,
@@ -57,22 +63,36 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
         date: new Date().toLocaleDateString("fr-FR"),
         prix: fromDevis.prix,
         abonnement: normalizeAbonnement(fromDevis.abonnement),
+        montantAcompte: 0,
       });
     } else {
       const savedFactures = localStorage.getItem("factures");
       const factures = savedFactures ? JSON.parse(savedFactures) : [];
       const nextNumero = factures.length + 1;
+      setHasAcompte(false);
       setFormData((prev) => ({
         ...prev,
         numeroFacture: `FAC-${String(nextNumero).padStart(6, "0")}`,
+        montantAcompte: 0,
       }));
     }
   }, [facture, fromDevis]);
 
+  const montantAcompteEffectif =
+    formData.statut === "Payé" || !hasAcompte
+      ? 0
+      : Math.max(0, Math.min(formData.prix, Math.round(formData.montantAcompte ?? 0)));
+  const resteAPayer = formData.statut === "Payé" ? 0 : Math.max(0, formData.prix - montantAcompteEffectif);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const ac =
+      formData.statut === "Payé" || !hasAcompte
+        ? 0
+        : Math.max(0, Math.min(formData.prix, Math.round(formData.montantAcompte ?? 0)));
     const factureToSave: Facture = {
       ...formData,
+      montantAcompte: ac > 0 ? ac : undefined,
       id: facture?.id || Date.now().toString(),
     };
     onSave(factureToSave);
@@ -147,7 +167,15 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                 <label className={formLabelClass}>Statut</label>
                 <select
                   value={formData.statut}
-                  onChange={(e) => setFormData({ ...formData, statut: e.target.value as "Payé" | "Non payé" })}
+                  onChange={(e) => {
+                    const statut = e.target.value as "Payé" | "Non payé";
+                    setFormData({
+                      ...formData,
+                      statut,
+                      montantAcompte: statut === "Payé" ? 0 : formData.montantAcompte,
+                    });
+                    if (statut === "Payé") setHasAcompte(false);
+                  }}
                   className={inputFieldClass}
                 >
                   <option value="Payé">Payé</option>
@@ -193,11 +221,79 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                   required
                   min="0"
                   value={formData.prix}
-                  onChange={(e) => setFormData({ ...formData, prix: parseInt(e.target.value, 10) || 0 })}
+                  onChange={(e) => {
+                    const prix = parseInt(e.target.value, 10) || 0;
+                    const ac = Math.round(formData.montantAcompte ?? 0);
+                    setFormData({
+                      ...formData,
+                      prix,
+                      montantAcompte: hasAcompte ? Math.min(prix, ac) : 0,
+                    });
+                  }}
                   className={inputFieldClass}
                 />
               </div>
             </div>
+
+            {formData.statut === "Non payé" ? (
+              <div className="rounded-xl border border-zinc-200/90 bg-zinc-50/50 p-4 dark:border-white/[0.08] dark:bg-white/[0.03]">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#ED8600] focus:ring-[#ED8600] dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-[#5b7fb8]"
+                    checked={hasAcompte}
+                    onChange={(e) => {
+                      const on = e.target.checked;
+                      setHasAcompte(on);
+                      if (!on) {
+                        setFormData({ ...formData, montantAcompte: 0 });
+                      }
+                    }}
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-100">Acompte versé</span>
+                    <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                      Cochez si un acompte a déjà été encaissé ; le reste à payer est calculé automatiquement.
+                    </span>
+                  </span>
+                </label>
+                {hasAcompte ? (
+                  <div className="mt-3 space-y-2">
+                    <div>
+                      <label className={formLabelClass} htmlFor="facture-acompte">
+                        Montant de l&apos;acompte (€)
+                      </label>
+                      <input
+                        id="facture-acompte"
+                        type="number"
+                        min="0"
+                        max={formData.prix}
+                        value={formData.montantAcompte ?? 0}
+                        onChange={(e) => {
+                          const n = Math.max(0, parseInt(e.target.value, 10) || 0);
+                          setFormData({
+                            ...formData,
+                            montantAcompte: Math.min(formData.prix, n),
+                          });
+                        }}
+                        className={inputFieldClass}
+                      />
+                    </div>
+                    <p className="text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-100">
+                      Reste à payer :{" "}
+                      <span className="text-[#ED8600] dark:text-[#8fa9c9]">{resteAPayer.toLocaleString("fr-FR")} €</span>
+                      <span className="ml-2 font-normal text-zinc-500 dark:text-zinc-400">
+                        (total {formData.prix.toLocaleString("fr-FR")} €
+                        {montantAcompteEffectif > 0
+                          ? ` − acompte ${montantAcompteEffectif.toLocaleString("fr-FR")} €`
+                          : ""}
+                        )
+                      </span>
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <div className={overlayFooterClass}>

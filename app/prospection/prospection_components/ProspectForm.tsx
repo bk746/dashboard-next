@@ -2,8 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import { Calendar, Clock } from "lucide-react";
-import type { Prospect, ProspectEtapeContact, ProspectRdv, ProspectReponseClient } from "@/app/types";
+import { Calendar, Clock, ExternalLink } from "lucide-react";
+import type {
+  AuditVisuelDossier,
+  AuditVisuelRecord,
+  Prospect,
+  ProspectEtapeContact,
+  ProspectRdv,
+  ProspectReponseClient,
+} from "@/app/types";
+import AuditVisuelBlock from "@/app/audit-visuel/AuditVisuelBlock";
+import { buildAuditVisuelDossier, emptyAuditChecklist } from "@/app/audit-visuel/auditVisuelEngine";
+import { prospectAuditRecordId, removeProspectAudit, upsertProspectAudit } from "@/app/audit-visuel/audit_visuel_utils";
+import { useJsonBucket } from "@/hooks/useJsonBucket";
 import {
   dateEtapeEnCours,
   emptyProspect,
@@ -13,6 +24,7 @@ import {
   prospectSiteHref,
   REPONSES_CLIENT,
 } from "@/app/prospection/prospection_utils";
+import Link from "next/link";
 import {
   overlayBackdropClass,
   overlayPanelWideClass,
@@ -65,6 +77,8 @@ function localDateTimeToISO(dateStr: string, timeStr: string): string | null {
 }
 
 export default function ProspectForm({ prospect, onClose, onSave }: ProspectFormProps) {
+  const [auditsVisuels, setAuditsVisuels, auditsReady] = useJsonBucket<AuditVisuelRecord[]>("audits-visuels", []);
+
   const [form, setForm] = useState<Prospect>(() =>
     prospect ? migrateProspect(prospect) : emptyProspect()
   );
@@ -76,6 +90,13 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
   const [rdvTime, setRdvTime] = useState(() => suggestedRdvSlot().time);
   const [rdvTitre, setRdvTitre] = useState("");
   const [rdvNote, setRdvNote] = useState("");
+  const [auditVisuelActif, setAuditVisuelActif] = useState(() => !!prospect?.auditVisuel);
+  const [auditDossier, setAuditDossier] = useState<AuditVisuelDossier>(() =>
+    prospect?.auditVisuel ??
+    buildAuditVisuelDossier(emptyAuditChecklist(), "generique", {
+      entreprise: prospect?.entreprise.trim() || undefined,
+    })
+  );
 
   useEffect(() => {
     const next = prospect ? migrateProspect(prospect) : emptyProspect();
@@ -86,7 +107,38 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
     setRdvTime(slot.time);
     setRdvTitre("");
     setRdvNote("");
-  }, [prospect]);
+    if (!prospect) {
+      setAuditVisuelActif(false);
+      setAuditDossier(buildAuditVisuelDossier(emptyAuditChecklist(), "generique", undefined));
+      return;
+    }
+    if (!auditsReady) {
+      setAuditVisuelActif(!!prospect.auditVisuel);
+      setAuditDossier(
+        prospect.auditVisuel ??
+          buildAuditVisuelDossier(emptyAuditChecklist(), "generique", {
+            entreprise: prospect.entreprise.trim() || undefined,
+          })
+      );
+      return;
+    }
+    const rid = prospectAuditRecordId(prospect.id);
+    const fromBucket = auditsVisuels.find((a) => a.id === rid);
+    const dossier =
+      fromBucket?.dossier ??
+      prospect.auditVisuel ??
+      buildAuditVisuelDossier(emptyAuditChecklist(), "generique", {
+        entreprise: prospect.entreprise.trim() || undefined,
+      });
+    setAuditVisuelActif(!!(fromBucket || prospect.auditVisuel));
+    setAuditDossier(dossier);
+  }, [prospect, auditsReady, auditsVisuels]);
+
+  useEffect(() => {
+    if (!auditVisuelActif) return;
+    const label = form.entreprise.trim() || undefined;
+    setAuditDossier((d) => buildAuditVisuelDossier(d.checklist, d.template, { entreprise: label }));
+  }, [form.entreprise, auditVisuelActif]);
 
   const ajouterRdv = () => {
     if (!rdvActif) return;
@@ -159,14 +211,31 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
           }
         : sansStatut;
     const siteTrim = sansStatut.siteWeb?.trim();
+    const entrepriseSave = sansStatut.entreprise.trim() || undefined;
+    const auditVisuelFinal = auditVisuelActif
+      ? buildAuditVisuelDossier(auditDossier.checklist, auditDossier.template, { entreprise: entrepriseSave })
+      : undefined;
+    const prospectIdSave = prospect?.id ?? form.id;
+    if (auditVisuelFinal && entrepriseSave) {
+      setAuditsVisuels((list) =>
+        upsertProspectAudit(
+          list,
+          { id: prospectIdSave, entreprise: entrepriseSave, siteWeb: siteTrim },
+          auditVisuelFinal
+        )
+      );
+    } else {
+      setAuditsVisuels((list) => removeProspectAudit(list, prospectIdSave));
+    }
     onSave({
       ...sansDatesSiAucun,
       siteWeb: siteTrim || undefined,
       urgent: !!sansStatut.urgent,
       rdv: rdvActif ? sansStatut.rdv : [],
+      auditVisuel: auditVisuelFinal,
       reponseClient: (sansStatut.reponseClient ?? "en_attente") as ProspectReponseClient,
       etapeContact: sansStatut.etapeContact as ProspectEtapeContact,
-      id: prospect?.id ?? form.id,
+      id: prospectIdSave,
       updatedAt: now,
       createdAt: prospect?.createdAt ?? form.createdAt,
     });
@@ -301,6 +370,68 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                     </span>
                   </span>
                 </label>
+              </div>
+
+              <div className="md:col-span-2 space-y-3">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-200/90 bg-zinc-50/50 px-4 py-3 dark:border-white/[0.1] dark:bg-white/[0.03]">
+                  <input
+                    type="checkbox"
+                    checked={auditVisuelActif}
+                    onChange={(e) => {
+                      const on = e.target.checked;
+                      setAuditVisuelActif(on);
+                      if (on) {
+                        setAuditDossier((d) =>
+                          buildAuditVisuelDossier(d.checklist, d.template, {
+                            entreprise: form.entreprise.trim() || undefined,
+                          })
+                        );
+                      }
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#2563eb] focus:ring-[#2563eb] dark:border-zinc-600 dark:bg-zinc-900"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      Audit visuel sur le dossier
+                    </span>
+                    <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                      Cochez pour afficher la grille (design, CTA, SEO local…). Les réponses sont enregistrées sur la fiche
+                      et dans l&apos;historique Finance → Audit visuel (même dossier après enregistrement).
+                    </span>
+                    {auditVisuelActif &&
+                    (prospect?.auditVisuel ||
+                      auditsVisuels.some(
+                        (a) => a.id === prospectAuditRecordId(prospect?.id ?? form.id)
+                      )) ? (
+                      <Link
+                        href={`/audit-visuel/${prospectAuditRecordId(prospect?.id ?? form.id)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#c26500] underline-offset-2 hover:underline dark:text-[#a8c0e0]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Ouvrir en plein écran
+                        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                      </Link>
+                    ) : auditVisuelActif ? (
+                      <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-500">
+                        Enregistrez la fiche pour synchroniser l&apos;audit dans l&apos;historique et activer le lien plein
+                        écran.
+                      </p>
+                    ) : null}
+                  </span>
+                </label>
+                {auditVisuelActif ? (
+                  <div className="rounded-xl border border-dashed border-zinc-300/90 bg-white/60 px-2 py-3 dark:border-white/[0.1] dark:bg-white/[0.02] sm:px-3">
+                    <AuditVisuelBlock
+                      key={form.id}
+                      value={auditDossier}
+                      onChange={setAuditDossier}
+                      entrepriseHint={form.entreprise.trim() || undefined}
+                      compact
+                    />
+                  </div>
+                ) : null}
               </div>
 
               <div>

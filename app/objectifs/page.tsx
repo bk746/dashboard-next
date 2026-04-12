@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Target } from "lucide-react";
 import {
   pageShellClass,
@@ -20,6 +20,7 @@ import ObjectifsTable from "./objectifs_components/ObjectifsTable";
 import ObjectifForm from "./objectifs_components/ObjectifForm";
 import type { Client, Facture, Objectif } from "@/app/types";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
+import { getActuelPourObjectif, normalizeObjectifPeriode } from "@/app/lib/objectifsPeriod";
 
 export default function Objectifs() {
   const [objectifs, setObjectifs] = useJsonBucket<Objectif[]>("objectifs", []);
@@ -53,14 +54,10 @@ export default function Objectifs() {
     setShowForm(true);
   };
 
-  const caActuel = factures
-    .filter((f) => f.statut === "Payé")
-    .reduce((sum, facture) => sum + facture.prix, 0);
-
-  const clientsActuels = clients.length;
+  const now = useMemo(() => new Date(), []);
 
   const progressions = objectifs.map((obj) => {
-    const actuel = obj.type === "Financier" ? caActuel : clientsActuels;
+    const actuel = getActuelPourObjectif(obj, factures, clients, now);
     return obj.objectif > 0 ? Math.min((actuel / obj.objectif) * 100, 100) : 0;
   });
   const progressionTotal =
@@ -97,14 +94,14 @@ export default function Objectifs() {
           <div className="mb-4">
             <h2 className={sectionIntroTitleClass}>Vos objectifs</h2>
             <p className={sectionIntroDescClass}>
-              Une carte par objectif : suivez la barre de progression par rapport au CA facturé ou au nombre de clients.
+              Une carte par objectif : la progression compare la cible au réalisé sur la période choisie (année, mois ou semaine).
             </p>
           </div>
           <div
             className={`grid ${staggerCardsGridClass} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6`}
           >
             {objectifs.map((objectif) => {
-              const actuel = objectif.type === "Financier" ? caActuel : clientsActuels;
+              const actuel = getActuelPourObjectif(objectif, factures, clients, now);
               return (
                 <ObjectifCard
                   key={objectif.id}
@@ -112,6 +109,7 @@ export default function Objectifs() {
                   objectif={objectif.objectif}
                   actuel={actuel}
                   libelle={objectif.libelle}
+                  periode={normalizeObjectifPeriode(objectif.periode)}
                 />
               );
             })}

@@ -12,7 +12,9 @@ import {
   Target,
   Settings,
   Calculator,
+  ScanEye,
   ClipboardList,
+  Globe,
   LogOut,
   LogIn,
   type LucideIcon,
@@ -31,8 +33,12 @@ const menuItems: NavItem[] = [
     href: "/finance",
     label: "Finance",
     icon: Wallet,
-    children: [{ href: "/estimation", label: "Estimation", icon: Calculator }],
+    children: [
+      { href: "/estimation", label: "Estimation", icon: Calculator },
+      { href: "/audit-visuel", label: "Audit visuel", icon: ScanEye },
+    ],
   },
+  { href: "/analyse-site", label: "Analyseur IA", icon: Globe },
   { href: "/deals-projets", label: "Deals / Projets", icon: Briefcase },
   { href: "/objectifs", label: "Objectifs", icon: Target },
 ];

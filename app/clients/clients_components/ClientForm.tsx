@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FaTimes } from "react-icons/fa";
-import type { AbonnementOffre, Client } from "@/app/types";
+import { useState, useEffect, useMemo } from "react";
+import { FaSearch, FaTimes } from "react-icons/fa";
+import type { AbonnementOffre, Client, Prospect } from "@/app/types";
 import { ABONNEMENT_OPTIONS, normalizeAbonnement } from "@/lib/abonnement";
+import {
+  SECTEURS_ACTIVITE_OPTIONS,
+  SECTEUR_ACTIVITE_AUTRE,
+  SECTEUR_ACTIVITE_VIDE,
+  isSecteurActiviteInList,
+} from "@/lib/secteursActivite";
+import { useJsonBucket } from "@/hooks/useJsonBucket";
 import {
   overlayBackdropClass,
   overlayPanelClass,
@@ -24,7 +31,62 @@ interface ClientFormProps {
   onSave: (client: Client) => void;
 }
 
+function defaultNewClientForm() {
+  return {
+    entreprise: "",
+    patron: "",
+    telephone: "",
+    email: "",
+    statut: "Actif" as const,
+    abonnement: "Aucun" as AbonnementOffre,
+    secteurActivite: "",
+    derniereActivite: new Date().toLocaleDateString("fr-FR"),
+  };
+}
+
+function prospectToFormFields(p: Prospect) {
+  return {
+    entreprise: p.entreprise.trim(),
+    patron: p.contactNom?.trim() ?? "",
+    telephone: p.telephone?.trim() ?? "",
+    email: p.email?.trim() ?? "",
+    statut: "Actif" as const,
+    abonnement: "Aucun" as AbonnementOffre,
+    secteurActivite: "",
+    derniereActivite: new Date().toLocaleDateString("fr-FR"),
+  };
+}
+
 export default function ClientForm({ client, onClose, onSave }: ClientFormProps) {
+  const [prospects] = useJsonBucket<Prospect[]>("prospection", []);
+  const prospectsSorted = useMemo(
+    () => [...prospects].sort((a, b) => a.entreprise.localeCompare(b.entreprise, "fr")),
+    [prospects]
+  );
+
+  const [importFromProspection, setImportFromProspection] = useState(false);
+  const [importProspectId, setImportProspectId] = useState("");
+  const [prospectSearchQuery, setProspectSearchQuery] = useState("");
+
+  const filteredProspectsForImport = useMemo(() => {
+    const q = prospectSearchQuery.trim().toLowerCase();
+    let list = q
+      ? prospectsSorted.filter((p) => {
+          const blob = [p.entreprise, p.contactNom ?? "", p.email ?? "", p.telephone ?? ""]
+            .join(" ")
+            .toLowerCase();
+          return blob.includes(q);
+        })
+      : prospectsSorted;
+    if (importProspectId) {
+      const selected = prospects.find((x) => x.id === importProspectId);
+      if (selected && !list.some((x) => x.id === importProspectId)) {
+        list = [selected, ...list];
+      }
+    }
+    return list;
+  }, [prospectsSorted, prospectSearchQuery, importProspectId, prospects]);
+
   const [formData, setFormData] = useState<{
     entreprise: string;
     patron: string;
@@ -34,18 +96,12 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
     abonnement: AbonnementOffre;
     secteurActivite: string;
     derniereActivite: string;
-  }>({
-    entreprise: "",
-    patron: "",
-    telephone: "",
-    email: "",
-    statut: "Actif",
-    abonnement: "Aucun",
-    secteurActivite: "",
-    derniereActivite: new Date().toLocaleDateString("fr-FR"),
-  });
+  }>(() => defaultNewClientForm());
 
   useEffect(() => {
+    setImportFromProspection(false);
+    setImportProspectId("");
+    setProspectSearchQuery("");
     if (client) {
       setFormData({
         entreprise: client.entreprise,
@@ -58,18 +114,16 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
         derniereActivite: client.derniereActivite,
       });
     } else {
-      setFormData({
-        entreprise: "",
-        patron: "",
-        telephone: "",
-        email: "",
-        statut: "Actif",
-        abonnement: "Aucun",
-        secteurActivite: "",
-        derniereActivite: new Date().toLocaleDateString("fr-FR"),
-      });
+      setFormData(defaultNewClientForm());
     }
   }, [client]);
+
+  const secteurSelectValue = useMemo(() => {
+    const v = formData.secteurActivite.trim();
+    if (!v) return SECTEUR_ACTIVITE_VIDE;
+    if (isSecteurActiviteInList(v)) return v;
+    return SECTEUR_ACTIVITE_AUTRE;
+  }, [formData.secteurActivite]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +159,100 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className={overlayScrollBodyClass}>
+            {!client ? (
+              <div className="mb-5 rounded-xl border border-zinc-200/90 bg-zinc-50/50 p-4 dark:border-white/[0.08] dark:bg-white/[0.03]">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#ED8600] focus:ring-[#ED8600] disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-[#5b7fb8]"
+                    checked={importFromProspection}
+                    disabled={prospects.length === 0}
+                                       onChange={(e) => {
+                      const on = e.target.checked;
+                      setImportFromProspection(on);
+                      setImportProspectId("");
+                      setProspectSearchQuery("");
+                      if (!on) {
+                        setFormData(defaultNewClientForm());
+                      }
+                    }}
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                      Remplir depuis la prospection
+                    </span>
+                    <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                      Cochez la case puis choisissez une entreprise déjà suivie en prospection pour préremplir le
+                      formulaire (nom, contact, téléphone, e-mail).
+                    </span>
+                  </span>
+                </label>
+                {importFromProspection ? (
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <label className={formLabelClass} htmlFor="client-import-prospect-search">
+                        Rechercher un prospect
+                      </label>
+                      <div className="relative">
+                        <FaSearch
+                          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 dark:text-zinc-500"
+                          aria-hidden
+                        />
+                        <input
+                          id="client-import-prospect-search"
+                          type="search"
+                          autoComplete="off"
+                          placeholder="Entreprise, contact, e-mail, téléphone…"
+                          value={prospectSearchQuery}
+                          onChange={(e) => setProspectSearchQuery(e.target.value)}
+                          className={`${inputFieldClass} pl-10`}
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+                        {prospectSearchQuery.trim()
+                          ? `${filteredProspectsForImport.length} résultat${filteredProspectsForImport.length > 1 ? "s" : ""} sur ${prospects.length}`
+                          : `${prospects.length} prospect${prospects.length > 1 ? "s" : ""} — tapez pour filtrer`}
+                      </p>
+                    </div>
+                    <div>
+                      <label className={formLabelClass} htmlFor="client-import-prospect">
+                        Choisir dans la liste
+                      </label>
+                      <select
+                        id="client-import-prospect"
+                        value={importProspectId}
+                        onChange={(e) => {
+                          const id = e.target.value;
+                          setImportProspectId(id);
+                          if (!id) return;
+                          const p = prospects.find((x) => x.id === id);
+                          if (p) setFormData(prospectToFormFields(p));
+                        }}
+                        className={inputFieldClass}
+                        disabled={filteredProspectsForImport.length === 0 && prospectSearchQuery.trim() !== ""}
+                      >
+                        <option value="">
+                          {filteredProspectsForImport.length === 0 && prospectSearchQuery.trim() !== ""
+                            ? "— Aucun résultat —"
+                            : "— Choisir une entreprise —"}
+                        </option>
+                        {filteredProspectsForImport.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.entreprise}
+                            {p.contactNom ? ` · ${p.contactNom}` : ""}
+                            {p.urgent ? " (urgent)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                ) : null}
+                {prospects.length === 0 ? (
+                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">Aucun prospect enregistré en prospection.</p>
+                ) : null}
+              </div>
+            ) : null}
+
             <div>
               <label className={formLabelClass}>Nom de l&apos;entreprise</label>
               <input
@@ -192,14 +340,52 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
             </div>
 
             <div>
-              <label className={formLabelClass}>Secteur d&apos;activité</label>
-              <input
-                type="text"
-                value={formData.secteurActivite}
-                onChange={(e) => setFormData({ ...formData, secteurActivite: e.target.value })}
-                placeholder="Ex. Tech, Santé, BTP..."
+              <label className={formLabelClass} htmlFor="client-secteur-select">
+                Secteur d&apos;activité
+              </label>
+              <select
+                id="client-secteur-select"
+                value={secteurSelectValue}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === SECTEUR_ACTIVITE_VIDE) {
+                    setFormData({ ...formData, secteurActivite: "" });
+                  } else if (v === SECTEUR_ACTIVITE_AUTRE) {
+                    setFormData({
+                      ...formData,
+                      secteurActivite: isSecteurActiviteInList(formData.secteurActivite)
+                        ? ""
+                        : formData.secteurActivite,
+                    });
+                  } else {
+                    setFormData({ ...formData, secteurActivite: v });
+                  }
+                }}
                 className={inputFieldClass}
-              />
+              >
+                <option value={SECTEUR_ACTIVITE_VIDE}>— Non renseigné —</option>
+                {SECTEURS_ACTIVITE_OPTIONS.map((label) => (
+                  <option key={label} value={label}>
+                    {label}
+                  </option>
+                ))}
+                <option value={SECTEUR_ACTIVITE_AUTRE}>Autre (préciser ci-dessous)</option>
+              </select>
+              {secteurSelectValue === SECTEUR_ACTIVITE_AUTRE ? (
+                <div className="mt-2">
+                  <label className={formLabelClass} htmlFor="client-secteur-autre">
+                    Précisez le secteur
+                  </label>
+                  <input
+                    id="client-secteur-autre"
+                    type="text"
+                    value={formData.secteurActivite}
+                    onChange={(e) => setFormData({ ...formData, secteurActivite: e.target.value })}
+                    placeholder="Saisie libre si votre secteur n'est pas dans la liste"
+                    className={inputFieldClass}
+                  />
+                </div>
+              ) : null}
             </div>
 
             <div>

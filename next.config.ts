@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Désactiver le cache agressif pour éviter les données obsolètes
+  serverExternalPackages: ["playwright"],
   experimental: {
-    // Réduire le cache client (minimum 30s pour static)
     staleTimes: {
       dynamic: 0,
       static: 30,

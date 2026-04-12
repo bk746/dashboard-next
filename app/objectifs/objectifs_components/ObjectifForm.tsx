@@ -15,15 +15,7 @@ import {
   primaryButtonClass,
   secondaryButtonClass,
 } from "@/app/components/appCardStyles";
-
-interface Objectif {
-  id: string;
-  type: "Financier" | "Client";
-  libelle: string;
-  objectif: number;
-  dateDebut: string;
-  dateFin: string;
-}
+import type { Objectif, ObjectifPeriode } from "@/app/types";
 
 interface ObjectifFormProps {
   objectif?: Objectif | null;
@@ -38,6 +30,7 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
     objectif: 0,
     dateDebut: new Date().toLocaleDateString("fr-FR"),
     dateFin: "",
+    periode: "annee",
   });
 
   useEffect(() => {
@@ -48,6 +41,7 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
         objectif: objectif.objectif,
         dateDebut: objectif.dateDebut,
         dateFin: objectif.dateFin,
+        periode: objectif.periode ?? "annee",
       });
     }
   }, [objectif]);
@@ -106,6 +100,22 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
                 <option value="Financier">Financier</option>
                 <option value="Client">Client</option>
               </select>
+            </div>
+
+            <div>
+              <label className={formLabelClass}>Période de suivi</label>
+              <select
+                value={formData.periode ?? "annee"}
+                onChange={(e) => setFormData({ ...formData, periode: e.target.value as ObjectifPeriode })}
+                className={inputFieldClass}
+              >
+                <option value="annee">Année civile en cours</option>
+                <option value="mois">Mois en cours</option>
+                <option value="semaine">Semaine en cours (lun.–dim.)</option>
+              </select>
+              <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-500">
+                Le réalisé est calculé sur cette fenêtre (CA encaissé ou volume clients selon le type).
+              </p>
             </div>
 
             <div>

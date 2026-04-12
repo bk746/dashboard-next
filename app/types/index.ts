@@ -29,6 +29,8 @@ export interface Facture {
   date: string;
   prix: number;
   abonnement: AbonnementOffre;
+  /** Acompte déjà versé (facture non soldée). Reste à payer = prix − montantAcompte. */
+  montantAcompte?: number;
 }
 
 export interface PrestationDevis {
@@ -50,6 +52,9 @@ export interface Devis {
   abonnement: AbonnementOffre;
 }
 
+/** Période sur laquelle la cible et le « réalisé » sont comparés (défaut : année civile). */
+export type ObjectifPeriode = "annee" | "mois" | "semaine";
+
 export interface Objectif {
   id: string;
   type: "Financier" | "Client";
@@ -57,6 +62,8 @@ export interface Objectif {
   objectif: number;
   dateDebut: string;
   dateFin: string;
+  /** Absent = année (rétrocompatibilité). */
+  periode?: ObjectifPeriode;
 }
 
 export interface Projet {
@@ -121,6 +128,51 @@ export interface ProspectRdv {
   note?: string;
 }
 
+/** Modèle d’audit : pondération et suggestions adaptées au secteur. */
+export type AuditVisuelTemplate = "generique" | "btp" | "artisan" | "service_local";
+
+export interface AuditVisuelChecklist {
+  designDate: boolean;
+  ctaAbsent: boolean;
+  hierarchie: boolean;
+  reassurance: boolean;
+  responsive: boolean;
+  structure: boolean;
+  seoLocal: boolean;
+  performancePerdue: boolean;
+}
+
+export interface AuditVisuelGenerated {
+  noteSur100: number;
+  labelNote: string;
+  faiblessesPrincipales: string[];
+  syntheseCourte: string;
+  synthesePremium: string;
+  argumentsCommerciaux: string[];
+  prioritesRefonte: string[];
+}
+
+/** Audit visuel enregistré sur la fiche prospect (Finance → Audit visuel ou formulaire prospect). */
+export interface AuditVisuelDossier {
+  template: AuditVisuelTemplate;
+  checklist: AuditVisuelChecklist;
+  generated: AuditVisuelGenerated;
+  /** ISO */
+  updatedAt: string;
+}
+
+/** Historique des audits (bucket `audits-visuels`) — autonome ou lié à un prospect (`prospect-${id}`). */
+export interface AuditVisuelRecord {
+  id: string;
+  prospectId?: string;
+  /** Titre affiché (entreprise, nom du site, libellé libre). */
+  titre: string;
+  siteWeb?: string;
+  dossier: AuditVisuelDossier;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Prospect {
   id: string;
   entreprise: string;
@@ -147,6 +199,8 @@ export interface Prospect {
   relanceAppelSemaineFait: boolean;
   notes: ProspectNote[];
   rdv: ProspectRdv[];
+  /** Audit visuel rapide (checklist + textes générés), optionnel. */
+  auditVisuel?: AuditVisuelDossier;
   createdAt: string;
   updatedAt: string;
 }

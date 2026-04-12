@@ -1,14 +1,17 @@
 import { FaBullseye } from "react-icons/fa";
 import { appCardKpiColumn, kpiLabelClass, kpiValueClass, kpiIconClass } from "@/app/components/appCardStyles";
+import type { ObjectifPeriode } from "@/app/types";
+import { periodeLabelFr } from "@/app/lib/objectifsPeriod";
 
 interface ObjectifCardProps {
   type: "Financier" | "Client";
   objectif: number;
   actuel: number;
   libelle: string;
+  periode?: ObjectifPeriode;
 }
 
-export default function ObjectifCard({ type, objectif, actuel, libelle }: ObjectifCardProps) {
+export default function ObjectifCard({ type, objectif, actuel, libelle, periode = "annee" }: ObjectifCardProps) {
   const progression = objectif > 0 ? Math.min((actuel / objectif) * 100, 100) : 0;
   const isCompleted = progression >= 100;
 
@@ -16,7 +19,10 @@ export default function ObjectifCard({ type, objectif, actuel, libelle }: Object
     <div className={appCardKpiColumn}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex flex-col gap-3 md:gap-1.5 flex-1 min-w-0">
-          <p className={kpiLabelClass}>Objectif {type}</p>
+          <p className={kpiLabelClass}>
+            Objectif {type}{" "}
+            <span className="font-normal text-zinc-500 dark:text-zinc-500">· {periodeLabelFr(periode)}</span>
+          </p>
           <p className={kpiValueClass}>
             {objectif.toLocaleString("fr-FR")} {type === "Financier" ? "€" : ""}
           </p>

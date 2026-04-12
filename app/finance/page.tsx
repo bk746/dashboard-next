@@ -38,6 +38,8 @@ import {
   filterDepensesForDisplay,
   computeDepenseTotals,
   isFactureEnRetard,
+  getResteAPayerFacture,
+  getMontantEncaisseFacture,
 } from "./utils";
 
 type Tab = "devis" | "factures";
@@ -64,8 +66,8 @@ export default function Finance() {
     const next = clients.map((c) => ({
       ...c,
       caTotal: factures
-        .filter((f) => f.entreprise === c.entreprise && f.statut === "Payé")
-        .reduce((s, f) => s + f.prix, 0),
+        .filter((f) => f.entreprise === c.entreprise)
+        .reduce((s, f) => s + getMontantEncaisseFacture(f), 0),
     }));
     const same =
       next.length === clients.length &&
@@ -77,17 +79,17 @@ export default function Finance() {
   const facturesInPeriod = useMemo(() => filterFacturesByPeriod(factures, periodScope), [factures, periodScope]);
 
   const revenueEncaisse = useMemo(
-    () => facturesInPeriod.filter((f) => f.statut === "Payé").reduce((s, f) => s + f.prix, 0),
+    () => facturesInPeriod.reduce((s, f) => s + getMontantEncaisseFacture(f), 0),
     [facturesInPeriod]
   );
 
   const enAttente = useMemo(
-    () => facturesInPeriod.filter((f) => f.statut === "Non payé").reduce((s, f) => s + f.prix, 0),
+    () => facturesInPeriod.filter((f) => f.statut === "Non payé").reduce((s, f) => s + getResteAPayerFacture(f), 0),
     [facturesInPeriod]
   );
 
   const enRetard = useMemo(
-    () => factures.filter((f) => isFactureEnRetard(f)).reduce((s, f) => s + f.prix, 0),
+    () => factures.filter((f) => isFactureEnRetard(f)).reduce((s, f) => s + getResteAPayerFacture(f), 0),
     [factures]
   );
 
@@ -104,7 +106,9 @@ export default function Finance() {
   const periodLabelLong = periodScope === "month" ? "Mois en cours" : "Tout historique";
 
   const hintRevenue =
-    periodScope === "month" ? "Factures payées — émises ce mois" : "Factures payées — toutes périodes";
+    periodScope === "month"
+      ? "Montants encaissés ce mois (factures payées + acomptes sur impayées, date de facture)"
+      : "Montants encaissés (payé intégral + acomptes, date de facture)";
 
   const hintAttente =
     periodScope === "month" ? "Factures impayées — émises ce mois" : "Factures impayées — toutes périodes";

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useCompany } from "@/app/hooks/useCompany";
 import type { CompanySettings } from "@/app/config/company";
 import ChangePinPanel from "@/app/parametres/ChangePinPanel";
+import DashboardLayoutPanel from "@/app/parametres/DashboardLayoutPanel";
 import {
   pageShellClass,
   pageEyebrowClass,
@@ -21,7 +22,7 @@ import {
   segmentedTabInactiveClass,
 } from "@/app/components/appCardStyles";
 
-type Tab = "entreprise" | "code";
+type Tab = "entreprise" | "dashboard" | "code";
 
 export default function Parametres() {
   const [tab, setTab] = useState<Tab>("entreprise");
@@ -74,6 +75,15 @@ export default function Parametres() {
               <button
                 type="button"
                 role="tab"
+                aria-selected={tab === "dashboard"}
+                onClick={() => setTab("dashboard")}
+                className={tab === "dashboard" ? segmentedTabActiveClass : segmentedTabInactiveClass}
+              >
+                Dashboard
+              </button>
+              <button
+                type="button"
+                role="tab"
                 aria-selected={tab === "code"}
                 onClick={() => setTab("code")}
                 className={tab === "code" ? segmentedTabActiveClass : segmentedTabInactiveClass}
@@ -87,6 +97,10 @@ export default function Parametres() {
         {tab === "code" ? (
           <div className="space-y-6 px-4 sm:px-6 md:px-0">
             <ChangePinPanel />
+          </div>
+        ) : tab === "dashboard" ? (
+          <div className="space-y-6 px-4 sm:px-6 md:px-0">
+            <DashboardLayoutPanel />
           </div>
         ) : (
         <form onSubmit={handleSubmit} className="space-y-6 px-4 sm:px-6 md:px-0">

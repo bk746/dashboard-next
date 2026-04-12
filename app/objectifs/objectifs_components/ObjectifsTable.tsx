@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { FaSearch, FaChevronDown, FaEllipsisV } from "react-icons/fa";
 import { Target } from "lucide-react";
 import type { Objectif } from "@/app/types";
+import { normalizeObjectifPeriode, periodeLabelFr } from "@/app/lib/objectifsPeriod";
 import { inputFieldClass, panelSurfaceClass, sectionIntroTitleClass, sectionIntroDescClass } from "@/app/components/appCardStyles";
 
 interface ObjectifsTableProps {
@@ -15,15 +16,22 @@ interface ObjectifsTableProps {
 export default function ObjectifsTable({ objectifs, onDelete, onEdit }: ObjectifsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("Tous les types");
+  const [periodeFilter, setPeriodeFilter] = useState<string>("Toutes les périodes");
 
   const filteredObjectifs = useMemo(
     () =>
       objectifs.filter((objectif) => {
         const matchesSearch = objectif.libelle.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = typeFilter === "Tous les types" || objectif.type === typeFilter;
-        return matchesSearch && matchesType;
+        const p = normalizeObjectifPeriode(objectif.periode);
+        const matchesPeriode =
+          periodeFilter === "Toutes les périodes" ||
+          (periodeFilter === "Année" && p === "annee") ||
+          (periodeFilter === "Mois" && p === "mois") ||
+          (periodeFilter === "Semaine" && p === "semaine");
+        return matchesSearch && matchesType && matchesPeriode;
       }),
-    [objectifs, searchTerm, typeFilter]
+    [objectifs, searchTerm, typeFilter, periodeFilter]
   );
 
   const isFilteredEmpty = objectifs.length > 0 && filteredObjectifs.length === 0;
@@ -47,7 +55,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
         <p className={sectionIntroDescClass}>
           {objectifs.length === 0
             ? "Aucune ligne à afficher."
-            : `${objectifs.length} objectif${objectifs.length > 1 ? "s" : ""} — recherchez par libellé, filtrez par type (CA ou nombre de clients).`}
+            : `${objectifs.length} objectif${objectifs.length > 1 ? "s" : ""} — recherche, filtre par type et par période de suivi.`}
         </p>
       </div>
 
@@ -74,22 +82,43 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
                 />
               </div>
             </div>
-            <div className="w-full shrink-0 lg:w-52">
-              <label htmlFor="objectifs-filter-type" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Type
-              </label>
-              <div className="relative">
-                <select
-                  id="objectifs-filter-type"
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className={`${inputFieldClass} w-full appearance-none cursor-pointer px-4 py-2.5 pr-9 text-sm rounded-xl`}
-                >
-                  <option value="Tous les types">Tous les types</option>
-                  <option value="Financier">Financier</option>
-                  <option value="Client">Client</option>
-                </select>
-                <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500" />
+            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:w-auto lg:shrink-0 lg:grid-cols-2 lg:gap-4">
+              <div className="w-full sm:min-w-[11rem]">
+                <label htmlFor="objectifs-filter-type" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Type
+                </label>
+                <div className="relative">
+                  <select
+                    id="objectifs-filter-type"
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className={`${inputFieldClass} w-full appearance-none cursor-pointer px-4 py-2.5 pr-9 text-sm rounded-xl`}
+                  >
+                    <option value="Tous les types">Tous les types</option>
+                    <option value="Financier">Financier</option>
+                    <option value="Client">Client</option>
+                  </select>
+                  <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500" />
+                </div>
+              </div>
+              <div className="w-full sm:min-w-[11rem]">
+                <label htmlFor="objectifs-filter-periode" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Période
+                </label>
+                <div className="relative">
+                  <select
+                    id="objectifs-filter-periode"
+                    value={periodeFilter}
+                    onChange={(e) => setPeriodeFilter(e.target.value)}
+                    className={`${inputFieldClass} w-full appearance-none cursor-pointer px-4 py-2.5 pr-9 text-sm rounded-xl`}
+                  >
+                    <option value="Toutes les périodes">Toutes les périodes</option>
+                    <option value="Année">Année</option>
+                    <option value="Mois">Mois</option>
+                    <option value="Semaine">Semaine</option>
+                  </select>
+                  <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500" />
+                </div>
               </div>
             </div>
           </div>
@@ -118,6 +147,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
                 onClick={() => {
                   setSearchTerm("");
                   setTypeFilter("Tous les types");
+                  setPeriodeFilter("Toutes les périodes");
                 }}
                 className="mt-5 text-sm font-medium text-[#ED8600] underline-offset-4 hover:underline dark:text-[#8fa9c9]"
               >
@@ -133,6 +163,9 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
                   </th>
                   <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                     Type
+                  </th>
+                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    Période
                   </th>
                   <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                     Cible
@@ -161,6 +194,9 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
                       <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getTypeBadgeColor(objectif.type)}`}>
                         {objectif.type}
                       </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">{periodeLabelFr(normalizeObjectifPeriode(objectif.periode))}</span>
                     </td>
                     <td className="p-4">
                       <span className="text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-200">

@@ -3,6 +3,7 @@
 import { FaTimes, FaPrint, FaEnvelope } from "react-icons/fa";
 import { useCompany } from "@/app/hooks/useCompany";
 import type { Client, Facture } from "@/app/types";
+import { getMontantAcompteFacture, getResteAPayerFacture } from "@/app/finance/utils";
 import { formatCompanyAddressLine, type CompanySettings } from "@/app/config/company";
 import { overlayBackdropClass, overlayDocumentViewerClass, overlayCloseButtonClass } from "@/app/components/appCardStyles";
 
@@ -14,16 +15,20 @@ interface FactureDocumentProps {
 
 function buildFactureMailto(facture: Facture, client: Client | null | undefined, company: CompanySettings): string {
   const subject = `Facture ${facture.numeroFacture} – ${facture.entreprise}`;
-  const body = [
+  const ac = getMontantAcompteFacture(facture);
+  const reste = getResteAPayerFacture(facture);
+  const bodyLines = [
     "Bonjour,",
     "",
     `Veuillez trouver notre facture n° ${facture.numeroFacture} en date du ${facture.date}.`,
     `Montant total TTC : ${facture.prix.toLocaleString("fr-FR")} €`,
-    `Statut : ${facture.statut}`,
-    "",
-    "Cordialement,",
-    company.denomination,
-  ].join("\n");
+  ];
+  if (ac > 0) {
+    bodyLines.push(`Acompte déjà versé : ${ac.toLocaleString("fr-FR")} €`);
+    bodyLines.push(`Reste à payer : ${reste.toLocaleString("fr-FR")} €`);
+  }
+  bodyLines.push(`Statut : ${facture.statut}`, "", "Cordialement,", company.denomination);
+  const body = bodyLines.join("\n");
   const dest = client?.email?.trim();
   const base = dest ? `mailto:${encodeURIComponent(dest)}` : "mailto:";
   return `${base}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -32,6 +37,8 @@ function buildFactureMailto(facture: Facture, client: Client | null | undefined,
 export default function FactureDocument({ facture, client, onClose }: FactureDocumentProps) {
   const [company] = useCompany();
   const mailtoHref = buildFactureMailto(facture, client, company);
+  const montantAcompte = getMontantAcompteFacture(facture);
+  const resteAPayer = getResteAPayerFacture(facture);
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
@@ -106,6 +113,20 @@ export default function FactureDocument({ facture, client, onClose }: FactureDoc
                 </tbody>
               </table>
             </div>
+            {montantAcompte > 0 ? (
+              <div className="mb-4 space-y-1 text-right text-sm text-neutral-700">
+                <p>
+                  <span className="text-neutral-600">Acompte versé :</span>{" "}
+                  <span className="font-medium tabular-nums">− {montantAcompte.toLocaleString("fr-FR")} €</span>
+                </p>
+                <p>
+                  <span className="text-neutral-600">Reste à payer :</span>{" "}
+                  <span className="font-semibold tabular-nums text-neutral-900">
+                    {resteAPayer.toLocaleString("fr-FR")} €
+                  </span>
+                </p>
+              </div>
+            ) : null}
             <div className="flex justify-end mb-6">
               <div className="text-right">
                 <span className="text-neutral-600 mr-4">Total TTC :</span>

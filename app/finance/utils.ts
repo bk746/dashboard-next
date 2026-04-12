@@ -40,6 +40,25 @@ export function isDateInCalendarYear(dateStr: string, year: number): boolean {
   return d.getFullYear() === year;
 }
 
+/** Acompte pris en compte (plafonné au montant de la facture, ignoré si facture payée). */
+export function getMontantAcompteFacture(f: Facture): number {
+  if (f.statut === "Payé") return 0;
+  const raw = f.montantAcompte ?? 0;
+  return Math.max(0, Math.min(f.prix, Math.round(raw)));
+}
+
+/** Montant encore dû sur une facture non payée (0 si payée). */
+export function getResteAPayerFacture(f: Facture): number {
+  if (f.statut === "Payé") return 0;
+  return Math.max(0, f.prix - getMontantAcompteFacture(f));
+}
+
+/** Encaissement réel : total si facture payée, sinon uniquement l’acompte (0 si aucun). */
+export function getMontantEncaisseFacture(f: Facture): number {
+  if (f.statut === "Payé") return f.prix;
+  return getMontantAcompteFacture(f);
+}
+
 /** Facture impayée dont la date est strictement avant aujourd'hui (échéance = date de facture). */
 export function isFactureEnRetard(f: Facture): boolean {
   if (f.statut !== "Non payé") return false;

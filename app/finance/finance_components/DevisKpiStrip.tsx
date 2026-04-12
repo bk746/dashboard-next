@@ -4,24 +4,19 @@ import type { Devis } from "@/app/types";
 
 interface DevisKpiStripProps {
   devis: Devis[];
+  /** Sans titre de section (ex. intégration dashboard). */
+  embedded?: boolean;
 }
 
-export default function DevisKpiStrip({ devis }: DevisKpiStripProps) {
+export default function DevisKpiStrip({ devis, embedded }: DevisKpiStripProps) {
   const acceptes = devis.filter((d) => d.statut === "Accepté");
   const montantAcceptes = acceptes.reduce((s, d) => s + d.prix, 0);
   const pipeline = devis.filter((d) => d.statut === "Brouillon" || d.statut === "Envoyé");
   const montantPipeline = pipeline.reduce((s, d) => s + d.prix, 0);
   const nbRefuses = devis.filter((d) => d.statut === "Refusé").length;
 
-  return (
-    <section className="mb-6 px-4 sm:px-6 md:mb-8 md:px-0" aria-label="Indicateurs devis">
-      <div className="mb-4">
-        <h2 className={sectionIntroTitleClass}>Vue d&apos;ensemble devis</h2>
-        <p className={sectionIntroDescClass}>
-          Montants signés, pipeline (brouillon + envoyé) et refus — sur l&apos;ensemble du portefeuille.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+  const grid = (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
         <div className={`${appCardBase} p-5 flex gap-4`}>
           <div className="rounded-xl bg-emerald-500/10 p-3 dark:bg-emerald-500/15">
             <FileCheck className="h-6 w-6 text-emerald-700 dark:text-emerald-400" strokeWidth={1.5} aria-hidden />
@@ -57,6 +52,25 @@ export default function DevisKpiStrip({ devis }: DevisKpiStripProps) {
           </div>
         </div>
       </div>
+  );
+
+  if (embedded) {
+    return (
+      <div className="w-full" aria-label="Indicateurs devis">
+        {grid}
+      </div>
+    );
+  }
+
+  return (
+    <section className="mb-6 px-4 sm:px-6 md:mb-8 md:px-0" aria-label="Indicateurs devis">
+      <div className="mb-4">
+        <h2 className={sectionIntroTitleClass}>Vue d&apos;ensemble devis</h2>
+        <p className={sectionIntroDescClass}>
+          Montants signés, pipeline (brouillon + envoyé) et refus — sur l&apos;ensemble du portefeuille.
+        </p>
+      </div>
+      {grid}
     </section>
   );
 }

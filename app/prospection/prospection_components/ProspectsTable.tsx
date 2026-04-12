@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { FaSearch, FaSlidersH } from "react-icons/fa";
-import { Building2, Calendar, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Building2, Calendar, Pencil, ScanEye, Trash2 } from "lucide-react";
+import { prospectAuditRecordId } from "@/app/audit-visuel/audit_visuel_utils";
 import type { Prospect, ProspectEtapeContact, ProspectReponseClient } from "@/app/types";
 import {
   auditPasEncoreEnvoye,
@@ -306,6 +308,17 @@ export default function ProspectsTable({
                                     title="Urgent — site critique"
                                     aria-label="Urgent — site critique"
                                   />
+                                ) : null}
+                                {p.auditVisuel ? (
+                                  <Link
+                                    href={`/audit-visuel/${prospectAuditRecordId(p.id)}`}
+                                    className="inline-flex items-center gap-1 rounded-full border border-violet-200/90 bg-violet-50 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-violet-900 transition hover:bg-violet-100/90 dark:border-violet-500/25 dark:bg-violet-950/40 dark:text-violet-200 dark:hover:bg-violet-900/50"
+                                    title="Ouvrir l’audit visuel (plein écran)"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <ScanEye className="h-3 w-3 shrink-0 opacity-80" aria-hidden />
+                                    {p.auditVisuel.generated.noteSur100}/100
+                                  </Link>
                                 ) : null}
                               </h3>
                               {(p.contactNom || p.email) && (

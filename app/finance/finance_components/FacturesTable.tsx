@@ -5,6 +5,7 @@ import { FaSearch, FaChevronDown, FaEllipsisV, FaEye } from "react-icons/fa";
 import { Receipt } from "lucide-react";
 import type { Facture } from "@/app/types";
 import { normalizeAbonnement } from "@/lib/abonnement";
+import { getMontantAcompteFacture, getResteAPayerFacture } from "@/app/finance/utils";
 import { inputFieldClass, panelSurfaceClass, sectionIntroTitleClass, sectionIntroDescClass } from "@/app/components/appCardStyles";
 
 interface FacturesTableProps {
@@ -207,6 +208,12 @@ export default function FacturesTable({ factures, totalInDatabase, onDelete, onE
                       <span className="text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
                         {facture.prix.toLocaleString("fr-FR")} €
                       </span>
+                      {facture.statut === "Non payé" && getMontantAcompteFacture(facture) > 0 ? (
+                        <span className="mt-0.5 block text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+                          Reste {getResteAPayerFacture(facture).toLocaleString("fr-FR")} € (acompte{" "}
+                          {getMontantAcompteFacture(facture).toLocaleString("fr-FR")} €)
+                        </span>
+                      ) : null}
                     </td>
                     <td className="p-4 align-middle">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getAbonnementBadgeColor(facture.abonnement)}`}>

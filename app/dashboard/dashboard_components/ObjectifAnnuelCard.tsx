@@ -9,18 +9,22 @@ import {
 } from "@/app/components/appCardStyles";
 
 interface ObjectifAnnuelCardProps {
-  caAnneeCours: number;
+  /** Montant encaissé sur la période de l’objectif (année, mois ou semaine). */
+  montantActuel: number;
   objectif: number;
   progression: number;
   /** Libellé de l’objectif financier suivi */
   objectifLibelle?: string;
+  /** Sous-titre sous le montant (période de comparaison). */
+  encaisseDescription?: string;
 }
 
 export default function ObjectifAnnuelCard({
-  caAnneeCours,
+  montantActuel,
   objectif,
   progression,
   objectifLibelle,
+  encaisseDescription = "CA encaissé sur l'année civile en cours",
 }: ObjectifAnnuelCardProps) {
   const percentage = Math.min(progression, 100);
   const isCompleted = progression >= 100;
@@ -32,7 +36,7 @@ export default function ObjectifAnnuelCard({
         <div className="flex flex-col gap-3 md:gap-1.5 flex-1 min-w-0">
           <p className={kpiLabelClass}>Objectif financier</p>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            Aucun objectif de type « Financier » n&apos;est défini. Créez-en un pour suivre votre progression annuelle.
+            Aucun objectif de type « Financier » n&apos;est défini. Créez-en un pour suivre votre progression (année, mois ou semaine).
           </p>
           <Link href="/objectifs" className={`${primaryButtonClass} mt-2 w-full text-center sm:w-auto`}>
             Définir un objectif
@@ -54,8 +58,8 @@ export default function ObjectifAnnuelCard({
             {objectifLibelle}
           </p>
         ) : null}
-        <p className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm">CA encaissé sur l&apos;année civile en cours</p>
-        <p className={kpiValueClass}>{caAnneeCours.toLocaleString("fr-FR")} €</p>
+        <p className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm">{encaisseDescription}</p>
+        <p className={kpiValueClass}>{montantActuel.toLocaleString("fr-FR")} €</p>
         <p className="text-zinc-400 dark:text-zinc-500 text-xs md:text-sm mt-1 md:mt-2">
           sur {objectif.toLocaleString("fr-FR")} €
         </p>
