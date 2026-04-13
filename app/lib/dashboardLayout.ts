@@ -172,7 +172,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   cardProchaineEcheance: "[Deals] Prochaine échéance",
   devisKpiStrip: "[Finance] Vue d’ensemble devis (acceptés / pipeline / refus)",
   cardRdvProspection: "[Prospection] Rendez-vous à venir",
-  cardAuditProspection: "[Prospection] Audits à envoyer",
+  cardAuditProspection: "[Prospection] Audit et mail à envoyer",
   cardRelanceMailProspection: "[Prospection] Relances mail à faire",
   cardRelanceAppelProspection: "[Prospection] Relances appel à faire",
   cardProgressionObjectifs: "[Objectifs] Progression globale",

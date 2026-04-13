@@ -11,12 +11,12 @@ const copy: Record<
   { title: string; titleClass: string; body: ReactNode; Icon: typeof FileText }
 > = {
   audit: {
-    title: "Audits à envoyer",
+    title: "Audit et mail à envoyer",
     titleClass: kpiLabelClass,
     body: (
       <>
-        Prospects <strong className="font-medium text-zinc-700 dark:text-zinc-300">sans date d&apos;envoi d&apos;audit</strong>, hors dossiers
-        validés ou refusés côté réponse.
+        Prospects <strong className="font-medium text-zinc-700 dark:text-zinc-300">sans date d&apos;envoi d&apos;audit</strong> — à traiter : envoi
+        de l&apos;audit et du mail, hors dossiers validés ou refusés côté réponse.
       </>
     ),
     Icon: FileText,
