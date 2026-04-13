@@ -1,15 +1,27 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { FileText, Mail, Phone } from "lucide-react";
+import { FileText, Mail, Phone, Users, type LucideIcon } from "lucide-react";
 import { appCardKpi, kpiLabelClass, kpiValueClass, kpiIconClass, kpiLabelDangerClass } from "@/app/components/appCardStyles";
 
-export type ProspectionRelanceMiniKind = "audit" | "mail" | "appel";
+export type ProspectionRelanceMiniKind = "encours" | "audit" | "mail" | "appel";
 
 const copy: Record<
   ProspectionRelanceMiniKind,
-  { title: string; titleClass: string; body: ReactNode; Icon: typeof FileText }
+  { title: string; titleClass: string; body: ReactNode; Icon: LucideIcon }
 > = {
+  encours: {
+    title: "Prospects en cours",
+    titleClass: kpiLabelClass,
+    body: (
+      <>
+        Dossiers avec réponse <strong className="font-medium text-zinc-700 dark:text-zinc-300">en attente</strong> — ils
+        disparaissent du compteur dès que vous passez la fiche en <strong className="font-medium text-zinc-700 dark:text-zinc-300">Validé</strong> ou{" "}
+        <strong className="font-medium text-zinc-700 dark:text-zinc-300">Refusé</strong>.
+      </>
+    ),
+    Icon: Users,
+  },
   audit: {
     title: "Audit et mail à envoyer",
     titleClass: kpiLabelClass,

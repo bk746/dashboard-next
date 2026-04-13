@@ -20,6 +20,7 @@ export type DashboardWidgetId =
   | "cardProchaineEcheance"
   | "devisKpiStrip"
   | "cardRdvProspection"
+  | "cardProspectsEnCours"
   | "cardAuditProspection"
   | "cardRelanceMailProspection"
   | "cardRelanceAppelProspection"
@@ -56,6 +57,7 @@ export const KPI_GRID_WIDGET_IDS: DashboardWidgetId[] = [
   "cardValeurPipeline",
   "cardProjetsEnCours",
   "cardProchaineEcheance",
+  "cardProspectsEnCours",
   "cardAuditProspection",
   "cardRelanceMailProspection",
   "cardRelanceAppelProspection",
@@ -85,6 +87,7 @@ export const ALL_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
   "cardProchaineEcheance",
   "devisKpiStrip",
   "cardRdvProspection",
+  "cardProspectsEnCours",
   "cardAuditProspection",
   "cardRelanceMailProspection",
   "cardRelanceAppelProspection",
@@ -172,6 +175,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   cardProchaineEcheance: "[Deals] Prochaine échéance",
   devisKpiStrip: "[Finance] Vue d’ensemble devis (acceptés / pipeline / refus)",
   cardRdvProspection: "[Prospection] Rendez-vous à venir",
+  cardProspectsEnCours: "[Prospection] Prospects en cours",
   cardAuditProspection: "[Prospection] Audit et mail à envoyer",
   cardRelanceMailProspection: "[Prospection] Relances mail à faire",
   cardRelanceAppelProspection: "[Prospection] Relances appel à faire",

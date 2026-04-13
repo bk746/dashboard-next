@@ -33,6 +33,11 @@ export function estReponseClosee(p: Prospect): boolean {
   return p.reponseClient === "valide" || p.reponseClient === "refuse";
 }
 
+/** Prospect encore actif dans le pipe (réponse « en attente » — hors validé / refusé). */
+export function prospectEnCours(p: Prospect): boolean {
+  return !estReponseClosee(p);
+}
+
 /**
  * Normalise les anciennes fiches (champ `statut`) vers `etapeContact` + `reponseClient`.
  * Par défaut la réponse est « en attente » si non renseignée.

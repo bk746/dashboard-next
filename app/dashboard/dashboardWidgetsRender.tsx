@@ -46,6 +46,7 @@ export type DashboardWidgetRenderContext = {
   valeurPipeline: number;
   projetsEnCours: number;
   prochaineEcheanceStr: string | null;
+  prospectsEnCours: number;
   auditsAEnvoyer: number;
   relancesMailAFaire: number;
   relancesAppelAFaire: number;
@@ -99,6 +100,8 @@ export function renderKpiGridWidget(id: DashboardWidgetId, ctx: DashboardWidgetR
       return <ProjetsActifsCard projetsEnCours={ctx.projetsEnCours} />;
     case "cardProchaineEcheance":
       return <ProchaineEcheanceCard prochaineEcheance={ctx.prochaineEcheanceStr} />;
+    case "cardProspectsEnCours":
+      return <ProspectionRelanceMiniCard kind="encours" value={ctx.prospectsEnCours} />;
     case "cardAuditProspection":
       return <ProspectionRelanceMiniCard kind="audit" value={ctx.auditsAEnvoyer} />;
     case "cardRelanceMailProspection":

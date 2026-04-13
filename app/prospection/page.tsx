@@ -19,6 +19,7 @@ import {
   besoinRelanceMailJ3,
   listeRendezVousAVenir,
   migrateProspect,
+  prospectEnCours,
 } from "@/app/prospection/prospection_utils";
 import ProspectForm from "./prospection_components/ProspectForm";
 import ProspectsTable from "./prospection_components/ProspectsTable";
@@ -57,8 +58,9 @@ export default function ProspectionPage() {
 
   const prospectsM = useMemo(() => prospects.map(migrateProspect), [prospects]);
 
-  const { auditsAEnvoyer, relancesMailAFaire, relancesAppelAFaire } = useMemo(() => {
+  const { prospectsEnCours, auditsAEnvoyer, relancesMailAFaire, relancesAppelAFaire } = useMemo(() => {
     return {
+      prospectsEnCours: prospectsM.filter((p) => prospectEnCours(p)).length,
       auditsAEnvoyer: prospectsM.filter((p) => auditPasEncoreEnvoye(p)).length,
       relancesMailAFaire: prospectsM.filter((p) => besoinRelanceMailJ3(p)).length,
       relancesAppelAFaire: prospectsM.filter((p) => besoinRelanceAppelSemaine(p)).length,
@@ -116,6 +118,7 @@ export default function ProspectionPage() {
             </p>
           </div>
           <RelancesKpiCards
+            prospectsEnCours={prospectsEnCours}
             auditsAEnvoyer={auditsAEnvoyer}
             relancesMailAFaire={relancesMailAFaire}
             relancesAppelAFaire={relancesAppelAFaire}

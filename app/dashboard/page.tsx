@@ -31,6 +31,7 @@ import {
   besoinRelanceMailJ3,
   listeRendezVousAVenir,
   migrateProspect,
+  prospectEnCours,
 } from "@/app/prospection/prospection_utils";
 import DevisKpiStrip from "@/app/finance/finance_components/DevisKpiStrip";
 import RendezVousAVenirCard from "@/app/prospection/prospection_components/RendezVousAVenirCard";
@@ -203,8 +204,9 @@ export default function Dashboard() {
 
   const prospectsM = useMemo(() => prospects.map(migrateProspect), [prospects]);
 
-  const { auditsAEnvoyer, relancesMailAFaire, relancesAppelAFaire, rendezVousAVenir } = useMemo(() => {
+  const { prospectsEnCours, auditsAEnvoyer, relancesMailAFaire, relancesAppelAFaire, rendezVousAVenir } = useMemo(() => {
     return {
+      prospectsEnCours: prospectsM.filter((p) => prospectEnCours(p)).length,
       auditsAEnvoyer: prospectsM.filter((p) => auditPasEncoreEnvoye(p)).length,
       relancesMailAFaire: prospectsM.filter((p) => besoinRelanceMailJ3(p)).length,
       relancesAppelAFaire: prospectsM.filter((p) => besoinRelanceAppelSemaine(p)).length,
@@ -295,6 +297,7 @@ export default function Dashboard() {
       valeurPipeline,
       projetsEnCours,
       prochaineEcheanceStr,
+      prospectsEnCours,
       auditsAEnvoyer,
       relancesMailAFaire,
       relancesAppelAFaire,
@@ -323,6 +326,7 @@ export default function Dashboard() {
       valeurPipeline,
       projetsEnCours,
       prochaineEcheanceStr,
+      prospectsEnCours,
       auditsAEnvoyer,
       relancesMailAFaire,
       relancesAppelAFaire,
