@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, Fragment } from "react";
+import { useMemo, Fragment, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Facture, Client, Objectif, Devis, Depense, Projet, Prospect } from "@/app/types";
@@ -87,9 +87,21 @@ export default function Dashboard() {
   const [depenses] = useJsonBucket<Depense[]>("depenses", []);
   const [projets] = useJsonBucket<Projet[]>("projets", []);
   const [prospects] = useJsonBucket<Prospect[]>("prospection", []);
-  const [layoutRaw] = useJsonBucket<DashboardLayoutPrefs>("dashboardLayout", defaultDashboardLayoutPrefs());
+  const [layoutRaw, setLayoutRaw] = useJsonBucket<DashboardLayoutPrefs>(
+    "dashboardLayout",
+    defaultDashboardLayoutPrefs()
+  );
 
   const prefs = useMemo(() => normalizeDashboardLayoutPrefs(layoutRaw), [layoutRaw]);
+
+  useEffect(() => {
+    const normalized = normalizeDashboardLayoutPrefs(layoutRaw);
+    const rawVersion = layoutRaw.layoutVersion ?? 1;
+    const nextVersion = normalized.layoutVersion ?? 1;
+    if (rawVersion < nextVersion) {
+      setLayoutRaw(normalized);
+    }
+  }, [layoutRaw, setLayoutRaw]);
   const visibleOrder = useMemo(
     () => prefs.order.filter((id) => !prefs.hidden.includes(id)),
     [prefs]

@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
 import {
   ALL_DASHBOARD_WIDGET_IDS,
+  DASHBOARD_LAYOUT_VERSION,
   DASHBOARD_WIDGET_LABELS,
   defaultDashboardLayoutPrefs,
   normalizeDashboardLayoutPrefs,
@@ -26,19 +27,46 @@ function moveId(list: DashboardWidgetId[], id: DashboardWidgetId, delta: -1 | 1)
   return next;
 }
 
+function buildHiddenList(hiddenSet: Set<DashboardWidgetId>): DashboardWidgetId[] {
+  return ALL_DASHBOARD_WIDGET_IDS.filter((w) => hiddenSet.has(w));
+}
+
 export default function DashboardLayoutPanel() {
   const [raw, setRaw] = useJsonBucket<DashboardLayoutPrefs>("dashboardLayout", defaultDashboardLayoutPrefs());
   const prefs = useMemo(() => normalizeDashboardLayoutPrefs(raw), [raw]);
 
+  useEffect(() => {
+    const normalized = normalizeDashboardLayoutPrefs(raw);
+    const rawVersion = raw.layoutVersion ?? 1;
+    const nextVersion = normalized.layoutVersion ?? 1;
+    if (rawVersion < nextVersion) {
+      setRaw(normalized);
+    }
+  }, [raw, setRaw]);
+
   const setHidden = (id: DashboardWidgetId, hidden: boolean) => {
-    const set = new Set(prefs.hidden);
-    if (hidden) set.add(id);
-    else set.delete(id);
-    setRaw({ ...prefs, hidden: ALL_DASHBOARD_WIDGET_IDS.filter((w) => set.has(w)) });
+    setRaw((prev) => {
+      const base = normalizeDashboardLayoutPrefs(prev);
+      const set = new Set(base.hidden);
+      if (hidden) set.add(id);
+      else set.delete(id);
+      return {
+        order: base.order,
+        hidden: buildHiddenList(set),
+        layoutVersion: DASHBOARD_LAYOUT_VERSION,
+      };
+    });
   };
 
   const move = (id: DashboardWidgetId, delta: -1 | 1) => {
-    setRaw({ ...prefs, order: moveId(prefs.order, id, delta) });
+    setRaw((prev) => {
+      const base = normalizeDashboardLayoutPrefs(prev);
+      return {
+        order: moveId(base.order, id, delta),
+        hidden: base.hidden,
+        layoutVersion: DASHBOARD_LAYOUT_VERSION,
+      };
+    });
   };
 
   const reset = () => setRaw(defaultDashboardLayoutPrefs());
@@ -67,7 +95,7 @@ export default function DashboardLayoutPanel() {
               <label className="flex cursor-pointer items-start gap-3 sm:min-w-0 sm:flex-1">
                 <input
                   type="checkbox"
-                  className="mt-1 h-4 w-4 rounded border-zinc-300 text-[#6C5DD3] focus:ring-[#6C5DD3]/30"
+                  className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-zinc-300 text-[#6C5DD3] focus:ring-[#6C5DD3]/30"
                   checked={!hidden}
                   onChange={(e) => setHidden(id, !e.target.checked)}
                 />
@@ -102,7 +130,7 @@ export default function DashboardLayoutPanel() {
         })}
       </ul>
 
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap gap-3">
         <button type="button" onClick={reset} className={parametresPrimaryBtn}>
           Réinitialiser l&apos;ordre et l&apos;affichage
         </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import {
   Bell,
   Building2,
@@ -25,6 +25,7 @@ import {
   ETAPES_CONTACT,
   prospectSiteHref,
 } from "@/app/prospection/prospection_utils";
+import { prospectMatchesSearch } from "@/app/prospection/prospectionSearch";
 const floatingCard =
   "overflow-hidden rounded-3xl border-0 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
 
@@ -62,39 +63,39 @@ export default function ProspectsTable({
   onReponseChange,
 }: ProspectsTableProps) {
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const [filtrePriorite, setFiltrePriorite] = useState<FiltreProspection>("tous");
   const [filtreReponse, setFiltreReponse] = useState<FiltreReponseProspection>("tous");
   const [filtreEtape, setFiltreEtape] = useState<FiltreEtapeProspection>("tous");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  const searchActive = deferredSearch.trim().length > 0;
+  const searchPending = search !== deferredSearch;
+
   const filtered = useMemo(() => {
     let list = [...prospects];
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.entreprise.toLowerCase().includes(q) ||
-          (p.contactNom ?? "").toLowerCase().includes(q) ||
-          (p.email ?? "").toLowerCase().includes(q) ||
-          (p.siteWeb ?? "").toLowerCase().includes(q)
-      );
+
+    if (searchActive) {
+      list = list.filter((p) => prospectMatchesSearch(p, deferredSearch));
+    } else {
+      switch (filtrePriorite) {
+        case "urgent":
+          list = list.filter((p) => !!p.urgent);
+          break;
+        case "audit_a_envoyer":
+          list = list.filter((p) => auditPasEncoreEnvoye(p));
+          break;
+        case "relance":
+          list = list.filter((p) => besoinRelance(p));
+          break;
+        case "audit_actif":
+          list = list.filter((p) => auditEnvoyeAuProspect(p) && !estReponseClosee(p));
+          break;
+        default:
+          break;
+      }
     }
-    switch (filtrePriorite) {
-      case "urgent":
-        list = list.filter((p) => !!p.urgent);
-        break;
-      case "audit_a_envoyer":
-        list = list.filter((p) => auditPasEncoreEnvoye(p));
-        break;
-      case "relance":
-        list = list.filter((p) => besoinRelance(p));
-        break;
-      case "audit_actif":
-        list = list.filter((p) => auditEnvoyeAuProspect(p) && !estReponseClosee(p));
-        break;
-      default:
-        break;
-    }
+
     if (filtreReponse !== "tous") {
       list = list.filter((p) => (p.reponseClient ?? "en_attente") === filtreReponse);
     }
@@ -103,7 +104,7 @@ export default function ProspectsTable({
     }
     list.sort((a, b) => a.entreprise.localeCompare(b.entreprise, "fr"));
     return list;
-  }, [prospects, search, filtrePriorite, filtreReponse, filtreEtape]);
+  }, [prospects, deferredSearch, searchActive, filtrePriorite, filtreReponse, filtreEtape]);
 
   const counts = useMemo(() => {
     return {
@@ -136,7 +137,10 @@ export default function ProspectsTable({
     setFiltreEtape("tous");
   };
   const isFiltering =
-    !!search.trim() || filtrePriorite !== "tous" || filtreReponse !== "tous" || filtreEtape !== "tous";
+    searchActive ||
+    (!searchActive && filtrePriorite !== "tous") ||
+    filtreReponse !== "tous" ||
+    filtreEtape !== "tous";
 
   return (
     <div className={floatingCard}>
@@ -149,11 +153,13 @@ export default function ProspectsTable({
             />
             <input
               type="search"
-              placeholder="Rechercher une entreprise, un contact, un site…"
+              placeholder="Entreprise, contact, e-mail, site, tél… (sans majuscules)"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`${inputClass} py-2.5 pl-10 pr-10`}
-              aria-label="Rechercher"
+              className={`${inputClass} py-2.5 pl-10 pr-10 ${searchPending ? "opacity-80" : ""}`}
+              aria-label="Rechercher un prospect"
+              autoComplete="off"
+              spellCheck={false}
             />
             {search ? (
               <button
@@ -269,9 +275,19 @@ export default function ProspectsTable({
         ) : null}
 
         <p className="mt-3 text-xs text-zinc-500">
+          {searchActive ? (
+            <>
+              <span className="font-medium text-[#5E549E]">Recherche sur tous les prospects</span>
+              {" · "}
+            </>
+          ) : null}
           {filtered.length} prospect{filtered.length > 1 ? "s" : ""} affiché
-          {isFiltering && filtered.length !== counts.tous ? (
+          {searchPending ? <span className="text-zinc-400"> …</span> : null}
+          {isFiltering && !searchActive && filtered.length !== counts.tous ? (
             <span className="text-zinc-400"> / {counts.tous}</span>
+          ) : null}
+          {searchActive && filtered.length !== counts.tous ? (
+            <span className="text-zinc-400"> / {counts.tous} au total</span>
           ) : null}
         </p>
       </div>
