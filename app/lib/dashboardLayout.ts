@@ -1,7 +1,6 @@
 /** Blocs configurables du dashboard (cartes du site + navigation). */
 export type DashboardWidgetId =
   | "quickLinks"
-  | "financeHint"
   | "kpiCa"
   | "kpiClients"
   | "kpiObjectif"
@@ -67,7 +66,6 @@ export const FULL_WIDTH_WIDGET_IDS: DashboardWidgetId[] = ["cardRdvProspection",
 
 export const ALL_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
   "quickLinks",
-  "financeHint",
   "kpiCa",
   "kpiClients",
   "kpiObjectif",
@@ -118,6 +116,7 @@ export function defaultDashboardLayoutPrefs(): DashboardLayoutPrefs {
 }
 
 const LEGACY_WIDGET_ID_MAP: Record<string, DashboardWidgetId> = {
+  financeHint: "kpiObjectif",
   cardRelanceMailProspection: "cardRelanceProspection",
   cardRelanceAppelProspection: "cardRelanceProspection",
 };
@@ -140,7 +139,6 @@ export function normalizeDashboardLayoutPrefs(raw: unknown): DashboardLayoutPref
     ? o.order
         .map(resolveWidgetId)
         .filter((id): id is DashboardWidgetId => id != null)
-        .map((id) => (id === "financeHint" ? "kpiObjectif" : id))
     : [];
   const hiddenIn = Array.isArray(o.hidden) ? o.hidden.map(resolveWidgetId).filter((id): id is DashboardWidgetId => id != null) : [];
   if (orderIn.length === 0) return def;
@@ -170,7 +168,6 @@ export function normalizeDashboardLayoutPrefs(raw: unknown): DashboardLayoutPref
 
 export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   quickLinks: "Liens rapides",
-  financeHint: "Alerte factures impayées",
   kpiCa: "CA du mois (dashboard)",
   kpiClients: "Clients actifs (dashboard)",
   kpiObjectif: "Objectif financier (dashboard)",
