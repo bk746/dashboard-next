@@ -21,7 +21,6 @@ import {
   dateEffectiveProchaineRelance,
   dateEtapeEnCours,
   formatDateISOFr,
-  estReponseClosee,
   ETAPES_CONTACT,
   prospectSiteHref,
 } from "@/app/prospection/prospection_utils";
@@ -36,8 +35,8 @@ export type FiltreProspection =
   | "tous"
   | "urgent"
   | "audit_a_envoyer"
-  | "relance"
-  | "audit_actif";
+  | "audit_fait"
+  | "relance";
 
 /** Filtre sur la réponse client (combinable avec étape et filtre relance). */
 export type FiltreReponseProspection = "tous" | ProspectReponseClient;
@@ -90,8 +89,8 @@ export default function ProspectsTable({
         case "relance":
           list = list.filter((p) => besoinRelance(p));
           break;
-        case "audit_actif":
-          list = list.filter((p) => auditPersonnaliseFait(p) && !estReponseClosee(p));
+        case "audit_fait":
+          list = list.filter((p) => auditPersonnaliseFait(p));
           break;
         default:
           break;
@@ -113,6 +112,7 @@ export default function ProspectsTable({
       tous: prospects.length,
       urgent: prospects.filter((p) => !!p.urgent).length,
       audit_a_envoyer: prospects.filter((p) => auditPasEncoreEnvoye(p)).length,
+      audit_fait: prospects.filter((p) => auditPersonnaliseFait(p)).length,
       relance: prospects.filter((p) => besoinRelance(p)).length,
     };
   }, [prospects]);
@@ -121,6 +121,7 @@ export default function ProspectsTable({
     { value: "tous", label: "Tous", count: counts.tous },
     { value: "relance", label: "À relancer", count: counts.relance },
     { value: "audit_a_envoyer", label: "Audit à faire", count: counts.audit_a_envoyer },
+    { value: "audit_fait", label: "Audit fait", count: counts.audit_fait },
     { value: "urgent", label: "Urgent", count: counts.urgent },
   ];
 
