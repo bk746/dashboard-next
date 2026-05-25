@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import type { Prospect, ProspectEtapeContact, ProspectReponseClient } from "@/app/types";
 import {
-  auditEnvoyeAuProspect,
   auditPasEncoreEnvoye,
+  auditPersonnaliseFait,
   besoinRelance,
   dateEffectiveProchaineRelance,
   dateEtapeEnCours,
@@ -50,6 +50,7 @@ interface ProspectsTableProps {
   onEdit: (p: Prospect) => void;
   onDelete: (id: string) => void;
   onReponseChange: (p: Prospect, reponse: ProspectReponseClient) => void;
+  onAuditFaitChange: (p: Prospect, fait: boolean) => void;
 }
 
 function libelleEtape(value: string) {
@@ -61,6 +62,7 @@ export default function ProspectsTable({
   onEdit,
   onDelete,
   onReponseChange,
+  onAuditFaitChange,
 }: ProspectsTableProps) {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
@@ -89,7 +91,7 @@ export default function ProspectsTable({
           list = list.filter((p) => besoinRelance(p));
           break;
         case "audit_actif":
-          list = list.filter((p) => auditEnvoyeAuProspect(p) && !estReponseClosee(p));
+          list = list.filter((p) => auditPersonnaliseFait(p) && !estReponseClosee(p));
           break;
         default:
           break;
@@ -317,6 +319,7 @@ export default function ProspectsTable({
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onReponseChange={onReponseChange}
+                onAuditFaitChange={onAuditFaitChange}
               />
             </li>
           ))}
@@ -331,15 +334,17 @@ interface ProspectCardProps {
   onEdit: (p: Prospect) => void;
   onDelete: (id: string) => void;
   onReponseChange: (p: Prospect, reponse: ProspectReponseClient) => void;
+  onAuditFaitChange: (p: Prospect, fait: boolean) => void;
 }
 
-function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange }: ProspectCardProps) {
+function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditFaitChange }: ProspectCardProps) {
   const et = libelleEtape(p.etapeContact);
   const dateAction = dateEtapeEnCours(p);
   const rep = p.reponseClient ?? "en_attente";
   const siteHref = prospectSiteHref(p.siteWeb);
   const relanceDue = besoinRelance(p);
   const prochaineRelance = dateEffectiveProchaineRelance(p);
+  const auditFait = auditPersonnaliseFait(p);
 
   const cardTheme =
     rep === "valide"
@@ -401,6 +406,19 @@ function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange }: Prospe
                 >
                   Urgent
                 </span>
+              ) : null}
+              {auditFait ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAuditFaitChange(p, false);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F08A9B] to-rose-400 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm shadow-rose-300/40 transition-opacity hover:opacity-90"
+                  title="Retirer le statut audit fait"
+                >
+                  Audit fait
+                </button>
               ) : null}
             </div>
 

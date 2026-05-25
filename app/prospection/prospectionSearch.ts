@@ -1,5 +1,5 @@
 import type { Prospect } from "@/app/types";
-import { ETAPES_CONTACT } from "@/app/prospection/prospection_utils";
+import { auditPersonnaliseFait, ETAPES_CONTACT } from "@/app/prospection/prospection_utils";
 
 /** Normalise pour recherche insensible à la casse, aux accents et à la ponctuation. */
 export function normalizeSearchText(value: string): string {
@@ -43,6 +43,7 @@ export function buildProspectSearchHaystack(p: Prospect): { loose: string; compa
     etapeLabel(p.etapeContact),
     reponseLabel(p.reponseClient ?? "en_attente"),
     p.urgent ? "urgent" : "",
+    auditPersonnaliseFait(p) ? "audit fait" : "",
     ...(p.notes?.map((n) => n.contenu) ?? []),
     ...(p.rdv?.map((r) => `${r.titre ?? ""} ${r.note ?? ""}`) ?? []),
   ];

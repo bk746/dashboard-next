@@ -199,7 +199,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
         <DashboardToneKpiCard
           tone="violet"
           label="Audit à faire"
-          subtitle="Pas encore envoyé"
+          subtitle="Pas encore réalisé"
           value={ctx.auditsAEnvoyer}
           icon={<FileText strokeWidth={1.75} aria-hidden />}
         />

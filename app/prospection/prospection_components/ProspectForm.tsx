@@ -389,8 +389,8 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                   </div>
                 </div>
                 <p className="text-[11px] text-zinc-500">
-                  <strong>Audit fait</strong> : votre suivi interne. <strong>Audit envoyé</strong> : compte dans « Audit à
-                  faire » sur le tableau de bord. Aucun des deux ne déclenche de relance (relances après le 1er appel).
+                  <strong>Audit fait</strong> : retire le prospect de « Audit à faire ». <strong>Audit envoyé</strong> :
+                  date d&apos;envoi au client. Les relances restent liées au 1er appel.
                 </p>
               </div>
 

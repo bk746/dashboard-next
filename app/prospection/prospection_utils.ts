@@ -402,11 +402,14 @@ export function auditEnvoyeAuProspect(p: Prospect): boolean {
 /** @deprecated Alias — audit envoyé au prospect */
 export const auditPersonnaliseEnvoye = auditEnvoyeAuProspect;
 
-/** Audit pas encore envoyé au prospect — hors dossiers clos (validé / refusé). */
+/** Audit pas encore réalisé (suivi interne) — liste « Audit à faire », hors dossiers clos. */
 export function auditPasEncoreEnvoye(p: Prospect): boolean {
   if (estReponseClosee(p)) return false;
-  return !auditEnvoyeAuProspect(p);
+  return !auditPersonnaliseFait(p);
 }
+
+/** Alias explicite — même logique que auditPasEncoreEnvoye. */
+export const auditAFaire = auditPasEncoreEnvoye;
 
 /** Relance à traiter : après le 1er appel, date prévue atteinte (+3 j ouvrés ou sans réponse). */
 export function besoinRelance(p: Prospect): boolean {

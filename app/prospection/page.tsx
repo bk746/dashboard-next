@@ -11,6 +11,7 @@ import {
   listeRendezVousAVenir,
   migrateProspect,
   prospectEnCours,
+  todayDateISO,
 } from "@/app/prospection/prospection_utils";
 import ProspectForm from "./prospection_components/ProspectForm";
 import ProspectsTable from "./prospection_components/ProspectsTable";
@@ -49,6 +50,19 @@ export default function ProspectionPage() {
         if (x.id !== p.id) return x;
         const patch: Partial<Prospect> = { reponseClient: reponse, updatedAt: new Date().toISOString() };
         if (reponse === "valide" || reponse === "refuse") patch.dateProchaineRelance = undefined;
+        return migrateProspect({ ...x, ...patch });
+      })
+    );
+  };
+
+  const updateAuditFaitProspect = (p: Prospect, fait: boolean) => {
+    setProspects(
+      prospects.map((x) => {
+        if (x.id !== p.id) return x;
+        const patch: Partial<Prospect> = {
+          dateAuditFait: fait ? todayDateISO() : undefined,
+          updatedAt: new Date().toISOString(),
+        };
         return migrateProspect({ ...x, ...patch });
       })
     );
@@ -121,7 +135,7 @@ export default function ProspectionPage() {
             <DashboardToneKpiCard
               tone="pink"
               label="Audit à faire"
-              subtitle="Pas encore envoyé"
+              subtitle="Pas encore réalisé"
               value={auditsAEnvoyer}
               icon={<FileText aria-hidden />}
             />
@@ -157,6 +171,7 @@ export default function ProspectionPage() {
             }}
             onDelete={deleteProspect}
             onReponseChange={updateReponseProspect}
+            onAuditFaitChange={updateAuditFaitProspect}
           />
         </section>
       </div>
