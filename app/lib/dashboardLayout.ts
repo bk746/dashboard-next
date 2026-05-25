@@ -22,22 +22,23 @@ export type DashboardWidgetId =
   | "cardRdvProspection"
   | "cardProspectsEnCours"
   | "cardAuditProspection"
-  | "cardRelanceMailProspection"
-  | "cardRelanceAppelProspection"
+  | "cardRelanceProspection"
   | "cardProgressionObjectifs";
+
+/** Bloc hero en tête : graphique CA + KPI CA / clients actifs à droite. */
+export const HERO_WIDGET_IDS: DashboardWidgetId[] = ["chartEvolutionCa", "kpiCa", "kpiClients"];
 
 /** Affichage par défaut (7 blocs initiaux du dashboard) — les autres cartes sont masquées jusqu’à activation. */
 export const CORE_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
-  "quickLinks",
-  "financeHint",
+  "chartEvolutionCa",
   "kpiCa",
   "kpiClients",
+  "quickLinks",
   "kpiObjectif",
-  "chartEvolutionCa",
   "chartActiviteClients",
 ];
 
-export const TOP_WIDGET_IDS: DashboardWidgetId[] = ["quickLinks", "financeHint"];
+export const TOP_WIDGET_IDS: DashboardWidgetId[] = ["quickLinks", "kpiObjectif"];
 
 export const CHART_WIDGET_IDS: DashboardWidgetId[] = ["chartEvolutionCa", "chartActiviteClients"];
 
@@ -45,7 +46,6 @@ export const CHART_WIDGET_IDS: DashboardWidgetId[] = ["chartEvolutionCa", "chart
 export const KPI_GRID_WIDGET_IDS: DashboardWidgetId[] = [
   "kpiCa",
   "kpiClients",
-  "kpiObjectif",
   "cardTotalClients",
   "cardActiviteMois",
   "cardAbonnementsActifs",
@@ -59,8 +59,7 @@ export const KPI_GRID_WIDGET_IDS: DashboardWidgetId[] = [
   "cardProchaineEcheance",
   "cardProspectsEnCours",
   "cardAuditProspection",
-  "cardRelanceMailProspection",
-  "cardRelanceAppelProspection",
+  "cardRelanceProspection",
   "cardProgressionObjectifs",
 ];
 
@@ -89,8 +88,7 @@ export const ALL_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
   "cardRdvProspection",
   "cardProspectsEnCours",
   "cardAuditProspection",
-  "cardRelanceMailProspection",
-  "cardRelanceAppelProspection",
+  "cardRelanceProspection",
   "cardProgressionObjectifs",
 ];
 
@@ -119,16 +117,32 @@ export function defaultDashboardLayoutPrefs(): DashboardLayoutPrefs {
   };
 }
 
+const LEGACY_WIDGET_ID_MAP: Record<string, DashboardWidgetId> = {
+  cardRelanceMailProspection: "cardRelanceProspection",
+  cardRelanceAppelProspection: "cardRelanceProspection",
+};
+
 function isWidgetId(id: unknown): id is DashboardWidgetId {
   return typeof id === "string" && ALL_DASHBOARD_WIDGET_IDS.includes(id as DashboardWidgetId);
+}
+
+function resolveWidgetId(id: unknown): DashboardWidgetId | null {
+  if (typeof id !== "string") return null;
+  if (isWidgetId(id)) return id;
+  return LEGACY_WIDGET_ID_MAP[id] ?? null;
 }
 
 export function normalizeDashboardLayoutPrefs(raw: unknown): DashboardLayoutPrefs {
   const def = defaultDashboardLayoutPrefs();
   if (!raw || typeof raw !== "object") return def;
   const o = raw as Partial<DashboardLayoutPrefs>;
-  const orderIn = Array.isArray(o.order) ? o.order.filter(isWidgetId) : [];
-  const hiddenIn = Array.isArray(o.hidden) ? o.hidden.filter(isWidgetId) : [];
+  const orderIn = Array.isArray(o.order)
+    ? o.order
+        .map(resolveWidgetId)
+        .filter((id): id is DashboardWidgetId => id != null)
+        .map((id) => (id === "financeHint" ? "kpiObjectif" : id))
+    : [];
+  const hiddenIn = Array.isArray(o.hidden) ? o.hidden.map(resolveWidgetId).filter((id): id is DashboardWidgetId => id != null) : [];
   if (orderIn.length === 0) return def;
   const seen = new Set<DashboardWidgetId>();
   const order: DashboardWidgetId[] = [];
@@ -176,9 +190,8 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   devisKpiStrip: "[Finance] Vue d’ensemble devis (acceptés / pipeline / refus)",
   cardRdvProspection: "[Prospection] Rendez-vous à venir",
   cardProspectsEnCours: "[Prospection] Prospects en cours",
-  cardAuditProspection: "[Prospection] Audit et mail à envoyer",
-  cardRelanceMailProspection: "[Prospection] Relances mail à faire",
-  cardRelanceAppelProspection: "[Prospection] Relances appel à faire",
+  cardAuditProspection: "[Prospection] Audit à faire",
+  cardRelanceProspection: "[Prospection] Relance",
   cardProgressionObjectifs: "[Objectifs] Progression globale",
 };
 
@@ -192,6 +205,10 @@ export function isChartWidgetId(id: DashboardWidgetId): boolean {
 
 export function isTopWidgetId(id: DashboardWidgetId): boolean {
   return TOP_WIDGET_IDS.includes(id);
+}
+
+export function isHeroWidgetId(id: DashboardWidgetId): boolean {
+  return HERO_WIDGET_IDS.includes(id);
 }
 
 export function isFullWidthWidgetId(id: DashboardWidgetId): boolean {

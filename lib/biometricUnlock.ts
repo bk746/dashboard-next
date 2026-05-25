@@ -1,9 +1,11 @@
 /**
- * Déverrouillage via WebAuthn (Face ID / Touch ID sur iOS Safari, biométrie sur Android).
- * Contexte sécurisé (HTTPS ou localhost) requis.
+ * Déverrouillage via WebAuthn (Touch ID sur Mac, Face ID sur iPhone/iPad, biométrie Android).
+ * Contexte sécurisé requis (HTTPS ou localhost).
  */
 
 const STORAGE_KEY = "bk_app_webauthn_cred_id";
+
+export type BiometricKind = "touchId" | "faceId" | "generic";
 
 export function isWebAuthnAvailable(): boolean {
   return typeof window !== "undefined" && !!window.PublicKeyCredential;
@@ -17,6 +19,15 @@ export async function isPlatformAuthenticatorAvailable(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export function detectBiometricKind(): BiometricKind {
+  if (typeof navigator === "undefined") return "generic";
+  const ua = navigator.userAgent || "";
+  const isAppleMobile = /iPhone|iPad|iPod/i.test(ua);
+  if (isAppleMobile) return "faceId";
+  if (/Macintosh|Mac OS X/i.test(ua)) return "touchId";
+  return "generic";
 }
 
 export function hasBiometricCredential(): boolean {
@@ -51,24 +62,46 @@ function arrayBufferToBase64Url(buf: ArrayBuffer): string {
 }
 
 /** Libellé court selon l’appareil (FR). */
-export function getBiometricActionLabel(kind: "unlock" | "activate"): string {
-  if (typeof navigator === "undefined") {
-    return kind === "unlock" ? "Déverrouiller" : "Activer la biométrie";
+export function getBiometricActionLabel(kind: "unlock" | "activate" | "disable"): string {
+  const bio = detectBiometricKind();
+  if (bio === "touchId") {
+    if (kind === "unlock") return "Déverrouiller avec Touch ID";
+    if (kind === "activate") return "Activer Touch ID";
+    return "Désactiver Touch ID";
   }
-  const ua = navigator.userAgent || "";
-  const isAppleMobile = /iPhone|iPad|iPod/i.test(ua);
-  if (isAppleMobile) {
-    return kind === "unlock" ? "Déverrouiller avec Face ID" : "Activer Face ID";
+  if (bio === "faceId") {
+    if (kind === "unlock") return "Déverrouiller avec Face ID";
+    if (kind === "activate") return "Activer Face ID";
+    return "Désactiver Face ID";
   }
-  return kind === "unlock" ? "Déverrouiller avec biométrie" : "Activer la biométrie";
+  if (kind === "unlock") return "Déverrouiller avec biométrie";
+  if (kind === "activate") return "Activer la biométrie";
+  return "Désactiver la biométrie";
+}
+
+export function getBiometricTitle(): string {
+  const bio = detectBiometricKind();
+  if (bio === "touchId") return "Touch ID";
+  if (bio === "faceId") return "Face ID";
+  return "Biométrie";
+}
+
+export function getBiometricHint(): string {
+  const bio = detectBiometricKind();
+  if (bio === "touchId") {
+    return "Utilise le capteur Touch ID de ton Mac pour ouvrir l’app sans retaper le code.";
+  }
+  if (bio === "faceId") {
+    return "Utilise Face ID pour ouvrir l’app sans retaper le code.";
+  }
+  return "Utilise l’empreinte ou la reconnaissance faciale de ton appareil.";
 }
 
 /**
- * Enregistre un passkey sur l’authentificateur plateforme (Face ID, Touch ID, etc.).
+ * Enregistre un passkey sur l’authentificateur plateforme (Touch ID, Face ID, etc.).
  */
 export async function registerBiometricUnlock(): Promise<boolean> {
   if (!isWebAuthnAvailable()) return false;
-  if (hasBiometricCredential()) return true;
 
   const challenge = new Uint8Array(32);
   crypto.getRandomValues(challenge);
@@ -77,6 +110,10 @@ export async function registerBiometricUnlock(): Promise<boolean> {
   crypto.getRandomValues(userId);
 
   try {
+    if (hasBiometricCredential()) {
+      clearBiometricCredential();
+    }
+
     const credential = (await navigator.credentials.create({
       publicKey: {
         challenge,
@@ -105,7 +142,7 @@ export async function registerBiometricUnlock(): Promise<boolean> {
 }
 
 /**
- * Vérifie Face ID / biométrie et débloque si la réponse est valide (même origine, même rpId).
+ * Vérifie Touch ID / Face ID et débloque si la réponse est valide.
  */
 export async function authenticateWithBiometric(): Promise<boolean> {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -123,7 +160,7 @@ export async function authenticateWithBiometric(): Promise<boolean> {
           {
             id: new Uint8Array(base64UrlToBuffer(stored)),
             type: "public-key",
-            transports: ["internal", "hybrid"],
+            transports: ["internal"],
           },
         ],
         userVerification: "required",

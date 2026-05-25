@@ -1,59 +1,47 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { FileText, Mail, Phone, Users, type LucideIcon } from "lucide-react";
-import { appCardKpi, kpiLabelClass, kpiValueClass, kpiIconClass, kpiLabelDangerClass } from "@/app/components/appCardStyles";
+import { Bell, FileText, Users, type LucideIcon } from "lucide-react";
 
-export type ProspectionRelanceMiniKind = "encours" | "audit" | "mail" | "appel";
+export type ProspectionRelanceMiniKind = "encours" | "audit" | "relance";
 
-const copy: Record<
-  ProspectionRelanceMiniKind,
-  { title: string; titleClass: string; body: ReactNode; Icon: LucideIcon }
-> = {
+interface ToneConfig {
+  title: string;
+  sub: string;
+  Icon: LucideIcon;
+  surface: string;
+  iconWrap: string;
+  accent: string;
+}
+
+const config: Record<ProspectionRelanceMiniKind, ToneConfig> = {
   encours: {
     title: "Prospects en cours",
-    titleClass: kpiLabelClass,
-    body: (
-      <>
-        Dossiers avec réponse <strong className="font-medium text-zinc-700 dark:text-zinc-300">en attente</strong> — ils
-        disparaissent du compteur dès que vous passez la fiche en <strong className="font-medium text-zinc-700 dark:text-zinc-300">Validé</strong> ou{" "}
-        <strong className="font-medium text-zinc-700 dark:text-zinc-300">Refusé</strong>.
-      </>
-    ),
+    sub: "Réponse en attente",
     Icon: Users,
+    surface: "bg-white dark:bg-[#12131a]",
+    iconWrap:
+      "bg-zinc-100 text-zinc-700 dark:bg-white/[0.06] dark:text-zinc-300",
+    accent: "text-zinc-500 dark:text-zinc-400",
   },
   audit: {
-    title: "Audit et mail à envoyer",
-    titleClass: kpiLabelClass,
-    body: (
-      <>
-        Prospects <strong className="font-medium text-zinc-700 dark:text-zinc-300">sans date d&apos;envoi d&apos;audit</strong> — à traiter : envoi
-        de l&apos;audit et du mail, hors dossiers validés ou refusés côté réponse.
-      </>
-    ),
+    title: "Audit à faire",
+    sub: "Pas encore envoyé",
     Icon: FileText,
+    surface:
+      "bg-gradient-to-br from-sky-50/80 via-white to-white dark:from-sky-950/40 dark:via-[#12131a] dark:to-[#12131a]",
+    iconWrap:
+      "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+    accent: "text-sky-700/80 dark:text-sky-300/80",
   },
-  mail: {
-    title: "Relances mail à faire",
-    titleClass: kpiLabelDangerClass,
-    body: (
-      <>
-        Entreprises où l&apos;audit a été envoyé il y a <strong className="font-medium text-zinc-700 dark:text-zinc-300">3 jours ou plus</strong>,
-        sans relance mail enregistrée.
-      </>
-    ),
-    Icon: Mail,
-  },
-  appel: {
-    title: "Relances appel à faire",
-    titleClass: kpiLabelClass,
-    body: (
-      <>
-        Entreprises où le <strong className="font-medium text-zinc-700 dark:text-zinc-300">mail de relance</strong> a été envoyé il y a{" "}
-        <strong className="font-medium text-zinc-700 dark:text-zinc-300">1 semaine ou plus</strong>, sans appel de relance enregistré.
-      </>
-    ),
-    Icon: Phone,
+  relance: {
+    title: "À relancer",
+    sub: "Échéance atteinte",
+    Icon: Bell,
+    surface:
+      "bg-gradient-to-br from-amber-50/90 via-white to-white dark:from-amber-950/45 dark:via-[#12131a] dark:to-[#12131a]",
+    iconWrap:
+      "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+    accent: "text-amber-800/85 dark:text-amber-300/85",
   },
 };
 
@@ -63,17 +51,25 @@ interface ProspectionRelanceMiniCardProps {
 }
 
 export default function ProspectionRelanceMiniCard({ kind, value }: ProspectionRelanceMiniCardProps) {
-  const c = copy[kind];
+  const c = config[kind];
   const Icon = c.Icon;
   return (
-    <div className={appCardKpi}>
-      <div className="flex flex-col gap-3 md:gap-1.5 flex-1 min-w-0">
-        <p className={c.titleClass}>{c.title}</p>
-        <p className={kpiValueClass}>{value}</p>
-        <p className="text-zinc-500 dark:text-zinc-500 text-xs md:text-sm mt-1 md:mt-2 leading-snug">{c.body}</p>
+    <div
+      className={`group relative overflow-hidden rounded-3xl border-0 p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_-12px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-12px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.6)] ${c.surface}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-105 ${c.iconWrap}`}
+        >
+          <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+        </div>
+        <p className="text-3xl font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50 md:text-4xl">
+          {value}
+        </p>
       </div>
-      <div className="hidden sm:flex flex-shrink-0 items-start">
-        <Icon className={kpiIconClass} aria-hidden />
+      <div className="mt-4">
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{c.title}</p>
+        <p className={`mt-0.5 text-xs ${c.accent}`}>{c.sub}</p>
       </div>
     </div>
   );

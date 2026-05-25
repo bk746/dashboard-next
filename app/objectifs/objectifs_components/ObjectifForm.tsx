@@ -2,20 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import {
-  overlayBackdropClass,
-  overlayPanelClass,
-  overlayHeaderClass,
-  overlayTitleClass,
-  overlayCloseButtonClass,
-  overlayScrollBodyClass,
-  overlayFooterClass,
-  inputFieldClass,
-  formLabelClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-} from "@/app/components/appCardStyles";
+import { overlayBackdropClass, overlayScrollBodyClass } from "@/app/components/appCardStyles";
 import type { Objectif, ObjectifPeriode } from "@/app/types";
+import {
+  objectifsLightPanel,
+  objectifsLightInput,
+  objectifsLightLabel,
+  objectifsSecondaryBtn,
+  objectifsVioletPrimaryBtn,
+} from "@/app/objectifs/objectifsUi";
 
 interface ObjectifFormProps {
   objectif?: Objectif | null;
@@ -61,41 +56,46 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={overlayPanelClass}
+        className={objectifsLightPanel}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="objectif-form-title"
       >
-        <div className={overlayHeaderClass}>
-          <h2 id="objectif-form-title" className={overlayTitleClass}>
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+          <h2 id="objectif-form-title" className="text-lg font-semibold text-[#5E549E]">
             {title}
           </h2>
-          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+            aria-label="Fermer"
+          >
             <FaTimes className="h-5 w-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className={overlayScrollBodyClass}>
+          <div className={`${overlayScrollBodyClass} space-y-4`}>
             <div>
-              <label className={formLabelClass}>Libellé</label>
+              <label className={objectifsLightLabel}>Libellé</label>
               <input
                 type="text"
                 required
                 value={formData.libelle}
                 onChange={(e) => setFormData({ ...formData, libelle: e.target.value })}
                 placeholder="Ex: Objectif 200 000€"
-                className={inputFieldClass}
+                className={objectifsLightInput}
               />
             </div>
 
             <div>
-              <label className={formLabelClass}>Type</label>
+              <label className={objectifsLightLabel}>Type</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as "Financier" | "Client" })}
-                className={inputFieldClass}
+                className={objectifsLightInput}
               >
                 <option value="Financier">Financier</option>
                 <option value="Client">Client</option>
@@ -103,23 +103,23 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
             </div>
 
             <div>
-              <label className={formLabelClass}>Période de suivi</label>
+              <label className={objectifsLightLabel}>Période de suivi</label>
               <select
                 value={formData.periode ?? "annee"}
                 onChange={(e) => setFormData({ ...formData, periode: e.target.value as ObjectifPeriode })}
-                className={inputFieldClass}
+                className={objectifsLightInput}
               >
                 <option value="annee">Année civile en cours</option>
                 <option value="mois">Mois en cours</option>
                 <option value="semaine">Semaine en cours (lun.–dim.)</option>
               </select>
-              <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-500">
+              <p className="mt-1.5 text-xs text-zinc-500">
                 Le réalisé est calculé sur cette fenêtre (CA encaissé ou volume clients selon le type).
               </p>
             </div>
 
             <div>
-              <label className={formLabelClass}>Objectif {formData.type === "Financier" ? "(€)" : ""}</label>
+              <label className={objectifsLightLabel}>Objectif {formData.type === "Financier" ? "(€)" : ""}</label>
               <input
                 type="number"
                 required
@@ -127,41 +127,40 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
                 value={formData.objectif}
                 onChange={(e) => setFormData({ ...formData, objectif: parseInt(e.target.value, 10) || 0 })}
                 placeholder={formData.type === "Financier" ? "Ex: 200000" : "Ex: 100"}
-                className={inputFieldClass}
+                className={objectifsLightInput}
               />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Date de début</label>
+                <label className={objectifsLightLabel}>Date de début</label>
                 <input
                   type="text"
                   required
                   value={formData.dateDebut}
                   onChange={(e) => setFormData({ ...formData, dateDebut: e.target.value })}
                   placeholder="DD/MM/YYYY"
-                  className={inputFieldClass}
+                  className={objectifsLightInput}
                 />
               </div>
-
               <div>
-                <label className={formLabelClass}>Date de fin</label>
+                <label className={objectifsLightLabel}>Date de fin</label>
                 <input
                   type="text"
                   value={formData.dateFin}
                   onChange={(e) => setFormData({ ...formData, dateFin: e.target.value })}
                   placeholder="DD/MM/YYYY"
-                  className={inputFieldClass}
+                  className={objectifsLightInput}
                 />
               </div>
             </div>
           </div>
 
-          <div className={overlayFooterClass}>
-            <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
+          <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-zinc-100 px-5 py-4 sm:flex-row sm:justify-end sm:px-6 sm:py-5">
+            <button type="button" onClick={onClose} className={objectifsSecondaryBtn}>
               Annuler
             </button>
-            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
+            <button type="submit" className={objectifsVioletPrimaryBtn}>
               {objectif ? "Modifier" : "Créer"}
             </button>
           </div>

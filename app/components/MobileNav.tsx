@@ -13,9 +13,7 @@ import {
   Menu,
   X,
   Calculator,
-  ScanEye,
   ClipboardList,
-  Globe,
   LogIn,
   LogOut,
   type LucideIcon,
@@ -29,8 +27,6 @@ const mainItems: { href: string; label: string; icon: LucideIcon; indent?: boole
   { href: "/prospection", label: "Prospection", icon: ClipboardList },
   { href: "/finance", label: "Finance", icon: Wallet },
   { href: "/estimation", label: "Estimation", icon: Calculator, indent: true },
-  { href: "/audit-visuel", label: "Audit visuel", icon: ScanEye, indent: true },
-  { href: "/analyse-site", label: "Analyseur IA", icon: Globe },
   { href: "/deals-projets", label: "Deals / Projets", icon: Briefcase },
   { href: "/objectifs", label: "Objectifs", icon: Target },
 ];

@@ -2,43 +2,34 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import { Calendar, Clock, ExternalLink } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import type {
-  AuditVisuelDossier,
   AuditVisuelRecord,
   Prospect,
   ProspectEtapeContact,
   ProspectRdv,
   ProspectReponseClient,
 } from "@/app/types";
-import AuditVisuelBlock from "@/app/audit-visuel/AuditVisuelBlock";
-import { buildAuditVisuelDossier, emptyAuditChecklist } from "@/app/audit-visuel/auditVisuelEngine";
-import { prospectAuditRecordId, removeProspectAudit, upsertProspectAudit } from "@/app/audit-visuel/audit_visuel_utils";
+import ProspectRelanceBlock from "@/app/prospection/prospection_components/ProspectRelanceBlock";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
 import {
   dateEtapeEnCours,
   emptyProspect,
   ETAPES_CONTACT,
+  estReponseClosee,
+  getDateAppel,
   migrateProspect,
+  numeroAppelEtape,
+  patchDateAppel,
   patchDatesForEtapeContact,
   prospectSiteHref,
+  removeProspectAuditBucket,
   REPONSES_CLIENT,
+  todayDateISO,
 } from "@/app/prospection/prospection_utils";
-import Link from "next/link";
-import {
-  overlayBackdropClass,
-  overlayPanelWideClass,
-  overlayHeaderClass,
-  overlayTitleClass,
-  overlayCloseButtonClass,
-  overlayScrollBodyClass,
-  overlayFooterClass,
-  inputFieldClass,
-  formLabelClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-  panelSurfaceClass,
-} from "@/app/components/appCardStyles";
+import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
+
+const lightPanelSurface = "rounded-2xl border-0 bg-[#6C5DD3]/[0.06] p-4 sm:p-5 space-y-4";
 
 interface ProspectFormProps {
   prospect?: Prospect | null;
@@ -77,7 +68,7 @@ function localDateTimeToISO(dateStr: string, timeStr: string): string | null {
 }
 
 export default function ProspectForm({ prospect, onClose, onSave }: ProspectFormProps) {
-  const [auditsVisuels, setAuditsVisuels, auditsReady] = useJsonBucket<AuditVisuelRecord[]>("audits-visuels", []);
+  const [, setAuditsVisuels] = useJsonBucket<AuditVisuelRecord[]>("audits-visuels", []);
 
   const [form, setForm] = useState<Prospect>(() =>
     prospect ? migrateProspect(prospect) : emptyProspect()
@@ -90,13 +81,6 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
   const [rdvTime, setRdvTime] = useState(() => suggestedRdvSlot().time);
   const [rdvTitre, setRdvTitre] = useState("");
   const [rdvNote, setRdvNote] = useState("");
-  const [auditVisuelActif, setAuditVisuelActif] = useState(() => !!prospect?.auditVisuel);
-  const [auditDossier, setAuditDossier] = useState<AuditVisuelDossier>(() =>
-    prospect?.auditVisuel ??
-    buildAuditVisuelDossier(emptyAuditChecklist(), "generique", {
-      entreprise: prospect?.entreprise.trim() || undefined,
-    })
-  );
 
   useEffect(() => {
     const next = prospect ? migrateProspect(prospect) : emptyProspect();
@@ -107,38 +91,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
     setRdvTime(slot.time);
     setRdvTitre("");
     setRdvNote("");
-    if (!prospect) {
-      setAuditVisuelActif(false);
-      setAuditDossier(buildAuditVisuelDossier(emptyAuditChecklist(), "generique", undefined));
-      return;
-    }
-    if (!auditsReady) {
-      setAuditVisuelActif(!!prospect.auditVisuel);
-      setAuditDossier(
-        prospect.auditVisuel ??
-          buildAuditVisuelDossier(emptyAuditChecklist(), "generique", {
-            entreprise: prospect.entreprise.trim() || undefined,
-          })
-      );
-      return;
-    }
-    const rid = prospectAuditRecordId(prospect.id);
-    const fromBucket = auditsVisuels.find((a) => a.id === rid);
-    const dossier =
-      fromBucket?.dossier ??
-      prospect.auditVisuel ??
-      buildAuditVisuelDossier(emptyAuditChecklist(), "generique", {
-        entreprise: prospect.entreprise.trim() || undefined,
-      });
-    setAuditVisuelActif(!!(fromBucket || prospect.auditVisuel));
-    setAuditDossier(dossier);
-  }, [prospect, auditsReady, auditsVisuels]);
-
-  useEffect(() => {
-    if (!auditVisuelActif) return;
-    const label = form.entreprise.trim() || undefined;
-    setAuditDossier((d) => buildAuditVisuelDossier(d.checklist, d.template, { entreprise: label }));
-  }, [form.entreprise, auditVisuelActif]);
+  }, [prospect]);
 
   const ajouterRdv = () => {
     if (!rdvActif) return;
@@ -194,55 +147,48 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
     e.preventDefault();
     if (!form.entreprise.trim()) return;
     const et = form.etapeContact;
-    if (et !== "aucun") {
-      if (!form.dateAuditPersoEnvoye?.trim()) return;
-      if ((et === "mail_envoye" || et === "appel_passe") && !form.dateMailEnvoye?.trim()) return;
-      if (et === "appel_passe" && !form.dateAppelPasse?.trim()) return;
-    }
+    const nAppel = numeroAppelEtape(et);
+    if (nAppel > 0 && !getDateAppel(form, nAppel as 1 | 2 | 3 | 4)) return;
     const now = new Date().toISOString();
-    const { statut: _legacy, ...sansStatut } = form as Prospect & { statut?: string };
-    const sansDatesSiAucun =
-      et === "aucun"
-        ? {
-            ...sansStatut,
-            dateAuditPersoEnvoye: undefined,
-            dateMailEnvoye: undefined,
-            dateAppelPasse: undefined,
-          }
-        : sansStatut;
+    const {
+      statut: _legacy,
+      dateMailEnvoye: _dm,
+      dateAppelPasse: _da,
+      dateAuditPersoEnvoye: _dap,
+      ...sansStatut
+    } = form as Prospect & { statut?: string };
     const siteTrim = sansStatut.siteWeb?.trim();
-    const entrepriseSave = sansStatut.entreprise.trim() || undefined;
-    const auditVisuelFinal = auditVisuelActif
-      ? buildAuditVisuelDossier(auditDossier.checklist, auditDossier.template, { entreprise: entrepriseSave })
-      : undefined;
     const prospectIdSave = prospect?.id ?? form.id;
-    if (auditVisuelFinal && entrepriseSave) {
-      setAuditsVisuels((list) =>
-        upsertProspectAudit(
-          list,
-          { id: prospectIdSave, entreprise: entrepriseSave, siteWeb: siteTrim },
-          auditVisuelFinal
-        )
-      );
-    } else {
-      setAuditsVisuels((list) => removeProspectAudit(list, prospectIdSave));
-    }
-    onSave({
-      ...sansDatesSiAucun,
+    setAuditsVisuels((list) => removeProspectAuditBucket(list, prospectIdSave));
+    const reponseFinale = (sansStatut.reponseClient ?? "en_attente") as ProspectReponseClient;
+    const payload: Prospect = {
+      ...sansStatut,
       siteWeb: siteTrim || undefined,
       urgent: !!sansStatut.urgent,
       rdv: rdvActif ? sansStatut.rdv : [],
-      auditVisuel: auditVisuelFinal,
-      reponseClient: (sansStatut.reponseClient ?? "en_attente") as ProspectReponseClient,
+      auditVisuel: undefined,
+      reponseClient: reponseFinale,
       etapeContact: sansStatut.etapeContact as ProspectEtapeContact,
       id: prospectIdSave,
       updatedAt: now,
       createdAt: prospect?.createdAt ?? form.createdAt,
-    });
+    };
+    if (estReponseClosee(payload) || payload.etapeContact === "aucun") {
+      payload.dateProchaineRelance = undefined;
+    }
+    onSave(payload);
     onClose();
   };
 
   const title = prospect ? "Modifier le prospect" : "Nouveau prospect";
+
+  const lightPanelWideClass =
+    "w-full max-w-3xl max-h-[min(92vh,900px)] flex flex-col overflow-hidden rounded-3xl border-0 bg-white shadow-[0_24px_80px_-12px_rgba(108,93,211,0.22)] mx-2 sm:mx-4";
+  const lightInputClass =
+    "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2 text-zinc-800 placeholder:text-zinc-400 focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15 transition-colors";
+  const lightLabelClass = "block text-sm text-zinc-600 mb-2";
+  const violetPrimaryBtn =
+    "px-5 py-2.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] shadow-md shadow-[#6C5DD3]/25 hover:shadow-lg transition-all";
 
   const rdvTri = [...form.rdv].sort(
     (a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime()
@@ -253,37 +199,51 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
 
   const siteHrefPreview = prospectSiteHref(form.siteWeb);
   const siteWebSaisi = (form.siteWeb ?? "").trim();
+  const auditFait = !!form.dateAuditFait?.trim();
+  const auditEnvoye = !!form.dateAuditEnvoye?.trim();
+
+  const setAuditFait = (on: boolean) => {
+    setForm((f) => ({
+      ...f,
+      dateAuditFait: on ? f.dateAuditFait?.trim() || todayDateISO() : undefined,
+    }));
+  };
+
+  const setAuditEnvoye = (on: boolean) => {
+    setForm((f) => ({
+      ...f,
+      dateAuditEnvoye: on ? f.dateAuditEnvoye?.trim() || todayDateISO() : undefined,
+    }));
+  };
 
   const setDateEtape = (iso: string | undefined) => {
     const v = iso?.trim() || undefined;
     setForm((f) => {
-      switch (f.etapeContact) {
-        case "aucun":
-          return f;
-        case "audit_envoye":
-          return { ...f, dateAuditPersoEnvoye: v };
-        case "mail_envoye":
-          return { ...f, dateMailEnvoye: v };
-        case "appel_passe":
-          return { ...f, dateAppelPasse: v };
-      }
+      const n = numeroAppelEtape(f.etapeContact);
+      if (n === 0) return f;
+      return { ...f, ...patchDateAppel(f, n, v) };
     });
   };
 
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={overlayPanelWideClass}
+        className={lightPanelWideClass}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="prospect-form-title"
       >
-        <div className={overlayHeaderClass}>
-          <h2 id="prospect-form-title" className={overlayTitleClass}>
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+          <h2 id="prospect-form-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
             {title}
           </h2>
-          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+            aria-label="Fermer"
+          >
             <FaTimes className="h-5 w-5" />
           </button>
         </div>
@@ -292,44 +252,44 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
           <div className={overlayScrollBodyClass}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className={formLabelClass}>Entreprise *</label>
+                <label className={lightLabelClass}>Entreprise *</label>
                 <input
                   type="text"
                   required
                   value={form.entreprise}
                   onChange={(e) => setForm({ ...form, entreprise: e.target.value })}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 />
               </div>
               <div>
-                <label className={formLabelClass}>Contact</label>
+                <label className={lightLabelClass}>Contact</label>
                 <input
                   type="text"
                   value={form.contactNom ?? ""}
                   onChange={(e) => setForm({ ...form, contactNom: e.target.value })}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 />
               </div>
               <div>
-                <label className={formLabelClass}>Téléphone</label>
+                <label className={lightLabelClass}>Téléphone</label>
                 <input
                   type="text"
                   value={form.telephone ?? ""}
                   onChange={(e) => setForm({ ...form, telephone: e.target.value })}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 />
               </div>
               <div className="md:col-span-2">
-                <label className={formLabelClass}>Email</label>
+                <label className={lightLabelClass}>Email</label>
                 <input
                   type="email"
                   value={form.email ?? ""}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 />
               </div>
               <div className="md:col-span-2">
-                <label className={formLabelClass}>Site web</label>
+                <label className={lightLabelClass}>Site web</label>
                 <input
                   type="text"
                   inputMode="url"
@@ -337,7 +297,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                   placeholder="ex. monsite.fr ou https://…"
                   value={form.siteWeb ?? ""}
                   onChange={(e) => setForm({ ...form, siteWeb: e.target.value })}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 />
                 {siteHrefPreview ? (
                   <p className="mt-2 text-sm">
@@ -345,7 +305,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                       href={siteHrefPreview}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="break-all font-medium text-[#c26500] underline underline-offset-2 hover:text-[#a55500] dark:text-[#a8c0e0] dark:hover:text-[#c5d4ec]"
+                      className="break-all font-medium text-[#6C5DD3] underline underline-offset-2 hover:text-[#5E549E]"
                     >
                       {siteHrefPreview}
                     </a>
@@ -356,16 +316,16 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
               </div>
 
               <div className="md:col-span-2">
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-200/90 bg-zinc-50/50 px-4 py-3 dark:border-white/[0.1] dark:bg-white/[0.03]">
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border-0 bg-[#6C5DD3]/[0.06] px-4 py-3">
                   <input
                     type="checkbox"
                     checked={form.urgent ?? false}
                     onChange={(e) => setForm({ ...form, urgent: e.target.checked })}
-                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#2563eb] focus:ring-[#2563eb] dark:border-zinc-600 dark:bg-zinc-900"
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#6C5DD3] focus:ring-[#6C5DD3]"
                   />
                   <span>
-                    <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">Urgent — site critique</span>
-                    <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="block text-sm font-medium text-zinc-900">Urgent — site critique</span>
+                    <span className="mt-0.5 block text-xs text-zinc-500">
                       À traiter en priorité (repère rouge à côté du nom dans la liste).
                     </span>
                   </span>
@@ -373,76 +333,76 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
               </div>
 
               <div className="md:col-span-2 space-y-3">
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-200/90 bg-zinc-50/50 px-4 py-3 dark:border-white/[0.1] dark:bg-white/[0.03]">
-                  <input
-                    type="checkbox"
-                    checked={auditVisuelActif}
-                    onChange={(e) => {
-                      const on = e.target.checked;
-                      setAuditVisuelActif(on);
-                      if (on) {
-                        setAuditDossier((d) =>
-                          buildAuditVisuelDossier(d.checklist, d.template, {
-                            entreprise: form.entreprise.trim() || undefined,
-                          })
-                        );
-                      }
-                    }}
-                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#2563eb] focus:ring-[#2563eb] dark:border-zinc-600 dark:bg-zinc-900"
-                  />
-                  <span>
-                    <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      Audit visuel sur le dossier
-                    </span>
-                    <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
-                      Cochez pour afficher la grille (design, CTA, SEO local…). Les réponses sont enregistrées sur la fiche
-                      et dans l&apos;historique Finance → Audit visuel (même dossier après enregistrement).
-                    </span>
-                    {auditVisuelActif &&
-                    (prospect?.auditVisuel ||
-                      auditsVisuels.some(
-                        (a) => a.id === prospectAuditRecordId(prospect?.id ?? form.id)
-                      )) ? (
-                      <Link
-                        href={`/audit-visuel/${prospectAuditRecordId(prospect?.id ?? form.id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#c26500] underline-offset-2 hover:underline dark:text-[#a8c0e0]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Ouvrir en plein écran
-                        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                      </Link>
-                    ) : auditVisuelActif ? (
-                      <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-500">
-                        Enregistrez la fiche pour synchroniser l&apos;audit dans l&apos;historique et activer le lien plein
-                        écran.
-                      </p>
+                <p className={lightLabelClass}>Audit</p>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      aria-pressed={auditFait}
+                      onClick={() => setAuditFait(!auditFait)}
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        auditFait
+                          ? "border-emerald-500/45 bg-emerald-500/15 text-emerald-900"
+                          : "border-zinc-200/90 bg-white text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      {auditFait ? "✓ Audit fait" : "Audit fait"}
+                    </button>
+                    {auditFait ? (
+                      <input
+                        id="date-audit-fait"
+                        type="date"
+                        aria-label="Date audit fait"
+                        value={form.dateAuditFait ?? ""}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, dateAuditFait: e.target.value || undefined }))
+                        }
+                        className={`${lightInputClass} max-w-[150px] py-1.5 text-sm`}
+                      />
                     ) : null}
-                  </span>
-                </label>
-                {auditVisuelActif ? (
-                  <div className="rounded-xl border border-dashed border-zinc-300/90 bg-white/60 px-2 py-3 dark:border-white/[0.1] dark:bg-white/[0.02] sm:px-3">
-                    <AuditVisuelBlock
-                      key={form.id}
-                      value={auditDossier}
-                      onChange={setAuditDossier}
-                      entrepriseHint={form.entreprise.trim() || undefined}
-                      compact
-                    />
                   </div>
-                ) : null}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      aria-pressed={auditEnvoye}
+                      onClick={() => setAuditEnvoye(!auditEnvoye)}
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        auditEnvoye
+                          ? "border-sky-500/45 bg-sky-500/15 text-sky-950"
+                          : "border-zinc-200/90 bg-white text-zinc-600 hover:bg-zinc-50"
+                      }`}
+                    >
+                      {auditEnvoye ? "✓ Audit envoyé" : "Audit envoyé"}
+                    </button>
+                    {auditEnvoye ? (
+                      <input
+                        id="date-audit-envoye"
+                        type="date"
+                        aria-label="Date audit envoyé"
+                        value={form.dateAuditEnvoye ?? ""}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, dateAuditEnvoye: e.target.value || undefined }))
+                        }
+                        className={`${lightInputClass} max-w-[150px] py-1.5 text-sm`}
+                      />
+                    ) : null}
+                  </div>
+                </div>
+                <p className="text-[11px] text-zinc-500">
+                  <strong>Audit fait</strong> : votre suivi interne. <strong>Audit envoyé</strong> : compte dans « Audit à
+                  faire » sur le tableau de bord. Aucun des deux ne déclenche de relance (relances après le 1er appel).
+                </p>
               </div>
 
               <div>
-                <label className={formLabelClass}>Étape (contact)</label>
+                <label className={lightLabelClass}>Statut du contact</label>
                 <select
                   value={form.etapeContact}
                   onChange={(e) => {
                     const v = e.target.value as ProspectEtapeContact;
                     setForm((f) => ({ ...f, ...patchDatesForEtapeContact(f, v) }));
                   }}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 >
                   {ETAPES_CONTACT.map((s) => (
                     <option key={s.value} value={s.value}>
@@ -452,13 +412,13 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                 </select>
               </div>
               <div>
-                <label className={formLabelClass}>Réponse du prospect</label>
+                <label className={lightLabelClass}>Réponse du prospect</label>
                 <select
                   value={form.reponseClient ?? "en_attente"}
                   onChange={(e) =>
                     setForm({ ...form, reponseClient: e.target.value as ProspectReponseClient })
                   }
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 >
                   {REPONSES_CLIENT.map((s) => (
                     <option key={s.value} value={s.value}>
@@ -466,34 +426,31 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                <p className="text-xs text-zinc-500">
                   Par défaut : <strong>En attente</strong>. Choisissez Validé ou Refusé lorsque la réponse est connue.
                 </p>
               </div>
 
-              {form.etapeContact === "aucun" ? (
-                <div className="md:col-span-2 rounded-xl border border-dashed border-zinc-300/90 bg-zinc-50/50 px-4 py-3 dark:border-white/[0.1] dark:bg-white/[0.03]">
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                    Étape <strong>Aucun</strong> : pas de date d&apos;étape à renseigner. Choisissez une autre étape dès que
-                    le contact avance.
-                  </p>
-                </div>
-              ) : (
+              {numeroAppelEtape(form.etapeContact) > 0 ? (
                 <div className="md:col-span-2">
-                  <label className={formLabelClass}>Date *</label>
+                  <label className={lightLabelClass}>Date de l&apos;appel *</label>
                   <input
                     type="date"
                     required
                     value={dateEtapeEnCours(form) ?? ""}
                     onChange={(e) => setDateEtape(e.target.value || undefined)}
-                    className={`${inputFieldClass} max-w-[220px]`}
+                    className={`${lightInputClass} max-w-[220px]`}
                   />
-                  <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
-                    Date de l&apos;action <strong>{libelleEtapeCourante}</strong>. Au changement d&apos;étape, une date est
-                    proposée (aujourd&apos;hui) si besoin — vous pouvez la corriger.
+                  <p className="text-xs text-zinc-500">
+                    Date pour <strong>{libelleEtapeCourante}</strong> (proposée à aujourd&apos;hui si vide).
                   </p>
                 </div>
-              )}
+              ) : null}
+
+              <ProspectRelanceBlock
+                form={form}
+                onChange={(patch) => setForm((f) => ({ ...f, ...patch }))}
+              />
             </div>
 
             <div className="mt-8 space-y-4">
@@ -501,12 +458,12 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar
-                      className="h-5 w-5 shrink-0 text-[#ED8600] dark:text-[#8fa9c9]"
+                      className="h-5 w-5 shrink-0 text-[#6C5DD3]"
                       aria-hidden
                     />
-                    <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Rendez-vous</h3>
+                    <h3 className="text-sm font-semibold text-zinc-800">Rendez-vous</h3>
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed pl-7 sm:pl-7">
+                  <p className="text-xs text-zinc-500">
                     Activez le curseur pour planifier un ou plusieurs RDV. Sinon, aucun rendez-vous n&apos;est enregistré sur
                     cette fiche.
                   </p>
@@ -514,7 +471,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                 <div className="flex shrink-0 items-center gap-3 self-end sm:self-center pl-7 sm:pl-0">
                   <span
                     id="rdv-switch-label"
-                    className="text-sm font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap"
+                    className="text-sm font-medium text-zinc-700"
                   >
                     Planifier un RDV
                   </span>
@@ -524,10 +481,8 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                     aria-checked={rdvActif}
                     aria-labelledby="rdv-switch-label"
                     onClick={() => setRdvActif((a) => !a)}
-                    className={`relative h-8 w-[3.35rem] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED8600] focus-visible:ring-offset-2 dark:focus-visible:ring-[#8fa9c9] dark:focus-visible:ring-offset-[#0a0a0c] ${
-                      rdvActif
-                        ? "bg-[#ED8600] dark:bg-[#5b7fb8]"
-                        : "bg-zinc-300/90 dark:bg-zinc-600"
+                    className={`relative h-8 w-[3.35rem] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C5DD3] focus-visible:ring-offset-2 ${
+                      rdvActif ? "bg-[#6C5DD3]" : "bg-zinc-300/90"
                     }`}
                   >
                     <span
@@ -540,22 +495,22 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
               </div>
 
               {rdvActif && (
-                <p className="text-xs text-zinc-500 dark:text-zinc-500 pl-7 -mt-1 sm:pl-0">
+                <p className="text-xs text-zinc-500">
                   Date et heure séparées — sur téléphone, les sélecteurs permettent de faire défiler comme des molettes.
                 </p>
               )}
 
               {rdvActif ? (
-              <div className={`${panelSurfaceClass} p-4 sm:p-5 space-y-4`}>
+              <div className={lightPanelSurface}>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
                     Quand ?
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label
                         htmlFor="rdv-date"
-                        className="mb-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
+                        className="mb-2 flex items-center gap-2 text-sm text-zinc-600"
                       >
                         <Calendar className="h-4 w-4 opacity-70" aria-hidden />
                         Date
@@ -565,13 +520,13 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                         type="date"
                         value={rdvDate}
                         onChange={(e) => setRdvDate(e.target.value)}
-                        className={`${inputFieldClass} min-h-[3rem] text-base [color-scheme:light] dark:[color-scheme:dark]`}
+                        className={`${lightInputClass} min-h-[3rem] text-base`}
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="rdv-time"
-                        className="mb-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
+                        className="mb-2 flex items-center gap-2 text-sm text-zinc-600"
                       >
                         <Clock className="h-4 w-4 opacity-70" aria-hidden />
                         Heure
@@ -582,7 +537,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                         step={300}
                         value={rdvTime}
                         onChange={(e) => setRdvTime(e.target.value)}
-                        className={`${inputFieldClass} min-h-[3rem] text-base [color-scheme:light] dark:[color-scheme:dark]`}
+                        className={`${lightInputClass} min-h-[3rem] text-base`}
                       />
                     </div>
                   </div>
@@ -590,53 +545,53 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                     <button
                       type="button"
                       onClick={() => applyRdvPreset("h1")}
-                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:bg-white/[0.08]"
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
                     >
                       Dans 1 h
                     </button>
                     <button
                       type="button"
                       onClick={() => applyRdvPreset("h2")}
-                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:bg-white/[0.08]"
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
                     >
                       Dans 2 h
                     </button>
                     <button
                       type="button"
                       onClick={() => applyRdvPreset("tomorrow9")}
-                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:bg-white/[0.08]"
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
                     >
                       Demain 9 h
                     </button>
                     <button
                       type="button"
                       onClick={() => applyRdvPreset("tomorrow14")}
-                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:bg-white/[0.08]"
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
                     >
                       Demain 14 h
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 border-t border-zinc-200/80 pt-4 dark:border-white/[0.08]">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 border-t border-zinc-200/80 pt-4">
                   <div className="sm:col-span-2">
-                    <label className={formLabelClass}>Titre (optionnel)</label>
+                    <label className={lightLabelClass}>Titre (optionnel)</label>
                     <input
                       type="text"
                       value={rdvTitre}
                       onChange={(e) => setRdvTitre(e.target.value)}
                       placeholder="Ex. Appel découverte, visio…"
-                      className={inputFieldClass}
+                      className={lightInputClass}
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className={formLabelClass}>Note</label>
+                    <label className={lightLabelClass}>Note</label>
                     <input
                       type="text"
                       value={rdvNote}
                       onChange={(e) => setRdvNote(e.target.value)}
                       placeholder="Lien visio, ordre du jour…"
-                      className={inputFieldClass}
+                      className={lightInputClass}
                     />
                   </div>
                 </div>
@@ -651,8 +606,8 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                 </button>
               </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-zinc-300/90 bg-zinc-50/50 px-4 py-6 text-center dark:border-white/[0.1] dark:bg-white/[0.02]">
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <div className="rounded-xl border border-dashed border-zinc-300/90 bg-zinc-50/50 px-4 py-6 text-center">
+                  <p className="text-sm text-zinc-600">
                     Option désactivée — aucun rendez-vous ne sera enregistré pour ce prospect.
                   </p>
                 </div>
@@ -666,19 +621,19 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                   rdvTri.map((r) => (
                     <li
                       key={r.id}
-                      className="rounded-lg border border-zinc-200/80 dark:border-white/[0.08] px-3 py-2 text-sm flex justify-between gap-2"
+                      className="rounded-lg border border-zinc-200/80"
                     >
                       <div>
-                        <span className="font-medium text-zinc-800 dark:text-zinc-100">
+                        <span className="font-medium text-zinc-800">
                           {new Date(r.debut).toLocaleString("fr-FR")}
                         </span>
-                        {r.titre && <span className="text-zinc-600 dark:text-zinc-400"> — {r.titre}</span>}
-                        {r.note && <p className="text-zinc-600 dark:text-zinc-400 mt-0.5">{r.note}</p>}
+                        {r.titre && <span className="text-zinc-600"> — {r.titre}</span>}
+                        {r.note && <p className="text-zinc-600">{r.note}</p>}
                       </div>
                       <button
                         type="button"
                         onClick={() => supprimerRdv(r.id)}
-                        className="text-xs text-rose-600 dark:text-rose-400 shrink-0"
+                        className="text-xs text-rose-600"
                       >
                         Supprimer
                       </button>
@@ -690,11 +645,11 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
             </div>
           </div>
 
-          <div className={overlayFooterClass}>
+          <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6">
             <button type="button" onClick={onClose} className={secondaryButtonClass}>
               Annuler
             </button>
-            <button type="submit" className={primaryButtonClass}>
+            <button type="submit" className={violetPrimaryBtn}>
               Enregistrer
             </button>
           </div>

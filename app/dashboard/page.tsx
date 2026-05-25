@@ -18,6 +18,7 @@ import {
   defaultDashboardLayoutPrefs,
   normalizeDashboardLayoutPrefs,
   isTopWidgetId,
+  isHeroWidgetId,
   isChartWidgetId,
   isKpiGridWidgetId,
   isFullWidthWidgetId,
@@ -27,30 +28,24 @@ import {
 import { getActuelPourObjectif, normalizeObjectifPeriode, getFinancierEncaisseLabel } from "@/app/lib/objectifsPeriod";
 import {
   auditPasEncoreEnvoye,
-  besoinRelanceAppelSemaine,
-  besoinRelanceMailJ3,
+  besoinRelance,
   listeRendezVousAVenir,
   migrateProspect,
   prospectEnCours,
 } from "@/app/prospection/prospection_utils";
 import DevisKpiStrip from "@/app/finance/finance_components/DevisKpiStrip";
 import RendezVousAVenirCard from "@/app/prospection/prospection_components/RendezVousAVenirCard";
-import {
-  pageShellClass,
-  pageEyebrowClass,
-  pageTitleClass,
-  pageSubtitleClass,
-  pageDividerClass,
-  sectionIntroTitleClass,
-  sectionIntroDescClass,
-  panelSurfaceClass,
-  primaryButtonClass,
-  staggerCardsGridClass,
-} from "@/app/components/appCardStyles";
+import { primaryButtonClass, staggerCardsGridClass } from "@/app/components/appCardStyles";
+
+const dashboardShellClass =
+  "min-h-screen w-full bg-white text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12 [&_.motion-card]:!rounded-3xl [&_.motion-card]:!border-0";
+import { Sparkles, Settings } from "lucide-react";
 import EvolutionCACard from "./dashboard_components/EvolutionCACard";
+import CACard from "./dashboard_components/CACard";
+import ClientsActifCard from "./dashboard_components/ClientsActifCard";
+import ObjectifAnnuelCard from "./dashboard_components/ObjectifAnnuelCard";
 import NouveauxClientsCard from "./dashboard_components/NouveauxClientsCard";
 import DashboardQuickLinks from "./dashboard_components/DashboardQuickLinks";
-import DashboardFinanceHint from "./dashboard_components/DashboardFinanceHint";
 import { renderKpiGridWidget, type DashboardWidgetRenderContext } from "./dashboardWidgetsRender";
 
 function countActifsWithActiviteInMonth(clients: Client[], year: number, month: number): number {
@@ -152,13 +147,6 @@ export default function Dashboard() {
   const periodeFin = normalizeObjectifPeriode(objectifFinancier?.periode);
   const encaisseDescription = objectifFinancier ? getFinancierEncaisseLabel(periodeFin) : undefined;
 
-  const montantImpayes = useMemo(
-    () => factures.filter((f) => f.statut === "Non payé").reduce((s, f) => s + getResteAPayerFacture(f), 0),
-    [factures]
-  );
-
-  const nbFacturesImpayees = useMemo(() => factures.filter((f) => f.statut === "Non payé").length, [factures]);
-
   const facturesMois = useMemo(() => filterFacturesByPeriod(factures, "month"), [factures]);
 
   const revenueEncaisseMois = useMemo(
@@ -204,12 +192,11 @@ export default function Dashboard() {
 
   const prospectsM = useMemo(() => prospects.map(migrateProspect), [prospects]);
 
-  const { prospectsEnCours, auditsAEnvoyer, relancesMailAFaire, relancesAppelAFaire, rendezVousAVenir } = useMemo(() => {
+  const { prospectsEnCours, auditsAEnvoyer, relancesAFaire, rendezVousAVenir } = useMemo(() => {
     return {
       prospectsEnCours: prospectsM.filter((p) => prospectEnCours(p)).length,
       auditsAEnvoyer: prospectsM.filter((p) => auditPasEncoreEnvoye(p)).length,
-      relancesMailAFaire: prospectsM.filter((p) => besoinRelanceMailJ3(p)).length,
-      relancesAppelAFaire: prospectsM.filter((p) => besoinRelanceAppelSemaine(p)).length,
+      relancesAFaire: prospectsM.filter((p) => besoinRelance(p)).length,
       rendezVousAVenir: listeRendezVousAVenir(prospectsM),
     };
   }, [prospectsM]);
@@ -299,8 +286,7 @@ export default function Dashboard() {
       prochaineEcheanceStr,
       prospectsEnCours,
       auditsAEnvoyer,
-      relancesMailAFaire,
-      relancesAppelAFaire,
+      relancesAFaire,
       progressionObjectifsTotal,
     }),
     [
@@ -328,8 +314,7 @@ export default function Dashboard() {
       prochaineEcheanceStr,
       prospectsEnCours,
       auditsAEnvoyer,
-      relancesMailAFaire,
-      relancesAppelAFaire,
+      relancesAFaire,
       progressionObjectifsTotal,
     ]
   );
@@ -338,16 +323,71 @@ export default function Dashboard() {
 
   const effectiveOrder = useMemo(() => {
     if (!hasNoData) return visibleOrder;
-    return visibleOrder.filter((id) => id === "quickLinks" || id === "financeHint");
+    return visibleOrder.filter((id) => id === "quickLinks" || id === "kpiObjectif");
   }, [hasNoData, visibleOrder]);
 
   const blocks = useMemo(() => {
     const out: React.ReactNode[] = [];
     let i = 0;
     const order = effectiveOrder;
+    const visibleSet = new Set(order);
+    const showHeroEv = visibleSet.has("chartEvolutionCa");
+    const showHeroCa = visibleSet.has("kpiCa");
+    const showHeroClients = visibleSet.has("kpiClients");
+
+    if (showHeroEv || showHeroCa || showHeroClients) {
+      const hasSideKpis = showHeroCa || showHeroClients;
+      out.push(
+        <section
+          key="hero-overview"
+          className="mb-6 px-4 sm:px-6 md:mb-8 md:px-0"
+          aria-label="Vue principale — évolution du CA"
+        >
+          <div
+            className={`grid grid-cols-1 gap-4 sm:gap-6 ${
+              showHeroEv && hasSideKpis ? "lg:grid-cols-3" : hasSideKpis ? "sm:grid-cols-2" : ""
+            }`}
+          >
+            {showHeroEv ? (
+              <div
+                className={
+                  hasSideKpis
+                    ? "min-h-[360px] sm:min-h-[400px] lg:col-span-2 lg:min-h-[420px]"
+                    : "min-h-[360px] sm:min-h-[400px]"
+                }
+              >
+                <EvolutionCACard data={evolutionCAData} />
+              </div>
+            ) : null}
+            {hasSideKpis ? (
+              <div
+                className={`flex flex-col gap-4 sm:gap-6 ${
+                  showHeroEv ? "" : "sm:col-span-2 lg:col-span-3 sm:grid sm:grid-cols-2"
+                }`}
+              >
+                {showHeroCa ? (
+                  <CACard caMoisEncaisse={widgetCtx.caMoisEncaisse} variationPct={widgetCtx.variationCAPct} />
+                ) : null}
+                {showHeroClients ? (
+                  <ClientsActifCard
+                    clientsActifs={widgetCtx.clientsActifs}
+                    deltaActiviteVsMoisPrec={widgetCtx.deltaActiviteVsMoisPrec}
+                  />
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </section>
+      );
+    }
 
     while (i < order.length) {
       const id = order[i];
+
+      if (isHeroWidgetId(id)) {
+        i++;
+        continue;
+      }
 
       if (isTopWidgetId(id)) {
         const batch: DashboardWidgetId[] = [];
@@ -360,8 +400,14 @@ export default function Dashboard() {
             {batch.map((wid) => (
               <Fragment key={wid}>
                 {wid === "quickLinks" ? <DashboardQuickLinks /> : null}
-                {wid === "financeHint" ? (
-                  <DashboardFinanceHint montantImpayes={montantImpayes} nbFacturesImpayees={nbFacturesImpayees} />
+                {wid === "kpiObjectif" ? (
+                  <ObjectifAnnuelCard
+                    montantActuel={widgetCtx.montantPourObjectifFinancier}
+                    objectif={widgetCtx.objectifAnnuelValue}
+                    progression={widgetCtx.progressionObjectif}
+                    objectifLibelle={widgetCtx.objectifFinancier?.libelle}
+                    encaisseDescription={widgetCtx.encaisseDescription}
+                  />
                 ) : null}
               </Fragment>
             ))}
@@ -376,26 +422,24 @@ export default function Dashboard() {
           batch.push(order[i]);
           i++;
         }
-        const hasEv = batch.includes("chartEvolutionCa");
-        const hasAc = batch.includes("chartActiviteClients");
+        const chartBatch = batch.filter((wid) => wid !== "chartEvolutionCa");
+        if (chartBatch.length === 0) continue;
+
+        const hasAc = chartBatch.includes("chartActiviteClients");
         out.push(
           <section key={`charts-${out.length}`} className="px-4 sm:px-6 md:px-0 mb-8" aria-labelledby="dash-charts-heading">
-            <div className="mb-4">
-              <h2 id="dash-charts-heading" className={sectionIntroTitleClass}>
-                Tendances
-              </h2>
-              <p className={sectionIntroDescClass}>
-                Encaissements et activité client (dernière activité) sur 12 mois glissants.
-              </p>
-            </div>
-            <div
-              className={`grid grid-cols-1 gap-4 sm:gap-6 md:gap-6 ${hasEv && hasAc ? "lg:grid-cols-3" : ""}`}
-            >
-              {hasEv ? (
-                <div className={hasAc ? "lg:col-span-2 min-h-[380px] sm:min-h-[440px]" : "min-h-[380px] sm:min-h-[440px]"}>
-                  <EvolutionCACard data={evolutionCAData} />
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="block h-5 w-1 rounded-full bg-gradient-to-b from-sky-500 to-sky-500/30" aria-hidden />
+                <div>
+                  <h2 id="dash-charts-heading" className="text-base font-semibold tracking-tight text-zinc-900">
+                    Activité clients
+                  </h2>
+                  <p className="text-xs text-zinc-500">Dernière activité par mois, 12 mois glissants.</p>
                 </div>
-              ) : null}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-6">
               {hasAc ? (
                 <div className="min-h-[380px] sm:min-h-[440px]">
                   <NouveauxClientsCard data={activiteClientsData} />
@@ -425,13 +469,16 @@ export default function Dashboard() {
         if (id === "devisKpiStrip") {
           out.push(
             <section key={`devis-${out.length}`} className="px-4 sm:px-6 md:px-0 mb-8" aria-labelledby="dash-devis-kpi">
-              <div className="mb-4">
-                <h2 id="dash-devis-kpi" className={sectionIntroTitleClass}>
-                  Vue d&apos;ensemble devis
-                </h2>
-                <p className={sectionIntroDescClass}>
-                  Montants signés, pipeline (brouillon + envoyé) et refus — même indicateurs que sur la page Finance (devis).
-                </p>
+              <div className="mb-4 flex items-center gap-2.5">
+                <span className="block h-5 w-1 rounded-full bg-gradient-to-b from-violet-500 to-violet-500/30" aria-hidden />
+                <div>
+                  <h2 id="dash-devis-kpi" className="text-base font-semibold tracking-tight text-zinc-900">
+                    Vue d&apos;ensemble devis
+                  </h2>
+                  <p className="text-xs text-zinc-500">
+                    Signés, pipeline (brouillon + envoyé) et refus — mêmes indicateurs que dans Finance.
+                  </p>
+                </div>
               </div>
               <DevisKpiStrip devis={devis} embedded />
             </section>
@@ -453,16 +500,8 @@ export default function Dashboard() {
           <section
             key={`kpi-grid-${out.length}`}
             className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8"
-            aria-labelledby="dash-cards-heading"
+            aria-label="Indicateurs"
           >
-            <div className="mb-4">
-              <h2 id="dash-cards-heading" className={sectionIntroTitleClass}>
-                Cartes & indicateurs
-              </h2>
-              <p className={sectionIntroDescClass}>
-                Blocs issus des pages Clients, Finance, Deals, Prospection et Objectifs — activables dans Paramètres → Dashboard.
-              </p>
-            </div>
             <div
               className={`grid ${staggerCardsGridClass} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6`}
             >
@@ -481,8 +520,6 @@ export default function Dashboard() {
     return out;
   }, [
     effectiveOrder,
-    montantImpayes,
-    nbFacturesImpayees,
     evolutionCAData,
     activiteClientsData,
     widgetCtx,
@@ -491,36 +528,80 @@ export default function Dashboard() {
     devis,
   ]);
 
+  const dateLabel = useMemo(() => {
+    return currentDate.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, [currentDate]);
+
+  const greeting = useMemo(() => {
+    const h = currentDate.getHours();
+    if (h < 6) return "Bonne nuit";
+    if (h < 12) return "Bonjour";
+    if (h < 18) return "Bon après-midi";
+    return "Bonsoir";
+  }, [currentDate]);
+
   return (
-    <div className={pageShellClass}>
+    <div className={dashboardShellClass}>
       <div className="md:max-w-[1600px] md:mx-auto">
-        <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
-          <div>
-            <p className={pageEyebrowClass}>Tableau de bord</p>
-            <h1 className={pageTitleClass}>Dashboard</h1>
-            <p className={pageSubtitleClass}>
-              Composez votre première page avec les cartes du site — Paramètres → Dashboard.
-            </p>
+        <header className="relative mb-6 overflow-hidden px-4 sm:px-6 md:mb-8 md:px-0">
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#6C5DD3]/12 text-[#6C5DD3]">
+                  <Sparkles className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                </span>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6C5DD3]/80">
+                  Dashboard
+                </p>
+              </div>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px] md:text-[32px]">
+                {greeting}{" "}
+                <span aria-hidden>👋</span>
+              </h1>
+              <p className="mt-1 text-sm text-[#6C5DD3]/70 sm:text-[15px]">
+                <span className="capitalize">{dateLabel}</span> · voici un aperçu de votre activité.
+              </p>
+            </div>
+            <Link
+              href="/parametres"
+              className="inline-flex shrink-0 items-center gap-2 self-start rounded-2xl border border-neutral-200/80 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)] sm:self-end"
+            >
+              <Settings className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+              Personnaliser
+            </Link>
           </div>
-          <div className={pageDividerClass} aria-hidden />
         </header>
 
         {blocks}
 
         {hasNoData ? (
           <div className="px-4 sm:px-6 md:px-0 mb-8">
-            <div className={`${panelSurfaceClass} p-8 text-center`}>
-              <p className="text-zinc-800 dark:text-zinc-200 font-medium">Votre tableau de bord est vide</p>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
-                Ajoutez des clients, des factures et des objectifs pour voir les graphiques et les tendances.
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link href="/finance" className={primaryButtonClass}>
-                  Aller à Finance
-                </Link>
-                <Link href="/clients" className="text-sm font-medium text-[#ED8600] dark:text-[#8fa9c9] py-2.5 px-4">
-                  Clients
-                </Link>
+            <div className="relative overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-[#FFF8F1] via-white to-white p-8 text-center shadow-[0_8px_24px_-12px_rgba(0,0,0,0.06)]">
+              <div
+                className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[#ED8600]/15 blur-3xl dark:bg-[#5b7fb8]/15"
+                aria-hidden
+              />
+              <div className="relative">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#ED8600]/15 text-[#c2410c] dark:bg-[#5b7fb8]/20 dark:text-[#a8c0e0]">
+                  <Sparkles className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                </div>
+                <p className="font-medium text-zinc-800">Votre tableau de bord est vide</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-zinc-500">
+                  Ajoutez des clients, des factures et des objectifs pour voir les graphiques et les tendances.
+                </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                  <Link href="/finance" className={primaryButtonClass}>
+                    Aller à Finance
+                  </Link>
+                  <Link href="/clients" className="py-2.5 px-4 text-sm font-medium text-[#ED8600] dark:text-[#8fa9c9]">
+                    Clients
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -528,7 +609,7 @@ export default function Dashboard() {
           <>
             {factures.length === 0 ? (
               <div className="px-4 sm:px-6 md:px-0 mb-6">
-                <p className="text-sm text-amber-800 dark:text-amber-200/90 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+                <p className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200/90">
                   Aucune facture enregistrée : le CA et les graphiques d&apos;encaissement restent à zéro.{" "}
                   <Link href="/finance" className="font-medium underline underline-offset-2">
                     Créer une facture dans Finance

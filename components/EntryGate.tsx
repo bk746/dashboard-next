@@ -4,13 +4,15 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import PinPadScreen from "@/components/PinPadScreen";
 import {
   authenticateWithBiometric,
+  detectBiometricKind,
   getBiometricActionLabel,
+  getBiometricHint,
   hasBiometricCredential,
   isPlatformAuthenticatorAvailable,
   registerBiometricUnlock,
 } from "@/lib/biometricUnlock";
 import { clearStoredPin, isPinConfigured, savePin, verifyPin } from "@/lib/pinLock";
-import { ScanFace } from "lucide-react";
+import { Fingerprint, ScanFace } from "lucide-react";
 
 const SPLASH_KEY = "bk-copilot-splash-shown";
 
@@ -19,19 +21,30 @@ type SplashPhase = "idle" | "splash" | "exit";
 const sf =
   "font-[system-ui,-apple-system,BlinkMacSystemFont,'SF_Pro_Text','Segoe_UI',sans-serif]";
 
+function BiometricIcon({ className }: { className?: string }) {
+  const kind = detectBiometricKind();
+  if (kind === "touchId") {
+    return <Fingerprint className={className} strokeWidth={1.5} aria-hidden />;
+  }
+  return <ScanFace className={className} strokeWidth={1.5} aria-hidden />;
+}
+
 /**
- * Écran noir « bk copilot » puis code 4 chiffres (style iOS).
+ * Écran noir « bk copilot » puis code 4 chiffres ou Touch ID / Face ID.
  */
 export default function EntryGate({ children }: { children: React.ReactNode }) {
   const [splashPhase, setSplashPhase] = useState<SplashPhase>("splash");
   const [unlocked, setUnlocked] = useState(false);
   const [hasPin, setHasPin] = useState(false);
   const [setupStep, setSetupStep] = useState<"create" | "confirm">("create");
+  const [showBioSetup, setShowBioSetup] = useState(false);
   const [verifyKey, setVerifyKey] = useState(0);
   const [platformBio, setPlatformBio] = useState(false);
   const [hasBioCred, setHasBioCred] = useState(false);
   const [bioBusy, setBioBusy] = useState(false);
+  const [bioError, setBioError] = useState<string | null>(null);
   const firstPinRef = useRef<string | null>(null);
+  const bioAutoAttempted = useRef(false);
 
   useLayoutEffect(() => {
     setHasPin(isPinConfigured());
@@ -92,9 +105,14 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
 
   const tryBiometricUnlock = useCallback(async () => {
     setBioBusy(true);
+    setBioError(null);
     try {
       const ok = await authenticateWithBiometric();
-      if (ok) setUnlocked(true);
+      if (ok) {
+        setUnlocked(true);
+      } else {
+        setBioError("Authentification annulée ou refusée.");
+      }
     } finally {
       setBioBusy(false);
     }
@@ -102,11 +120,15 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
 
   const tryActivateBiometric = useCallback(async () => {
     setBioBusy(true);
+    setBioError(null);
     try {
       const ok = await registerBiometricUnlock();
       if (ok) {
         setHasBioCred(true);
+        setShowBioSetup(false);
         setUnlocked(true);
+      } else {
+        setBioError("Impossible d’activer la biométrie. Réessaie ou utilise le code.");
       }
     } finally {
       setBioBusy(false);
@@ -118,23 +140,40 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
     setSetupStep("confirm");
   }, []);
 
-  const handleConfirm = useCallback(async (pin: string) => {
-    if (firstPinRef.current === pin) {
-      await savePin(pin);
-      setHasPin(true);
-      setUnlocked(true);
-      firstPinRef.current = null;
-    } else {
-      firstPinRef.current = null;
-      setSetupStep("create");
-    }
-  }, []);
+  const handleConfirm = useCallback(
+    async (pin: string) => {
+      if (firstPinRef.current === pin) {
+        await savePin(pin);
+        setHasPin(true);
+        firstPinRef.current = null;
+        const bioOk = await isPlatformAuthenticatorAvailable();
+        if (bioOk) {
+          setShowBioSetup(true);
+        } else {
+          setUnlocked(true);
+        }
+      } else {
+        firstPinRef.current = null;
+        setSetupStep("create");
+      }
+    },
+    []
+  );
 
   const showSplash = splashPhase === "splash" || splashPhase === "exit";
   const needSetup = !hasPin;
-
-  /** Ne pas monter le dashboard tant que le code / Face ID n’a pas validé — évite tout flash du contenu. */
   const showApp = unlocked;
+
+  const lockScreenVisible =
+    !showSplash && splashPhase === "idle" && !unlocked && !showBioSetup;
+
+  useEffect(() => {
+    if (!lockScreenVisible || needSetup || !platformBio || !hasBioCred || bioAutoAttempted.current) {
+      return;
+    }
+    bioAutoAttempted.current = true;
+    void tryBiometricUnlock();
+  }, [lockScreenVisible, needSetup, platformBio, hasBioCred, tryBiometricUnlock]);
 
   return (
     <>
@@ -150,7 +189,47 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {!showSplash && splashPhase === "idle" && !unlocked && (
+      {showBioSetup && (
+        <div
+          className={`${sf} fixed inset-0 z-[9998] flex min-h-[100dvh] flex-col items-center justify-center bg-black px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))]`}
+        >
+          <div className="max-w-sm text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-white">
+              <BiometricIcon className="h-8 w-8" />
+            </div>
+            <h2 className="text-xl font-semibold text-white">{getBiometricActionLabel("activate")} ?</h2>
+            <p className="mt-3 text-sm leading-relaxed text-white/60">{getBiometricHint()}</p>
+            {bioError ? (
+              <p className="mt-4 text-sm text-red-400" role="alert">
+                {bioError}
+              </p>
+            ) : null}
+          </div>
+          <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
+            <button
+              type="button"
+              disabled={bioBusy}
+              onClick={() => void tryActivateBiometric()}
+              className="rounded-2xl bg-[#0A84FF] px-6 py-3.5 text-[15px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {bioBusy ? "En attente…" : getBiometricActionLabel("activate")}
+            </button>
+            <button
+              type="button"
+              disabled={bioBusy}
+              onClick={() => {
+                setShowBioSetup(false);
+                setUnlocked(true);
+              }}
+              className="py-2 text-[15px] font-normal text-white/50 transition-opacity hover:text-white/70"
+            >
+              Plus tard
+            </button>
+          </div>
+        </div>
+      )}
+
+      {lockScreenVisible && (
         <div
           className={`${sf} fixed inset-0 z-[9998] flex min-h-[100dvh] flex-col items-center justify-center bg-black px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-12`}
         >
@@ -170,7 +249,7 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
                   variant="fullscreen"
                   title="Confirmer le code"
                   subtitle="Saisis à nouveau les quatre chiffres."
-                  onComplete={handleConfirm}
+                  onComplete={(pin) => void handleConfirm(pin)}
                 />
               )
             ) : (
@@ -178,14 +257,19 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
                 key={verifyKey}
                 variant="fullscreen"
                 title="Entrer le code"
-                subtitle="Quatre chiffres — comme sur iPhone."
+                subtitle="Quatre chiffres — ou utilise Touch ID ci-dessous."
                 onComplete={(pin) => void handleVerify(pin)}
               />
             )}
           </div>
 
           {!needSetup && (
-            <div className="mt-auto flex flex-col items-center gap-5 pb-10 pt-6">
+            <div className="mt-auto flex flex-col items-center gap-4 pb-10 pt-6">
+              {bioError ? (
+                <p className="max-w-xs text-center text-sm text-red-400" role="alert">
+                  {bioError}
+                </p>
+              ) : null}
               {platformBio && hasBioCred ? (
                 <button
                   type="button"
@@ -193,8 +277,8 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
                   onClick={() => void tryBiometricUnlock()}
                   className="flex items-center gap-2 text-[15px] font-normal text-[#0A84FF] transition-opacity hover:opacity-80 active:opacity-60 disabled:opacity-40"
                 >
-                  <ScanFace className="h-5 w-5 shrink-0" strokeWidth={1.5} aria-hidden />
-                  {getBiometricActionLabel("unlock")}
+                  <BiometricIcon className="h-5 w-5 shrink-0" />
+                  {bioBusy ? "Vérification…" : getBiometricActionLabel("unlock")}
                 </button>
               ) : null}
               {platformBio && !hasBioCred ? (
@@ -204,7 +288,7 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
                   onClick={() => void tryActivateBiometric()}
                   className="flex items-center gap-2 text-[15px] font-normal text-[#0A84FF] transition-opacity hover:opacity-80 active:opacity-60 disabled:opacity-40"
                 >
-                  <ScanFace className="h-5 w-5 shrink-0" strokeWidth={1.5} aria-hidden />
+                  <BiometricIcon className="h-5 w-5 shrink-0" />
                   {getBiometricActionLabel("activate")}
                 </button>
               ) : null}
@@ -219,7 +303,10 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
                     setHasPin(false);
                     setHasBioCred(false);
                     setSetupStep("create");
+                    setShowBioSetup(false);
                     setUnlocked(false);
+                    setBioError(null);
+                    bioAutoAttempted.current = false;
                     firstPinRef.current = null;
                   }
                 }}

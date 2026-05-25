@@ -6,14 +6,12 @@ import { FaSearch, FaChevronDown, FaEllipsisV } from "react-icons/fa";
 import { FolderKanban } from "lucide-react";
 import type { Projet } from "@/app/types";
 import {
-  inputFieldClass,
-  panelSurfaceClass,
-  sectionIntroTitleClass,
-  sectionIntroDescClass,
-  segmentedBarClass,
-  segmentedTabActiveClass,
-  segmentedTabInactiveClass,
-} from "@/app/components/appCardStyles";
+  dealsFloatingCard,
+  dealsInputClass,
+  dealsSegmentedBar,
+  dealsTabActive,
+  dealsTabInactive,
+} from "@/app/deals-projets/dealsProjetsUi";
 
 interface ProjetsTableProps {
   projets: Projet[];
@@ -81,17 +79,17 @@ function getEcheanceInfo(dateFinStr: string): {
 function urgencyBadgeClass(u: Urgency): string {
   switch (u) {
     case "retard":
-      return "bg-rose-500/90 text-white dark:bg-rose-500/80";
+      return "bg-rose-500/15 text-rose-800";
     case "urgent":
-      return "bg-orange-500/90 text-white dark:bg-orange-500/75";
+      return "bg-orange-500/15 text-orange-800";
     case "semaine":
-      return "bg-amber-500/75 text-amber-950 dark:bg-amber-500/70 dark:text-amber-950";
+      return "bg-amber-500/15 text-amber-900";
     case "mois":
-      return "bg-emerald-600/85 text-white dark:bg-emerald-500/75";
+      return "bg-emerald-500/12 text-emerald-800";
     case "plus":
-      return "bg-zinc-400 text-white dark:bg-zinc-500";
+      return "bg-zinc-200/90 text-zinc-600";
     default:
-      return "bg-zinc-400/80 text-white dark:bg-zinc-500";
+      return "bg-zinc-100 text-zinc-500";
   }
 }
 
@@ -157,13 +155,13 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
   const getStatutBadgeColor = (statut: string) => {
     switch (statut) {
       case "Actif":
-        return "bg-emerald-600/90 text-white dark:bg-emerald-500/80";
+        return "bg-emerald-500/12 text-emerald-800";
       case "Prospect":
-        return "bg-amber-600/90 text-white dark:bg-amber-500/75";
+        return "bg-amber-500/12 text-amber-800";
       case "Terminé":
-        return "bg-zinc-500 text-white";
+        return "bg-zinc-200/90 text-zinc-600";
       default:
-        return "bg-zinc-500 text-white";
+        return "bg-zinc-100 text-zinc-600";
     }
   };
 
@@ -174,63 +172,39 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
   };
 
   return (
-    <div className="pb-4 sm:pb-6 md:pb-10">
-      <div className="mb-4">
-        <h2 className={sectionIntroTitleClass}>Suivi des projets</h2>
-        <p className={sectionIntroDescClass}>
-          {projets.length === 0 ? (
-            "Créez un projet pour suivre valeur, dates et responsable."
-          ) : (
-            <>
-              {projetsEnCoursCount} projet{projetsEnCoursCount > 1 ? "s" : ""} en cours (hors terminés) sur {projets.length}. Tri
-              par défaut : échéance la plus proche (retards en premier). Les factures sont dans{" "}
-              <Link href="/finance" className="font-medium text-[#ED8600] underline-offset-2 hover:underline dark:text-[#8fa9c9]">
-                Finance
-              </Link>
-              .
-            </>
-          )}
-        </p>
-      </div>
+    <div className={dealsFloatingCard}>
+      <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-4 sm:px-6">
+        <p className="mb-3 text-sm font-semibold text-[#5E549E]">Suivi des projets</p>
+        <div className="flex flex-col gap-4">
+          <div className={dealsSegmentedBar} role="tablist" aria-label="Portée de la liste">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={vueScope === "encours"}
+              onClick={() => setVueScope("encours")}
+              className={vueScope === "encours" ? dealsTabActive : dealsTabInactive}
+            >
+              En cours
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={vueScope === "tous"}
+              onClick={() => setVueScope("tous")}
+              className={vueScope === "tous" ? dealsTabActive : dealsTabInactive}
+            >
+              Tous
+            </button>
+          </div>
 
-      <div className={`${panelSurfaceClass} overflow-hidden`}>
-        <div className="border-b border-zinc-100 bg-zinc-50/90 px-4 py-4 dark:border-white/[0.06] dark:bg-white/[0.03] sm:px-5">
-          <div className="flex flex-col gap-4">
-            <div>
-              <p className="mb-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">Vue</p>
-              <div className={segmentedBarClass} role="tablist" aria-label="Portée de la liste">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={vueScope === "encours"}
-                  onClick={() => setVueScope("encours")}
-                  className={vueScope === "encours" ? segmentedTabActiveClass : segmentedTabInactiveClass}
-                >
-                  En cours
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={vueScope === "tous"}
-                  onClick={() => setVueScope("tous")}
-                  className={vueScope === "tous" ? segmentedTabActiveClass : segmentedTabInactiveClass}
-                >
-                  Tous
-                </button>
-              </div>
-                <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
-                  « En cours » exclut les projets au statut Terminé. Tri par défaut : échéance la plus proche (retards en premier).
-                </p>
-            </div>
-
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0 flex-1">
-                <label htmlFor="projets-search" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                <label htmlFor="projets-search" className="mb-1.5 block text-xs font-medium text-zinc-600">
                   Rechercher
                 </label>
                 <div className="relative">
                   <FaSearch
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 dark:text-zinc-500"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400"
                     aria-hidden
                   />
                   <input
@@ -240,12 +214,12 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                     placeholder="Nom, entreprise ou responsable…"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`${inputFieldClass} pl-10 py-2.5 rounded-xl`}
+                    className={`${dealsInputClass} pl-10`}
                   />
                 </div>
               </div>
               <div className="w-full shrink-0 lg:w-52">
-                <label htmlFor="projets-filter-statut" className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                <label htmlFor="projets-filter-statut" className="mb-1.5 block text-xs font-medium text-zinc-600">
                   Statut
                 </label>
                 <div className="relative">
@@ -253,55 +227,67 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                     id="projets-filter-statut"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className={`${inputFieldClass} w-full appearance-none cursor-pointer px-4 py-2.5 pr-9 text-sm rounded-xl`}
+                    className={`${dealsInputClass} appearance-none cursor-pointer pr-9`}
                   >
                     <option value="Tous les statuts">Tous les statuts</option>
                     <option value="Actif">Actif</option>
                     <option value="Prospect">Prospect</option>
                     {vueScope === "tous" && <option value="Terminé">Terminé</option>}
                   </select>
-                  <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 dark:text-zinc-500" />
+                  <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400" />
                 </div>
               </div>
             </div>
-          </div>
         </div>
+        <p className="mt-3 text-xs text-zinc-500">
+          {projets.length === 0 ? (
+            "Aucun projet."
+          ) : (
+            <>
+              {projetsEnCoursCount} en cours sur {projets.length} · tri par échéance ·{" "}
+              <Link href="/finance" className="font-medium text-[#6C5DD3] hover:underline">
+                Finance
+              </Link>
+            </>
+          )}
+        </p>
+      </div>
 
-        <div className="overflow-x-auto">
+      <div className="overflow-x-auto">
           {isDatabaseEmpty ? (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-              <div className="mb-4 rounded-2xl bg-zinc-100 p-5 dark:bg-white/[0.06]">
-                <FolderKanban className="h-11 w-11 text-zinc-400 dark:text-zinc-500" strokeWidth={1.25} aria-hidden />
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+                <FolderKanban className="h-7 w-7" strokeWidth={1.25} aria-hidden />
               </div>
-              <p className="text-base font-semibold text-zinc-800 dark:text-zinc-100">Aucun projet enregistré</p>
-              <p className="mt-2 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
-                Créez un projet avec <span className="font-medium text-zinc-700 dark:text-zinc-300">Nouveau projet</span> — vous pourrez lier une facture pour préremplir montant et entreprise.
+              <p className="text-base font-semibold text-zinc-800">Aucun projet enregistré</p>
+              <p className="mt-2 max-w-sm text-sm text-zinc-500">
+                Créez un projet avec <span className="font-medium text-zinc-700">Nouveau projet</span> — vous pourrez lier une facture pour préremplir montant et entreprise.
               </p>
             </div>
           ) : onlyTermines ? (
             <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-              <p className="text-base font-medium text-zinc-800 dark:text-zinc-200">Aucun projet en cours</p>
-              <p className="mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
-                Tous vos projets sont au statut <span className="font-medium text-zinc-700 dark:text-zinc-300">Terminé</span>. Passez à la vue « Tous » pour les consulter, ou créez un nouveau deal.
+              <p className="text-base font-medium text-zinc-800">Aucun projet en cours</p>
+              <p className="mt-2 max-w-md text-sm text-zinc-500">
+                Tous vos projets sont au statut <span className="font-medium text-zinc-700">Terminé</span>. Passez à la vue « Tous » pour les consulter, ou créez un nouveau deal.
               </p>
               <button
                 type="button"
                 onClick={() => setVueScope("tous")}
-                className="mt-5 text-sm font-medium text-[#ED8600] underline-offset-4 hover:underline dark:text-[#8fa9c9]"
+                className="mt-5 text-sm font-medium text-[#6C5DD3] underline-offset-4 hover:underline"
               >
                 Afficher tous les projets
               </button>
             </div>
           ) : isFilteredEmpty ? (
             <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-              <p className="text-base font-medium text-zinc-800 dark:text-zinc-200">Aucun résultat</p>
-              <p className="mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-base font-medium text-zinc-800">Aucun résultat</p>
+              <p className="mt-2 max-w-md text-sm text-zinc-500">
                 Aucun projet ne correspond à votre recherche ou au filtre de statut.
               </p>
               <button
                 type="button"
                 onClick={resetFilters}
-                className="mt-5 text-sm font-medium text-[#ED8600] underline-offset-4 hover:underline dark:text-[#8fa9c9]"
+                className="mt-5 text-sm font-medium text-[#6C5DD3] underline-offset-4 hover:underline"
               >
                 Réinitialiser recherche et filtres
               </button>
@@ -309,15 +295,15 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
           ) : (
             <>
               {/* Mobile : cartes */}
-              <div className="md:hidden divide-y divide-zinc-100 dark:divide-white/[0.06]">
+              <div className="md:hidden divide-y divide-zinc-100">
                 {filteredProjets.map((projet) => {
                   const ech = getEcheanceInfo(projet.dateFin);
                   return (
                     <div key={projet.id} className="px-4 py-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="font-medium text-zinc-900 dark:text-zinc-100">{projet.nom}</p>
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400">{projet.entreprise}</p>
+                          <p className="font-medium text-zinc-900">{projet.nom}</p>
+                          <p className="text-sm text-zinc-600">{projet.entreprise}</p>
                         </div>
                         <span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${getStatutBadgeColor(projet.statut)}`}>
                           {projet.statut}
@@ -328,26 +314,26 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                           {ech.badgeLabel}
                         </span>
                         {ech.detail ? (
-                          <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{ech.detail}</span>
+                          <span className="text-xs tabular-nums text-zinc-500">{ech.detail}</span>
                         ) : null}
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">Fin {projet.dateFin || "—"}</span>
+                        <span className="text-xs text-zinc-500">Fin {projet.dateFin || "—"}</span>
                       </div>
-                      <p className="mt-2 text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
+                      <p className="mt-2 text-sm font-medium tabular-nums text-zinc-800">
                         {projet.valeur.toLocaleString("fr-FR")} €
                       </p>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{projet.responsable}</p>
+                      <p className="mt-1 text-xs text-zinc-500">{projet.responsable}</p>
                       <div className="mt-3 flex gap-3">
                         <button
                           type="button"
                           onClick={() => onEdit(projet)}
-                          className="text-sm font-medium text-[#ED8600] dark:text-[#8fa9c9]"
+                          className="text-sm font-medium text-[#6C5DD3]"
                         >
                           Modifier
                         </button>
                         <button
                           type="button"
                           onClick={() => onDelete(projet.id)}
-                          className="text-sm text-red-600 dark:text-red-400"
+                          className="text-sm text-red-600"
                         >
                           Supprimer
                         </button>
@@ -360,35 +346,35 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
               {/* Desktop : tableau */}
               <table className="hidden md:table w-full">
                 <thead>
-                  <tr className="border-b border-zinc-200/90 bg-zinc-50/50 dark:border-white/[0.06] dark:bg-white/[0.02]">
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  <tr className="border-b border-zinc-200/90 bg-zinc-50/50">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Projet
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Entreprise
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Statut
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Valeur
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Début
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Fin
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Échéance
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Responsable
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       Commentaire
                     </th>
-                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                       <span className="sr-only">Actions</span>
                     </th>
                   </tr>
@@ -399,13 +385,13 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                     return (
                       <tr
                         key={projet.id}
-                        className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-zinc-50/80 dark:border-white/[0.04] dark:hover:bg-white/[0.03]"
+                        className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-[#6C5DD3]/[0.04]"
                       >
                         <td className="p-4">
-                          <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{projet.nom}</span>
+                          <span className="text-sm font-medium text-zinc-800">{projet.nom}</span>
                         </td>
                         <td className="p-4">
-                          <span className="text-sm text-zinc-700 dark:text-zinc-300">{projet.entreprise}</span>
+                          <span className="text-sm text-zinc-700">{projet.entreprise}</span>
                         </td>
                         <td className="p-4 align-middle">
                           <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatutBadgeColor(projet.statut)}`}>
@@ -413,15 +399,15 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className="text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-200">
+                          <span className="text-sm font-medium tabular-nums text-zinc-800">
                             {projet.valeur.toLocaleString("fr-FR")} €
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">{projet.dateDebut}</span>
+                          <span className="text-sm tabular-nums text-zinc-600">{projet.dateDebut}</span>
                         </td>
                         <td className="p-4">
-                          <span className="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">{projet.dateFin}</span>
+                          <span className="text-sm tabular-nums text-zinc-600">{projet.dateFin}</span>
                         </td>
                         <td className="p-4">
                           <div className="flex flex-col gap-1">
@@ -429,15 +415,15 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                               {ech.badgeLabel}
                             </span>
                             {ech.detail ? (
-                              <span className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{ech.detail}</span>
+                              <span className="text-xs tabular-nums text-zinc-500">{ech.detail}</span>
                             ) : null}
                           </div>
                         </td>
                         <td className="p-4">
-                          <span className="text-sm text-zinc-700 dark:text-zinc-300">{projet.responsable}</span>
+                          <span className="text-sm text-zinc-700">{projet.responsable}</span>
                         </td>
                         <td className="p-4">
-                          <span className="block max-w-[200px] truncate text-sm text-zinc-600 dark:text-zinc-400" title={projet.commentaire || ""}>
+                          <span className="block max-w-[200px] truncate text-sm text-zinc-600" title={projet.commentaire || ""}>
                             {projet.commentaire || "—"}
                           </span>
                         </td>
@@ -446,7 +432,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                             <button
                               type="button"
                               onClick={() => onEdit(projet)}
-                              className="p-2 text-zinc-500 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                              className="p-2 text-zinc-500 transition-colors hover:text-zinc-800"
                               aria-label="Modifier"
                             >
                               <FaEllipsisV className="text-sm" />
@@ -454,7 +440,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                             <button
                               type="button"
                               onClick={() => onDelete(projet.id)}
-                              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                              className="text-sm text-red-600 hover:text-red-700"
                             >
                               Supprimer
                             </button>
@@ -467,7 +453,6 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
               </table>
             </>
           )}
-        </div>
       </div>
     </div>
   );

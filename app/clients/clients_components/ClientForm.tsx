@@ -11,19 +11,7 @@ import {
   isSecteurActiviteInList,
 } from "@/lib/secteursActivite";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
-import {
-  overlayBackdropClass,
-  overlayPanelClass,
-  overlayHeaderClass,
-  overlayTitleClass,
-  overlayCloseButtonClass,
-  overlayScrollBodyClass,
-  overlayFooterClass,
-  inputFieldClass,
-  formLabelClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-} from "@/app/components/appCardStyles";
+import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
 
 interface ClientFormProps {
   client?: Client | null;
@@ -139,20 +127,33 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
 
   const title = client ? "Modifier le client" : "Nouveau client";
 
+  const lightPanelClass =
+    "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-3xl border-0 bg-white shadow-[0_24px_80px_-12px_rgba(108,93,211,0.22)] mx-2 sm:mx-4";
+  const lightInputClass =
+    "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2 text-zinc-800 placeholder:text-zinc-400 focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15 transition-colors";
+  const lightLabelClass = "block text-sm text-zinc-600 mb-2";
+  const violetPrimaryBtn =
+    "px-5 py-2.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] shadow-md shadow-[#6C5DD3]/25 hover:shadow-lg transition-all w-full sm:w-auto";
+
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={overlayPanelClass}
+        className={lightPanelClass}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="client-form-title"
       >
-        <div className={overlayHeaderClass}>
-          <h2 id="client-form-title" className={overlayTitleClass}>
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+          <h2 id="client-form-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
             {title}
           </h2>
-          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+            aria-label="Fermer"
+          >
             <FaTimes className="h-5 w-5" />
           </button>
         </div>
@@ -160,11 +161,11 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className={overlayScrollBodyClass}>
             {!client ? (
-              <div className="mb-5 rounded-xl border border-zinc-200/90 bg-zinc-50/50 p-4 dark:border-white/[0.08] dark:bg-white/[0.03]">
+              <div className="mb-5 rounded-2xl border-0 bg-[#6C5DD3]/[0.06] p-4">
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#ED8600] focus:ring-[#ED8600] disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-[#5b7fb8]"
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#6C5DD3] focus:ring-[#6C5DD3] disabled:opacity-50"
                     checked={importFromProspection}
                     disabled={prospects.length === 0}
                                        onChange={(e) => {
@@ -190,7 +191,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                 {importFromProspection ? (
                   <div className="mt-3 space-y-3">
                     <div>
-                      <label className={formLabelClass} htmlFor="client-import-prospect-search">
+                      <label className={lightLabelClass} htmlFor="client-import-prospect-search">
                         Rechercher un prospect
                       </label>
                       <div className="relative">
@@ -205,7 +206,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                           placeholder="Entreprise, contact, e-mail, téléphone…"
                           value={prospectSearchQuery}
                           onChange={(e) => setProspectSearchQuery(e.target.value)}
-                          className={`${inputFieldClass} pl-10`}
+                          className={`${lightInputClass} pl-10`}
                         />
                       </div>
                       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
@@ -215,7 +216,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                       </p>
                     </div>
                     <div>
-                      <label className={formLabelClass} htmlFor="client-import-prospect">
+                      <label className={lightLabelClass} htmlFor="client-import-prospect">
                         Choisir dans la liste
                       </label>
                       <select
@@ -228,7 +229,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                           const p = prospects.find((x) => x.id === id);
                           if (p) setFormData(prospectToFormFields(p));
                         }}
-                        className={inputFieldClass}
+                        className={lightInputClass}
                         disabled={filteredProspectsForImport.length === 0 && prospectSearchQuery.trim() !== ""}
                       >
                         <option value="">
@@ -254,60 +255,60 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
             ) : null}
 
             <div>
-              <label className={formLabelClass}>Nom de l&apos;entreprise</label>
+              <label className={lightLabelClass}>Nom de l&apos;entreprise</label>
               <input
                 type="text"
                 required
                 value={formData.entreprise}
                 onChange={(e) => setFormData({ ...formData, entreprise: e.target.value })}
-                className={inputFieldClass}
+                className={lightInputClass}
               />
             </div>
 
             <div>
-              <label className={formLabelClass}>Nom du patron</label>
+              <label className={lightLabelClass}>Nom du patron</label>
               <input
                 type="text"
                 required
                 value={formData.patron}
                 onChange={(e) => setFormData({ ...formData, patron: e.target.value })}
-                className={inputFieldClass}
+                className={lightInputClass}
               />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Téléphone</label>
+                <label className={lightLabelClass}>Téléphone</label>
                 <input
                   type="tel"
                   required
                   value={formData.telephone}
                   onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 />
               </div>
 
               <div>
-                <label className={formLabelClass}>Email</label>
+                <label className={lightLabelClass}>Email</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={formLabelClass}>Statut</label>
+                <label className={lightLabelClass}>Statut</label>
                 <select
                   value={formData.statut}
                   onChange={(e) =>
                     setFormData({ ...formData, statut: e.target.value as "Actif" | "Inactif" | "Prospect" })
                   }
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 >
                   <option value="Actif">Actif</option>
                   <option value="Inactif">Inactif</option>
@@ -316,7 +317,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
               </div>
 
               <div>
-                <label className={formLabelClass} htmlFor="client-abonnement">
+                <label className={lightLabelClass} htmlFor="client-abonnement">
                   Offre d&apos;abonnement
                 </label>
                 <select
@@ -328,7 +329,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                       abonnement: e.target.value as AbonnementOffre,
                     })
                   }
-                  className={inputFieldClass}
+                  className={lightInputClass}
                 >
                   {ABONNEMENT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -340,7 +341,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
             </div>
 
             <div>
-              <label className={formLabelClass} htmlFor="client-secteur-select">
+              <label className={lightLabelClass} htmlFor="client-secteur-select">
                 Secteur d&apos;activité
               </label>
               <select
@@ -361,7 +362,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                     setFormData({ ...formData, secteurActivite: v });
                   }
                 }}
-                className={inputFieldClass}
+                className={lightInputClass}
               >
                 <option value={SECTEUR_ACTIVITE_VIDE}>— Non renseigné —</option>
                 {SECTEURS_ACTIVITE_OPTIONS.map((label) => (
@@ -373,7 +374,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
               </select>
               {secteurSelectValue === SECTEUR_ACTIVITE_AUTRE ? (
                 <div className="mt-2">
-                  <label className={formLabelClass} htmlFor="client-secteur-autre">
+                  <label className={lightLabelClass} htmlFor="client-secteur-autre">
                     Précisez le secteur
                   </label>
                   <input
@@ -382,30 +383,30 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
                     value={formData.secteurActivite}
                     onChange={(e) => setFormData({ ...formData, secteurActivite: e.target.value })}
                     placeholder="Saisie libre si votre secteur n'est pas dans la liste"
-                    className={inputFieldClass}
+                    className={lightInputClass}
                   />
                 </div>
               ) : null}
             </div>
 
             <div>
-              <label className={formLabelClass}>Dernière activité</label>
+              <label className={lightLabelClass}>Dernière activité</label>
               <input
                 type="text"
                 required
                 value={formData.derniereActivite}
                 onChange={(e) => setFormData({ ...formData, derniereActivite: e.target.value })}
                 placeholder="DD/MM/YYYY"
-                className={inputFieldClass}
+                className={lightInputClass}
               />
             </div>
           </div>
 
-          <div className={overlayFooterClass}>
+          <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6">
             <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
               Annuler
             </button>
-            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
+            <button type="submit" className={violetPrimaryBtn}>
               {client ? "Modifier" : "Créer"}
             </button>
           </div>

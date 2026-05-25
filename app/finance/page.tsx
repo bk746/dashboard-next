@@ -1,28 +1,27 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import {
+  Euro,
+  Clock,
+  AlertTriangle,
+  Wallet,
+  Scale,
+  FileText,
+} from "lucide-react";
 import type { Client, Depense, Devis, Facture } from "@/app/types";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
+import DashboardToneKpiCard, {
+  DashboardToneBadge,
+} from "@/app/dashboard/dashboard_components/DashboardToneKpiCard";
 import {
-  pageShellClass,
-  pageEyebrowClass,
-  pageTitleClass,
-  pageSubtitleClass,
-  pageDividerClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-  segmentedBarClass,
-  segmentedTabActiveClass,
-  segmentedTabInactiveClass,
-  sectionIntroTitleClass,
-  sectionIntroDescClass,
-  staggerCardsGridClass,
-} from "@/app/components/appCardStyles";
-import RevenueEncaisseCard from "./finance_components/RevenueEncaisseCard";
-import EnAttenteCard from "./finance_components/EnAttenteCard";
-import EnRetardCard from "./finance_components/EnRetardCard";
-import DepenseCard from "./finance_components/DepenseCard";
-import SyntheseNetCard from "./finance_components/SyntheseNetCard";
+  financeShellClass,
+  financePrimaryBtn,
+  financeSecondaryBtn,
+  financeSegmentedBar,
+  financeTabActive,
+  financeTabInactive,
+} from "./financeUi";
 import DepenseForm from "./finance_components/DepenseForm";
 import DepensesTable from "./finance_components/DepensesTable";
 import FacturesTable from "./finance_components/FacturesTable";
@@ -44,8 +43,12 @@ import {
 
 type Tab = "devis" | "factures";
 
+function formatEuro(n: number) {
+  return `${n.toLocaleString("fr-FR")} €`;
+}
+
 export default function Finance() {
-  const [tab, setTab] = useState<Tab>("devis");
+  const [tab, setTab] = useState<Tab>("factures");
   const [periodScope, setPeriodScope] = useState<"month" | "all">("month");
   const [clients, setClients, ready] = useJsonBucket<Client[]>("clients", []);
   const [devis, setDevis] = useJsonBucket<Devis[]>("devis", []);
@@ -107,16 +110,23 @@ export default function Finance() {
 
   const hintRevenue =
     periodScope === "month"
-      ? "Montants encaissés ce mois (factures payées + acomptes sur impayées, date de facture)"
-      : "Montants encaissés (payé intégral + acomptes, date de facture)";
+      ? "Encaissé ce mois (payé + acomptes)"
+      : "Encaissé — toutes périodes";
 
   const hintAttente =
-    periodScope === "month" ? "Factures impayées — émises ce mois" : "Factures impayées — toutes périodes";
+    periodScope === "month" ? "Impayées émises ce mois" : "Impayées — toutes périodes";
 
   const hintDepense =
-    periodScope === "month"
-      ? "Récurrents (mois) + occasionnels datés ce mois"
-      : "Somme de toutes les lignes (récurrent + occasionnel)";
+    periodScope === "month" ? "Récurrents + occasionnels du mois" : "Toutes les charges";
+
+  const dateLabel = useMemo(() => {
+    return new Date().toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
 
   const handleSaveFacture = (facture: Facture) => {
     const updated = editingFacture
@@ -166,120 +176,142 @@ export default function Finance() {
   };
 
   return (
-    <div className={pageShellClass}>
-      <div className="md:max-w-[1600px] md:mx-auto">
-        <header className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p className={pageEyebrowClass}>Trésorerie</p>
-              <h1 className={pageTitleClass}>Finance</h1>
-              <p className={pageSubtitleClass}>
-                {tab === "factures"
-                  ? "Indicateurs, synthèse nette et factures — les nouvelles factures se créent depuis un devis accepté."
-                  : "Créez un devis, puis une facture depuis le formulaire (statut Accepté) ou depuis la liste."}
-              </p>
+    <div className={financeShellClass}>
+      <div className="md:max-w-[1600px] md:mx-auto space-y-6 md:space-y-8">
+        <header className="px-1 space-y-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px]">
+                Finance
+              </h1>
+              <p className="mt-1 text-sm text-zinc-500 capitalize">{dateLabel}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingDevis(null);
-                  setShowDevisForm(true);
-                }}
-                className={`${primaryButtonClass} w-full sm:w-auto !px-4 sm:!px-6 text-sm`}
-              >
-                Créer un devis
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingDepense(null);
-                  setShowDepenseForm(true);
-                }}
-                className={secondaryButtonClass}
-              >
-                Nouvelle dépense
-              </button>
-            </div>
-          </div>
-          <div className={pageDividerClass} aria-hidden />
-          <div
-            className="mt-6 flex flex-col gap-2 sm:mt-7 sm:flex-row sm:items-center sm:justify-between"
-            role="tablist"
-            aria-label="Type de document"
-          >
-            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-500">Afficher</p>
-            <div className={segmentedBarClass}>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={tab === "devis"}
-                onClick={() => setTab("devis")}
-                className={tab === "devis" ? segmentedTabActiveClass : segmentedTabInactiveClass}
-              >
-                Devis
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={tab === "factures"}
-                onClick={() => setTab("factures")}
-                className={tab === "factures" ? segmentedTabActiveClass : segmentedTabInactiveClass}
-              >
-                Factures
-              </button>
-            </div>
-          </div>
 
-          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-0">
-            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Période (KPI, tableaux, synthèse)</p>
-            <div className={segmentedBarClass} role="group" aria-label="Période">
-              <button
-                type="button"
-                onClick={() => setPeriodScope("month")}
-                className={periodScope === "month" ? segmentedTabActiveClass : segmentedTabInactiveClass}
-              >
-                Mois en cours
-              </button>
-              <button
-                type="button"
-                onClick={() => setPeriodScope("all")}
-                className={periodScope === "all" ? segmentedTabActiveClass : segmentedTabInactiveClass}
-              >
-                Tout
-              </button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className={financeSegmentedBar} role="tablist" aria-label="Devis ou factures">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === "devis"}
+                    onClick={() => setTab("devis")}
+                    className={tab === "devis" ? financeTabActive : financeTabInactive}
+                  >
+                    Devis
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === "factures"}
+                    onClick={() => setTab("factures")}
+                    className={tab === "factures" ? financeTabActive : financeTabInactive}
+                  >
+                    Factures
+                  </button>
+                </div>
+                <div className={financeSegmentedBar} role="group" aria-label="Période">
+                  <button
+                    type="button"
+                    onClick={() => setPeriodScope("month")}
+                    className={periodScope === "month" ? financeTabActive : financeTabInactive}
+                  >
+                    Mois
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPeriodScope("all")}
+                    className={periodScope === "all" ? financeTabActive : financeTabInactive}
+                  >
+                    Tout
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingDevis(null);
+                    setShowDevisForm(true);
+                  }}
+                  className={financePrimaryBtn}
+                >
+                  <FileText className="h-4 w-4" aria-hidden />
+                  Devis
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingDepense(null);
+                    setShowDepenseForm(true);
+                  }}
+                  className={financeSecondaryBtn}
+                >
+                  <Wallet className="h-4 w-4" aria-hidden />
+                  Dépense
+                </button>
+              </div>
             </div>
           </div>
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
-            Période sélectionnée : <span className="font-medium text-zinc-700 dark:text-zinc-300">{periodLabelLong}</span>
-            . Les cartes « En retard » et les indicateurs devis (pipeline / acceptés) restent calculés sur tout le
-            portefeuille.
-          </p>
         </header>
 
         {tab === "factures" && (
           <>
-            <section className="mb-6 px-4 sm:px-6 md:mb-8 md:px-0" aria-label="Indicateurs">
-              <div className="mb-4">
-                <h2 className={sectionIntroTitleClass}>Vue d&apos;ensemble</h2>
-                <p className={sectionIntroDescClass}>
-                  Encaissements et impayés selon la période, retards (toutes périodes), dépenses et synthèse nette
-                  (encaissé − charges).
-                </p>
-              </div>
-              <div
-                className={`grid ${staggerCardsGridClass} grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5 xl:gap-4`}
-              >
-                <RevenueEncaisseCard revenueEncaisse={revenueEncaisse} periodHint={hintRevenue} />
-                <EnAttenteCard enAttente={enAttente} periodHint={hintAttente} />
-                <EnRetardCard enRetard={enRetard} />
-                <DepenseCard
-                  total={depenseTotals.total}
-                  totalRecurrent={depenseTotals.totalRecurrent}
-                  totalOccasionnel={depenseTotals.totalOccasionnel}
-                  periodHint={hintDepense}
+            <section aria-label="Indicateurs finance">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5">
+                <DashboardToneKpiCard
+                  tone="violet"
+                  label="Revenu encaissé"
+                  subtitle={hintRevenue}
+                  value={formatEuro(revenueEncaisse)}
+                  icon={<Euro aria-hidden />}
                 />
-                <SyntheseNetCard net={soldeNet} periodLabel={periodLabelLong} />
+                <DashboardToneKpiCard
+                  tone="pink"
+                  label="En attente"
+                  subtitle={hintAttente}
+                  value={formatEuro(enAttente)}
+                  icon={<Clock aria-hidden />}
+                  footer={<DashboardToneBadge variant="warn">Non payé</DashboardToneBadge>}
+                />
+                <DashboardToneKpiCard
+                  tone="pink"
+                  label="En retard"
+                  subtitle="Impayées, date passée — toutes périodes"
+                  value={formatEuro(enRetard)}
+                  icon={<AlertTriangle aria-hidden />}
+                  footer={<DashboardToneBadge variant="warn">À relancer</DashboardToneBadge>}
+                />
+                <DashboardToneKpiCard
+                  tone="violet"
+                  label="Dépenses"
+                  subtitle={hintDepense}
+                  value={formatEuro(depenseTotals.total)}
+                  icon={<Wallet aria-hidden />}
+                  footer={
+                    depenseTotals.totalRecurrent > 0 || depenseTotals.totalOccasionnel > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {depenseTotals.totalRecurrent > 0 ? (
+                          <DashboardToneBadge>Réc. {formatEuro(depenseTotals.totalRecurrent)}</DashboardToneBadge>
+                        ) : null}
+                        {depenseTotals.totalOccasionnel > 0 ? (
+                          <DashboardToneBadge>Occ. {formatEuro(depenseTotals.totalOccasionnel)}</DashboardToneBadge>
+                        ) : null}
+                      </div>
+                    ) : null
+                  }
+                />
+                <DashboardToneKpiCard
+                  tone={soldeNet >= 0 ? "violet" : "pink"}
+                  label="Synthèse nette"
+                  subtitle={`Encaissé − dépenses (${periodLabelLong})`}
+                  value={formatEuro(soldeNet)}
+                  icon={<Scale aria-hidden />}
+                  footer={
+                    <DashboardToneBadge variant={soldeNet >= 0 ? "success" : "warn"}>
+                      {soldeNet >= 0 ? "Positif" : "Négatif"}
+                    </DashboardToneBadge>
+                  }
+                />
               </div>
             </section>
 
@@ -297,7 +329,7 @@ export default function Finance() {
               }}
             />
 
-            <section className="px-4 sm:px-6 md:px-0" aria-label="Liste des factures">
+            <section aria-label="Liste des factures">
               <FacturesTable
                 factures={facturesForTable}
                 totalInDatabase={factures.length}
@@ -316,7 +348,7 @@ export default function Finance() {
         {tab === "devis" && (
           <>
             <DevisKpiStrip devis={devis} />
-            <section className="px-4 sm:px-6 md:px-0" aria-label="Devis">
+            <section aria-label="Devis">
               <DevisTable
                 devis={devisForTable}
                 totalInDatabase={devis.length}
@@ -333,7 +365,7 @@ export default function Finance() {
         )}
       </div>
 
-      {showFactureForm && (
+      {showFactureForm ? (
         <FactureForm
           facture={editingFacture}
           fromDevis={factureFromDevis}
@@ -345,9 +377,9 @@ export default function Finance() {
           }}
           onSave={handleSaveFacture}
         />
-      )}
+      ) : null}
 
-      {showDevisForm && (
+      {showDevisForm ? (
         <DevisForm
           devis={editingDevis}
           clients={clients}
@@ -358,25 +390,25 @@ export default function Finance() {
           onSave={handleSaveDevis}
           onCreateFacture={handleCreateFactureFromDevis}
         />
-      )}
+      ) : null}
 
-      {viewingDevis && (
+      {viewingDevis ? (
         <DevisDocument
           devis={viewingDevis}
           client={clients.find((c) => c.entreprise === viewingDevis.entreprise) ?? null}
           onClose={() => setViewingDevis(null)}
         />
-      )}
+      ) : null}
 
-      {viewingFacture && (
+      {viewingFacture ? (
         <FactureDocument
           facture={viewingFacture}
           client={clients.find((c) => c.entreprise === viewingFacture.entreprise) ?? null}
           onClose={() => setViewingFacture(null)}
         />
-      )}
+      ) : null}
 
-      {showDepenseForm && (
+      {showDepenseForm ? (
         <DepenseForm
           depense={editingDepense}
           onClose={() => {
@@ -385,7 +417,7 @@ export default function Finance() {
           }}
           onSave={handleSaveDepense}
         />
-      )}
+      ) : null}
     </div>
   );
 }

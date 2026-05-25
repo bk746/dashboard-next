@@ -4,19 +4,13 @@ import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import type { AbonnementOffre, Client, Devis, Facture } from "@/app/types";
 import { ABONNEMENT_OPTIONS, normalizeAbonnement } from "@/lib/abonnement";
+import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
 import {
-  overlayBackdropClass,
-  overlayPanelClass,
-  overlayHeaderClass,
-  overlayTitleClass,
-  overlayCloseButtonClass,
-  overlayScrollBodyClass,
-  overlayFooterClass,
-  inputFieldClass,
-  formLabelClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-} from "@/app/components/appCardStyles";
+  financeLightPanel,
+  financeLightInput,
+  financeLightLabel,
+  financeVioletPrimaryBtn,
+} from "@/app/finance/financeUi";
 
 interface FactureFormProps {
   facture?: Facture | null;
@@ -117,17 +111,22 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={overlayPanelClass}
+        className={financeLightPanel}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="facture-form-title"
       >
-        <div className={overlayHeaderClass}>
-          <h2 id="facture-form-title" className={overlayTitleClass}>
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+          <h2 id="facture-form-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
             {title}
           </h2>
-          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+            aria-label="Fermer"
+          >
             <FaTimes className="h-5 w-5" />
           </button>
         </div>
@@ -135,23 +134,23 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className={overlayScrollBodyClass}>
             <div>
-              <label className={formLabelClass}>Numéro de facture</label>
+              <label className={financeLightLabel}>Numéro de facture</label>
               <input
                 type="text"
                 required
                 value={formData.numeroFacture}
                 onChange={(e) => setFormData({ ...formData, numeroFacture: e.target.value })}
-                className={inputFieldClass}
+                className={financeLightInput}
               />
             </div>
 
             <div>
-              <label className={formLabelClass}>Entreprise</label>
+              <label className={financeLightLabel}>Entreprise</label>
               <select
                 required
                 value={formData.entreprise}
                 onChange={(e) => handleEntrepriseChange(e.target.value)}
-                className={inputFieldClass}
+                className={financeLightInput}
               >
                 <option value="">Sélectionner une entreprise</option>
                 {clients.map((client) => (
@@ -164,7 +163,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Statut</label>
+                <label className={financeLightLabel}>Statut</label>
                 <select
                   value={formData.statut}
                   onChange={(e) => {
@@ -176,7 +175,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                     });
                     if (statut === "Payé") setHasAcompte(false);
                   }}
-                  className={inputFieldClass}
+                  className={financeLightInput}
                 >
                   <option value="Payé">Payé</option>
                   <option value="Non payé">Non payé</option>
@@ -184,13 +183,13 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
               </div>
 
               <div>
-                <label className={formLabelClass}>Abonnement</label>
+                <label className={financeLightLabel}>Abonnement</label>
                 <select
                   value={formData.abonnement}
                   onChange={(e) =>
                     setFormData({ ...formData, abonnement: e.target.value as AbonnementOffre })
                   }
-                  className={inputFieldClass}
+                  className={financeLightInput}
                 >
                   {ABONNEMENT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -203,19 +202,19 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Date</label>
+                <label className={financeLightLabel}>Date</label>
                 <input
                   type="text"
                   required
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   placeholder="DD/MM/YYYY"
-                  className={inputFieldClass}
+                  className={financeLightInput}
                 />
               </div>
 
               <div>
-                <label className={formLabelClass}>Prix (€)</label>
+                <label className={financeLightLabel}>Prix (€)</label>
                 <input
                   type="number"
                   required
@@ -230,17 +229,17 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                       montantAcompte: hasAcompte ? Math.min(prix, ac) : 0,
                     });
                   }}
-                  className={inputFieldClass}
+                  className={financeLightInput}
                 />
               </div>
             </div>
 
             {formData.statut === "Non payé" ? (
-              <div className="rounded-xl border border-zinc-200/90 bg-zinc-50/50 p-4 dark:border-white/[0.08] dark:bg-white/[0.03]">
+              <div className="rounded-xl border border-zinc-200/90 bg-zinc-50/50 p-4">
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#ED8600] focus:ring-[#ED8600] dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-[#5b7fb8]"
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#ED8600] focus:ring-[#ED8600]"
                     checked={hasAcompte}
                     onChange={(e) => {
                       const on = e.target.checked;
@@ -251,8 +250,8 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                     }}
                   />
                   <span>
-                    <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-100">Acompte versé</span>
-                    <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="block text-sm font-medium text-zinc-800">Acompte versé</span>
+                    <span className="mt-0.5 block text-xs text-zinc-500">
                       Cochez si un acompte a déjà été encaissé ; le reste à payer est calculé automatiquement.
                     </span>
                   </span>
@@ -260,7 +259,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                 {hasAcompte ? (
                   <div className="mt-3 space-y-2">
                     <div>
-                      <label className={formLabelClass} htmlFor="facture-acompte">
+                      <label className={financeLightLabel} htmlFor="facture-acompte">
                         Montant de l&apos;acompte (€)
                       </label>
                       <input
@@ -276,13 +275,13 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                             montantAcompte: Math.min(formData.prix, n),
                           });
                         }}
-                        className={inputFieldClass}
+                        className={financeLightInput}
                       />
                     </div>
-                    <p className="text-sm font-medium tabular-nums text-zinc-800 dark:text-zinc-100">
+                    <p className="text-sm font-medium tabular-nums text-zinc-800">
                       Reste à payer :{" "}
-                      <span className="text-[#ED8600] dark:text-[#8fa9c9]">{resteAPayer.toLocaleString("fr-FR")} €</span>
-                      <span className="ml-2 font-normal text-zinc-500 dark:text-zinc-400">
+                      <span className="text-[#ED8600]">{resteAPayer.toLocaleString("fr-FR")} €</span>
+                      <span className="ml-2 font-normal text-zinc-500">
                         (total {formData.prix.toLocaleString("fr-FR")} €
                         {montantAcompteEffectif > 0
                           ? ` − acompte ${montantAcompteEffectif.toLocaleString("fr-FR")} €`
@@ -296,11 +295,11 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
             ) : null}
           </div>
 
-          <div className={overlayFooterClass}>
+          <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6">
             <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
               Annuler
             </button>
-            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
+            <button type="submit" className={financeVioletPrimaryBtn}>
               {facture ? "Modifier" : "Créer"}
             </button>
           </div>

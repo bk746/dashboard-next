@@ -1,24 +1,86 @@
-import Link from "next/link";
-import { secondaryButtonClass, panelSurfaceClass } from "@/app/components/appCardStyles";
+"use client";
 
-const links = [
-  { href: "/finance", label: "Finance" },
-  { href: "/clients", label: "Clients" },
-  { href: "/deals-projets", label: "Deals / Projets" },
-  { href: "/objectifs", label: "Objectifs" },
-] as const;
+import Link from "next/link";
+import { Wallet, Users, Briefcase, Target, type LucideIcon } from "lucide-react";
+
+type QuickLink = {
+  href: string;
+  label: string;
+  hint: string;
+  icon: LucideIcon;
+  iconBg: string;
+  iconColor: string;
+};
+
+const links: QuickLink[] = [
+  {
+    href: "/finance",
+    label: "Finance",
+    hint: "Factures, devis, dépenses",
+    icon: Wallet,
+    iconBg: "bg-[#ED8600]/12",
+    iconColor: "text-[#c2410c]",
+  },
+  {
+    href: "/clients",
+    label: "Clients",
+    hint: "Fiches & abonnements",
+    icon: Users,
+    iconBg: "bg-sky-500/12",
+    iconColor: "text-sky-700",
+  },
+  {
+    href: "/deals-projets",
+    label: "Deals & projets",
+    hint: "Pipeline en cours",
+    icon: Briefcase,
+    iconBg: "bg-violet-500/12",
+    iconColor: "text-violet-700",
+  },
+  {
+    href: "/objectifs",
+    label: "Objectifs",
+    hint: "Progression & cibles",
+    icon: Target,
+    iconBg: "bg-emerald-500/12",
+    iconColor: "text-emerald-700",
+  },
+];
+
+const cardShadow =
+  "shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
+const cardShadowHover =
+  "hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_14px_32px_-4px_rgba(0,0,0,0.14),0_24px_48px_-8px_rgba(0,0,0,0.10)]";
 
 export default function DashboardQuickLinks() {
   return (
-    <div className={`${panelSurfaceClass} px-4 py-4 sm:px-5 sm:py-4`}>
-      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-500 mb-3">Accès rapides</p>
-      <div className="flex flex-wrap gap-2">
-        {links.map(({ href, label }) => (
-          <Link key={href} href={href} className={`${secondaryButtonClass} !px-4 !py-2 text-sm`}>
-            {label}
-          </Link>
-        ))}
-      </div>
-    </div>
+    <section
+      aria-label="Accès rapides"
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+    >
+      {links.map(({ href, label, hint, icon: Icon, iconBg, iconColor }) => (
+        <Link
+          key={href}
+          href={href}
+          className={`group relative flex items-center gap-3 overflow-hidden rounded-3xl border-0 bg-white px-4 py-3.5 ${cardShadow} transition-all duration-300 hover:-translate-y-1 ${cardShadowHover}`}
+        >
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover:scale-105 ${iconBg} ${iconColor}`}
+          >
+            <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-zinc-900">{label}</p>
+            <p className="truncate text-[11px] text-zinc-500">{hint}</p>
+          </div>
+          <span
+            aria-hidden
+            className="ml-auto hidden text-zinc-400 transition-all group-hover:translate-x-0.5 group-hover:text-zinc-600 sm:inline"
+          >
+            →
+          </span>
+        </Link>
+      ))}
+    </section>
   );
 }

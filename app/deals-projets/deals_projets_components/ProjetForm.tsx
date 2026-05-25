@@ -3,19 +3,14 @@
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import type { Client, Facture, Projet } from "@/app/types";
+import { overlayBackdropClass, overlayScrollBodyClass } from "@/app/components/appCardStyles";
 import {
-  overlayBackdropClass,
-  overlayPanelClass,
-  overlayHeaderClass,
-  overlayTitleClass,
-  overlayCloseButtonClass,
-  overlayScrollBodyClass,
-  overlayFooterClass,
-  inputFieldClass,
-  formLabelClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-} from "@/app/components/appCardStyles";
+  dealsLightPanel,
+  dealsLightInput,
+  dealsLightLabel,
+  dealsSecondaryBtn,
+  dealsVioletPrimaryBtn,
+} from "@/app/deals-projets/dealsProjetsUi";
 
 interface ProjetFormProps {
   projet?: Projet | null;
@@ -85,17 +80,22 @@ export default function ProjetForm({ projet, clients, factures, onClose, onSave 
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={overlayPanelClass}
+        className={dealsLightPanel}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="projet-form-title"
       >
-        <div className={overlayHeaderClass}>
-          <h2 id="projet-form-title" className={overlayTitleClass}>
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+          <h2 id="projet-form-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
             {title}
           </h2>
-          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+            aria-label="Fermer"
+          >
             <FaTimes className="h-5 w-5" />
           </button>
         </div>
@@ -103,11 +103,11 @@ export default function ProjetForm({ projet, clients, factures, onClose, onSave 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className={overlayScrollBodyClass}>
             <div>
-              <label className={formLabelClass}>Nom facture</label>
+              <label className={dealsLightLabel}>Nom facture</label>
               <select
                 value={selectedFactureId}
                 onChange={(e) => handleFactureChange(e.target.value)}
-                className={inputFieldClass}
+                className={dealsLightInput}
               >
                 <option value="">Aucune (remplir manuellement)</option>
                 {factures.map((f) => (
@@ -116,29 +116,29 @@ export default function ProjetForm({ projet, clients, factures, onClose, onSave 
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                Choisir une facture remplit automatiquement le nom, l&apos;entreprise et la valeur.
+              <p className="mt-1 text-xs text-zinc-500">
+                Choisir une facture remplit le nom, l&apos;entreprise et la valeur.
               </p>
             </div>
 
             <div>
-              <label className={formLabelClass}>Nom du projet</label>
+              <label className={dealsLightLabel}>Nom du projet</label>
               <input
                 type="text"
                 required
                 value={formData.nom}
                 onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                className={inputFieldClass}
+                className={dealsLightInput}
               />
             </div>
 
             <div>
-              <label className={formLabelClass}>Entreprise</label>
+              <label className={dealsLightLabel}>Entreprise</label>
               <select
                 required
                 value={formData.entreprise}
                 onChange={(e) => setFormData({ ...formData, entreprise: e.target.value })}
-                className={inputFieldClass}
+                className={dealsLightInput}
               >
                 <option value="">Sélectionner une entreprise</option>
                 {clients.map((client) => (
@@ -150,13 +150,13 @@ export default function ProjetForm({ projet, clients, factures, onClose, onSave 
             </div>
 
             <div>
-              <label className={formLabelClass}>Statut</label>
+              <label className={dealsLightLabel}>Statut</label>
               <select
                 value={formData.statut}
                 onChange={(e) =>
                   setFormData({ ...formData, statut: e.target.value as "Actif" | "Prospect" | "Terminé" })
                 }
-                className={inputFieldClass}
+                className={dealsLightInput}
               >
                 <option value="Actif">Actif</option>
                 <option value="Prospect">Prospect</option>
@@ -166,71 +166,71 @@ export default function ProjetForm({ projet, clients, factures, onClose, onSave 
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Valeur (€)</label>
+                <label className={dealsLightLabel}>Valeur (€)</label>
                 <input
                   type="number"
                   required
                   min="0"
                   value={formData.valeur}
                   onChange={(e) => setFormData({ ...formData, valeur: parseInt(e.target.value, 10) || 0 })}
-                  className={inputFieldClass}
+                  className={dealsLightInput}
                 />
               </div>
 
               <div>
-                <label className={formLabelClass}>Responsable</label>
+                <label className={dealsLightLabel}>Responsable</label>
                 <input
                   type="text"
                   required
                   value={formData.responsable}
                   onChange={(e) => setFormData({ ...formData, responsable: e.target.value })}
-                  className={inputFieldClass}
+                  className={dealsLightInput}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Date de début</label>
+                <label className={dealsLightLabel}>Date de début</label>
                 <input
                   type="text"
                   required
                   value={formData.dateDebut}
                   onChange={(e) => setFormData({ ...formData, dateDebut: e.target.value })}
                   placeholder="DD/MM/YYYY"
-                  className={inputFieldClass}
+                  className={dealsLightInput}
                 />
               </div>
 
               <div>
-                <label className={formLabelClass}>Date de fin</label>
+                <label className={dealsLightLabel}>Date de fin</label>
                 <input
                   type="text"
                   value={formData.dateFin}
                   onChange={(e) => setFormData({ ...formData, dateFin: e.target.value })}
                   placeholder="DD/MM/YYYY"
-                  className={inputFieldClass}
+                  className={dealsLightInput}
                 />
               </div>
             </div>
 
             <div>
-              <label className={formLabelClass}>Commentaire</label>
+              <label className={dealsLightLabel}>Commentaire</label>
               <textarea
                 value={formData.commentaire}
                 onChange={(e) => setFormData({ ...formData, commentaire: e.target.value })}
                 placeholder="Décrivez le projet..."
                 rows={4}
-                className={`${inputFieldClass} resize-none`}
+                className={`${dealsLightInput} resize-none`}
               />
             </div>
           </div>
 
-          <div className={overlayFooterClass}>
-            <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
+          <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6">
+            <button type="button" onClick={onClose} className={dealsSecondaryBtn}>
               Annuler
             </button>
-            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
+            <button type="submit" className={dealsVioletPrimaryBtn}>
               {projet ? "Modifier" : "Créer"}
             </button>
           </div>

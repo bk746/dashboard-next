@@ -13,6 +13,16 @@ import Sidebar from "@/app/components/Sidebar";
 export default function RootProviders({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicAuth = pathname === "/login" || pathname === "/auth/callback";
+  const isLightPage =
+    pathname === "/dashboard" ||
+    pathname === "/clients" ||
+    pathname === "/prospection" ||
+    pathname === "/finance" ||
+    pathname === "/estimation" ||
+    pathname.startsWith("/estimation/") ||
+    pathname === "/deals-projets" ||
+    pathname === "/objectifs" ||
+    pathname === "/parametres";
 
   if (isPublicAuth) {
     return (
@@ -31,10 +41,16 @@ export default function RootProviders({ children }: { children: React.ReactNode 
       <DataSyncProvider>
         <EntryGate>
           <RequireAuth>
-            <div className="flex min-h-screen bg-[#0a0a0c]">
+            <div
+              className={`flex min-h-screen ${isLightPage ? "bg-white" : "bg-[#0a0a0c]"}`}
+            >
               <MobileNav />
               <Sidebar />
-              <main className="flex-1 w-full md:ml-[280px] min-h-screen pt-20 md:pt-0 relative z-0 overflow-auto bg-[#0a0a0c]">
+              <main
+                className={`relative z-0 min-h-screen w-full flex-1 overflow-auto pt-20 md:ml-[104px] md:pt-0 ${
+                  isLightPage ? "bg-white" : "bg-[#0a0a0c]"
+                }`}
+              >
                 <div className="h-auto md:min-h-screen">
                   <CacheBuster>{children}</CacheBuster>
                 </div>

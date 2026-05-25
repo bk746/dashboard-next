@@ -18,6 +18,17 @@ export const appCardKpiColumn = `${appCardBase} p-6 md:p-5 h-full flex flex-col 
 
 export const appCardChart = `${appCardBase} p-6 md:p-5 flex flex-col overflow-hidden relative h-full`;
 
+/** Cartes du dashboard — coins plus arrondis que le reste du site. */
+export const dashboardCardBase =
+  "motion-card rounded-3xl border-0 " +
+  "bg-white dark:bg-[#12131a] " +
+  "shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] " +
+  "dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] " +
+  "transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform " +
+  "hover:-translate-y-1 " +
+  "hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] " +
+  "motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+
 export const kpiLabelClass =
   "text-zinc-500 dark:text-zinc-500 text-xs md:text-lg font-medium md:font-semibold uppercase md:normal-case tracking-widest md:tracking-normal " +
   "md:text-[#ED8600] dark:md:text-[#8fa9c9]";
@@ -168,6 +179,5 @@ export const overlayFooterClass =
   "bg-zinc-50/80 dark:bg-white/[0.02] px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6";
 
 /** Alias compat. imports historiques `dashboardCard*` */
-export const dashboardCardBase = appCardBase;
-export const dashboardCardKpi = appCardKpi;
-export const dashboardCardChart = appCardChart;
+export const dashboardCardKpi = `${dashboardCardBase} p-6 md:p-5 h-full flex justify-between overflow-hidden`;
+export const dashboardCardChart = `${dashboardCardBase} p-6 md:p-5 flex flex-col overflow-hidden relative h-full`;

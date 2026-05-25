@@ -97,11 +97,31 @@ export interface EstimationTarifOverride {
 
 /** Estimation enregistrée, liée à un client (localStorage) */
 /** Pipeline commercial — prospection (hors fiche client classique). */
-/** Où vous en êtes dans les échanges (un seul choix). */
-export type ProspectEtapeContact = "aucun" | "audit_envoye" | "mail_envoye" | "appel_passe";
+/** Statut du contact — appels passés (1 à 4). L’audit (fait / envoyé) est géré à part. */
+export type ProspectEtapeContact =
+  | "aucun"
+  | "appel_passe"
+  | "appel_passe_2"
+  | "appel_passe_3"
+  | "appel_passe_4";
+
+export interface ProspectDatesAppels {
+  appel1?: string;
+  appel2?: string;
+  appel3?: string;
+  appel4?: string;
+}
 
 /** Réponse du prospect — par défaut « en attente » tant que vous ne validez ni ne refusez. */
 export type ProspectReponseClient = "en_attente" | "valide" | "refuse";
+
+export type ProspectRelanceCanal = "appel" | "mail";
+
+export interface ProspectRelanceSansReponse {
+  /** Date de la tentative (yyyy-mm-dd) */
+  date: string;
+  canal: ProspectRelanceCanal;
+}
 
 export type ProspectNoteType =
   | "mail"
@@ -187,16 +207,28 @@ export interface Prospect {
   reponseClient: ProspectReponseClient;
   /** @deprecated Ancien champ — migré automatiquement vers etapeContact / reponseClient */
   statut?: string;
-  /** Date à laquelle l’audit personnalisé a été envoyé (relances J+3 mail, J+7 appel). Format yyyy-mm-dd */
+  /** Date à laquelle l’audit a été réalisé (suivi interne). Format yyyy-mm-dd */
+  dateAuditFait?: string;
+  /** Date à laquelle l’audit a été envoyé au prospect. Format yyyy-mm-dd */
+  dateAuditEnvoye?: string;
+  /** @deprecated Migré vers dateAuditFait */
   dateAuditPersoEnvoye?: string;
-  /** Date du mail correspondant à l’étape « Mail envoyé » (pas forcément la relance J+3). Format yyyy-mm-dd */
+  /** Dates des appels (yyyy-mm-dd), selon le statut contact. */
+  datesAppels?: ProspectDatesAppels;
+  /** @deprecated Migré vers datesAppels.appel1 */
   dateMailEnvoye?: string;
-  /** Date de l’appel correspondant à l’étape « Appel passé ». Format yyyy-mm-dd */
+  /** @deprecated Migré vers datesAppels.appel1 */
   dateAppelPasse?: string;
-  relanceMailJ3Fait: boolean;
-  /** Date d’envoi du mail de relance (J+3) — sert au délai d’1 semaine avant l’appel. Format yyyy-mm-dd */
+  /** Tentatives sans réponse (chaque entrée repousse la relance de 3 jours ouvrés). */
+  relancesSansReponse?: ProspectRelanceSansReponse[];
+  /** Prochaine relance à effectuer (yyyy-mm-dd, jours ouvrés uniquement pour le calcul). */
+  dateProchaineRelance?: string;
+  /** @deprecated Ancien flux — migré vers relancesSansReponse / dateProchaineRelance */
+  relanceMailJ3Fait?: boolean;
+  /** @deprecated */
   dateRelanceMailEnvoye?: string;
-  relanceAppelSemaineFait: boolean;
+  /** @deprecated */
+  relanceAppelSemaineFait?: boolean;
   notes: ProspectNote[];
   rdv: ProspectRdv[];
   /** Audit visuel rapide (checklist + textes générés), optionnel. */

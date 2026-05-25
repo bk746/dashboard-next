@@ -12,224 +12,138 @@ import {
   Target,
   Settings,
   Calculator,
-  ScanEye,
   ClipboardList,
-  Globe,
   LogOut,
   LogIn,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 
-type NavLeaf = { href: string; label: string; icon: LucideIcon };
-type NavItem =
-  | NavLeaf
-  | { href: string; label: string; icon: LucideIcon; children: NavLeaf[] };
+type NavIcon = { href: string; label: string; icon: LucideIcon };
 
-const menuItems: NavItem[] = [
+const mainNav: NavIcon[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/clients", label: "Clients", icon: Users },
   { href: "/prospection", label: "Prospection", icon: ClipboardList },
-  {
-    href: "/finance",
-    label: "Finance",
-    icon: Wallet,
-    children: [
-      { href: "/estimation", label: "Estimation", icon: Calculator },
-      { href: "/audit-visuel", label: "Audit visuel", icon: ScanEye },
-    ],
-  },
-  { href: "/analyse-site", label: "Analyseur IA", icon: Globe },
+  { href: "/finance", label: "Finance", icon: Wallet },
+  { href: "/estimation", label: "Estimation", icon: Calculator },
   { href: "/deals-projets", label: "Deals / Projets", icon: Briefcase },
   { href: "/objectifs", label: "Objectifs", icon: Target },
 ];
+
+function isNavActive(href: string, pathname: string): boolean {
+  if (href === "/dashboard") return pathname === "/dashboard";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function NavIconButton({
+  href,
+  label,
+  icon: Icon,
+  active,
+}: NavIcon & { active: boolean }) {
+  return (
+    <li>
+      <Link
+        href={href}
+        title={label}
+        aria-label={label}
+        aria-current={active ? "page" : undefined}
+        className={`
+          flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200
+          ${
+            active
+              ? "bg-[#4a4088] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+              : "text-white/85 hover:bg-white/12 hover:text-white"
+          }
+        `}
+      >
+        <Icon className="h-[22px] w-[22px]" strokeWidth={1.75} aria-hidden />
+      </Link>
+    </li>
+  );
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const cloud = isSupabaseConfigured();
+  const settingsActive = pathname === "/parametres" || pathname.startsWith("/parametres/");
 
   return (
-    <aside
-      className="hidden md:flex md:fixed md:left-0 md:top-0 md:w-[280px] md:h-screen md:flex-col z-10
-        bg-white dark:bg-[#0a0a0c]
-        border-r border-zinc-200/90 dark:border-white/[0.06]
-        shadow-[4px_0_24px_rgba(0,0,0,0.04)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.35)]"
-    >
-      {/* Brand */}
-      <div className="px-5 pt-6 pb-5 border-b border-zinc-100 dark:border-white/[0.06]">
-        <h1 className="text-lg font-semibold tracking-tight leading-none">
-          <span className="text-[#ED8600] dark:text-[#8fa9c9]">BK</span>
-          <span className="text-zinc-800 dark:text-zinc-200 font-medium"> Copilot</span>
-        </h1>
-      </div>
+    <div className="pointer-events-none fixed left-0 top-0 z-20 hidden h-screen w-[104px] md:block">
+      <aside
+        className="pointer-events-auto absolute left-4 top-5 flex h-[calc(100vh-2.5rem)] w-[72px] flex-col items-center rounded-[2rem] bg-gradient-to-b from-[#6C5DD3] via-[#5E549E] to-[#5349A8] py-5 shadow-[0_12px_40px_-8px_rgba(108,93,211,0.55),0_4px_16px_rgba(0,0,0,0.08)]"
+        aria-label="Navigation principale"
+      >
+        {/* Haut — raccourci / alertes */}
+        <div className="flex flex-col items-center">
+          <Link
+            href="/dashboard"
+            title="BK Copilot"
+            aria-label="Accueil BK Copilot"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white transition-colors hover:bg-white/22"
+          >
+            <Bell className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+          </Link>
+        </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto" aria-label="Navigation principale">
-        <p className="px-3 mb-2 text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-          Menu
-        </p>
-        <ul className="space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            if ("children" in item && item.children?.length) {
-              return (
-                <li key={item.href} className="space-y-1">
-                  <Link
-                    href={item.href}
-                    className={`
-                      group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200
-                      ${
-                        pathname === item.href
-                          ? "bg-[#ED8600]/10 text-[#c2410c] dark:bg-white/[0.06] dark:text-[#b8c9d9]"
-                          : "text-zinc-600 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-                      }
-                    `}
-                  >
-                    <span
-                      className={`
-                        flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors
-                        ${
-                          pathname === item.href
-                            ? "border-[#ED8600]/25 bg-[#ED8600]/10 text-[#ED8600] dark:border-[#8fa9c9]/25 dark:bg-[#8fa9c9]/10 dark:text-[#8fa9c9]"
-                            : "border-zinc-200/80 bg-zinc-50 text-zinc-500 group-hover:border-zinc-300 group-hover:text-zinc-700 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-500 dark:group-hover:border-white/[0.1] dark:group-hover:text-zinc-300"
-                        }
-                      `}
-                    >
-                      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                    </span>
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                  <ul className="ml-2 pl-3 border-l border-zinc-200/80 dark:border-white/[0.08] space-y-0.5">
-                    {item.children.map((child) => {
-                      const ChildIcon = child.icon;
-                      const childActive = pathname === child.href;
-                      return (
-                        <li key={child.href}>
-                          <Link
-                            href={child.href}
-                            className={`
-                              group flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors duration-200
-                              ${
-                                childActive
-                                  ? "bg-[#ED8600]/10 text-[#c2410c] dark:bg-white/[0.06] dark:text-[#b8c9d9]"
-                                  : "text-zinc-600 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-                              }
-                            `}
-                          >
-                            <span
-                              className={`
-                                flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-colors
-                                ${
-                                  childActive
-                                    ? "border-[#ED8600]/25 bg-[#ED8600]/10 text-[#ED8600] dark:border-[#8fa9c9]/25 dark:bg-[#8fa9c9]/10 dark:text-[#8fa9c9]"
-                                    : "border-zinc-200/80 bg-zinc-50 text-zinc-500 group-hover:border-zinc-300 dark:border-white/[0.06] dark:bg-white/[0.03]"
-                                }
-                              `}
-                            >
-                              <ChildIcon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
-                            </span>
-                            <span className="truncate">{child.label}</span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </li>
-              );
-            }
-            const isActive = pathname === item.href;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`
-                    group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200
-                    ${
-                      isActive
-                        ? "bg-[#ED8600]/10 text-[#c2410c] dark:bg-white/[0.06] dark:text-[#b8c9d9]"
-                        : "text-zinc-600 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-                    }
-                  `}
-                >
-                  <span
-                    className={`
-                      flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors
-                      ${
-                        isActive
-                          ? "border-[#ED8600]/25 bg-[#ED8600]/10 text-[#ED8600] dark:border-[#8fa9c9]/25 dark:bg-[#8fa9c9]/10 dark:text-[#8fa9c9]"
-                          : "border-zinc-200/80 bg-zinc-50 text-zinc-500 group-hover:border-zinc-300 group-hover:text-zinc-700 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-500 dark:group-hover:border-white/[0.1] dark:group-hover:text-zinc-300"
-                      }
-                    `}
-                  >
-                    <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                  </span>
-                  <span className="truncate">{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+        <div className="my-4 h-px w-8 bg-white/20" aria-hidden />
 
-      {/* Pied : compte + paramètres */}
-      <div className="p-3 border-t border-zinc-100 dark:border-white/[0.06] mt-auto space-y-2">
-        {!cloud ? (
-          <div className="rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2.5">
-            <p className="text-[11px] font-medium leading-snug text-amber-800 dark:text-amber-200/95">
-              Pas de sync cloud : variables Supabase absentes sur ce déploiement (Vercel → Environment
-              Variables).
-            </p>
+        {/* Navigation */}
+        <nav className="flex flex-1 flex-col items-center overflow-y-auto overflow-x-hidden px-2 [&::-webkit-scrollbar]:hidden">
+          <ul className="flex flex-col items-center gap-1.5">
+            {mainNav.map((item) => (
+              <NavIconButton key={item.href} {...item} active={isNavActive(item.href, pathname)} />
+            ))}
+          </ul>
+        </nav>
+
+        <div className="my-3 h-px w-8 bg-white/20" aria-hidden />
+
+        {/* Bas — paramètres & compte */}
+        <div className="flex flex-col items-center gap-1.5">
+          {!cloud ? (
             <Link
               href="/login"
-              className="mt-2 flex items-center gap-2 text-xs font-semibold text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+              title="Connexion cloud"
+              aria-label="Connexion cloud"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl text-amber-200 transition-colors hover:bg-white/12"
             >
-              <LogIn className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              Connexion &amp; aide
+              <LogIn className="h-5 w-5" strokeWidth={1.75} aria-hidden />
             </Link>
-          </div>
-        ) : user ? (
-          <>
-            <p className="truncate px-3 text-[11px] text-zinc-500 dark:text-zinc-400" title={user.email ?? ""}>
-              {user.email}
-            </p>
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-600 dark:text-zinc-500 transition-colors duration-200 hover:bg-zinc-100 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-zinc-200/80 bg-zinc-50 text-zinc-500 transition-colors group-hover:border-zinc-300 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-500 dark:group-hover:border-white/[0.1] dark:group-hover:text-zinc-300">
-                <LogOut className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-              </span>
-              <span>Déconnexion</span>
-            </button>
-          </>
-        ) : null}
-        <Link
-          href="/parametres"
-          className={`
-            group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200
-            ${
-              pathname === "/parametres"
-                ? "bg-[#ED8600]/10 text-[#c2410c] dark:bg-white/[0.06] dark:text-[#b8c9d9]"
-                : "text-zinc-600 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-            }
-          `}
-        >
-          <span
+          ) : null}
+
+          <Link
+            href="/parametres"
+            title="Paramètres"
+            aria-label="Paramètres"
+            aria-current={settingsActive ? "page" : undefined}
             className={`
-              flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors
+              flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200
               ${
-                pathname === "/parametres"
-                  ? "border-[#ED8600]/25 bg-[#ED8600]/10 text-[#ED8600] dark:border-[#8fa9c9]/25 dark:bg-[#8fa9c9]/10 dark:text-[#8fa9c9]"
-                  : "border-zinc-200/80 bg-zinc-50 text-zinc-500 group-hover:border-zinc-300 group-hover:text-zinc-700 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-500 dark:group-hover:border-white/[0.1] dark:group-hover:text-zinc-300"
+                settingsActive
+                  ? "bg-[#4a4088] text-white"
+                  : "text-white/85 hover:bg-white/12 hover:text-white"
               }
             `}
           >
-            <Settings className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-          </span>
-          <span>Paramètres</span>
-        </Link>
-      </div>
-    </aside>
+            <Settings className="h-[22px] w-[22px]" strokeWidth={1.75} aria-hidden />
+          </Link>
+
+          {cloud && user ? (
+            <button
+              type="button"
+              title={`Déconnexion${user.email ? ` (${user.email})` : ""}`}
+              aria-label="Déconnexion"
+              onClick={() => void signOut()}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl text-white/85 transition-colors hover:bg-white/12 hover:text-white"
+            >
+              <LogOut className="h-[22px] w-[22px]" strokeWidth={1.75} aria-hidden />
+            </button>
+          ) : null}
+        </div>
+      </aside>
+    </div>
   );
 }

@@ -1,26 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Target } from "lucide-react";
-import {
-  pageShellClass,
-  pageEyebrowClass,
-  pageTitleClass,
-  pageSubtitleClass,
-  pageDividerClass,
-  primaryButtonClass,
-  sectionIntroTitleClass,
-  sectionIntroDescClass,
-  panelSurfaceClass,
-  staggerCardsGridClass,
-} from "@/app/components/appCardStyles";
-import ProgressionTotalCard from "./objectifs_components/ProgressionTotalCard";
+import { Plus, Target, TrendingUp, CheckCircle2 } from "lucide-react";
+import DashboardToneKpiCard from "@/app/dashboard/dashboard_components/DashboardToneKpiCard";
 import ObjectifCard from "./objectifs_components/ObjectifCard";
 import ObjectifsTable from "./objectifs_components/ObjectifsTable";
 import ObjectifForm from "./objectifs_components/ObjectifForm";
 import type { Client, Facture, Objectif } from "@/app/types";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
 import { getActuelPourObjectif, normalizeObjectifPeriode } from "@/app/lib/objectifsPeriod";
+import { objectifsShellClass, objectifsPrimaryBtn, objectifsFloatingCard } from "./objectifsUi";
 
 export default function Objectifs() {
   const [objectifs, setObjectifs] = useJsonBucket<Objectif[]>("objectifs", []);
@@ -56,50 +45,73 @@ export default function Objectifs() {
 
   const now = useMemo(() => new Date(), []);
 
-  const progressions = objectifs.map((obj) => {
-    const actuel = getActuelPourObjectif(obj, factures, clients, now);
-    return obj.objectif > 0 ? Math.min((actuel / obj.objectif) * 100, 100) : 0;
-  });
-  const progressionTotal =
-    progressions.length > 0 ? progressions.reduce((sum, p) => sum + p, 0) / progressions.length : 0;
+  const { progressionTotal, objectifsAtteints } = useMemo(() => {
+    const progressions = objectifs.map((obj) => {
+      const actuel = getActuelPourObjectif(obj, factures, clients, now);
+      return obj.objectif > 0 ? Math.min((actuel / obj.objectif) * 100, 100) : 0;
+    });
+    const total =
+      progressions.length > 0 ? progressions.reduce((sum, p) => sum + p, 0) / progressions.length : 0;
+    const atteints = progressions.filter((p) => p >= 100).length;
+    return { progressionTotal: total, objectifsAtteints: atteints };
+  }, [objectifs, factures, clients, now]);
+
+  const dateLabel = useMemo(() => {
+    return new Date().toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
 
   return (
-    <div className={pageShellClass}>
-      <div className="md:max-w-[1600px] md:mx-auto">
-        <header className="px-4 sm:px-6 md:px-0 mb-7 md:mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p className={pageEyebrowClass}>Suivi</p>
-              <h1 className={pageTitleClass}>Objectifs</h1>
-              <p className={pageSubtitleClass}>CA et volume clients : cibles, progression et détail.</p>
-            </div>
-            <button type="button" onClick={handleNewObjectif} className={primaryButtonClass}>
-              Nouvel objectif
-            </button>
+    <div className={objectifsShellClass}>
+      <div className="md:max-w-[1600px] md:mx-auto space-y-6 md:space-y-8">
+        <header className="px-1 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px]">
+              Objectifs
+            </h1>
+            <p className="mt-1 text-sm text-zinc-500 capitalize">{dateLabel}</p>
           </div>
-          <div className={pageDividerClass} aria-hidden />
+          <button type="button" onClick={handleNewObjectif} className={objectifsPrimaryBtn}>
+            <Plus className="h-4 w-4" aria-hidden />
+            Nouvel objectif
+          </button>
         </header>
 
-        <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Progression globale">
-          <div className="mb-4">
-            <h2 className={sectionIntroTitleClass}>Progression globale</h2>
-            <p className={sectionIntroDescClass}>
-              Moyenne de l&apos;avancement sur tous vos objectifs (CA et clients), par rapport aux cibles définies.
-            </p>
+        <section aria-label="Indicateurs objectifs">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
+            <DashboardToneKpiCard
+              tone="violet"
+              label="Progression globale"
+              subtitle="Moyenne sur tous les objectifs"
+              value={`${Math.min(progressionTotal, 100).toFixed(1)} %`}
+              icon={<TrendingUp aria-hidden />}
+            />
+            <DashboardToneKpiCard
+              tone="pink"
+              label="Objectifs actifs"
+              subtitle="CA et volume clients"
+              value={objectifs.length}
+              icon={<Target aria-hidden />}
+            />
+            <DashboardToneKpiCard
+              tone="pink"
+              label="Objectifs atteints"
+              subtitle="Progression à 100 %"
+              value={objectifsAtteints}
+              icon={<CheckCircle2 aria-hidden />}
+            />
           </div>
-          <ProgressionTotalCard progressionTotal={progressionTotal} />
         </section>
 
-        <section className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8" aria-label="Objectifs">
-          <div className="mb-4">
-            <h2 className={sectionIntroTitleClass}>Vos objectifs</h2>
-            <p className={sectionIntroDescClass}>
-              Une carte par objectif : la progression compare la cible au réalisé sur la période choisie (année, mois ou semaine).
-            </p>
-          </div>
-          <div
-            className={`grid ${staggerCardsGridClass} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6`}
-          >
+        <section aria-label="Vos objectifs">
+          <p className="mb-4 px-1 text-sm text-zinc-500">
+            Une carte par objectif — la progression compare la cible au réalisé sur la période choisie.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
             {objectifs.map((objectif) => {
               const actuel = getActuelPourObjectif(objectif, factures, clients, now);
               return (
@@ -114,28 +126,30 @@ export default function Objectifs() {
               );
             })}
             {objectifs.length === 0 && (
-              <div className={`col-span-full ${panelSurfaceClass} flex flex-col items-center justify-center px-6 py-14 text-center`}>
-                <div className="mb-4 rounded-2xl bg-zinc-100 p-5 dark:bg-white/[0.06]">
-                  <Target className="h-11 w-11 text-zinc-400 dark:text-zinc-500" strokeWidth={1.25} aria-hidden />
+              <div
+                className={`col-span-full ${objectifsFloatingCard} flex flex-col items-center justify-center px-6 py-14 text-center`}
+              >
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+                  <Target className="h-7 w-7" strokeWidth={1.25} aria-hidden />
                 </div>
-                <p className="text-base font-semibold text-zinc-800 dark:text-zinc-100">Aucun objectif pour l&apos;instant</p>
-                <p className="mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-base font-semibold text-zinc-800">Aucun objectif pour l&apos;instant</p>
+                <p className="mt-2 max-w-md text-sm text-zinc-500">
                   Définissez une cible CA ou nombre de clients avec{" "}
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">Nouvel objectif</span> — elle apparaîtra ici et dans le tableau détaillé.
+                  <span className="font-medium text-zinc-700">Nouvel objectif</span>.
                 </p>
               </div>
             )}
           </div>
         </section>
 
-        <section className="px-4 sm:px-6 md:px-0" aria-label="Liste des objectifs">
+        <section aria-label="Liste des objectifs">
           <ObjectifsTable objectifs={objectifs} onDelete={handleDeleteObjectif} onEdit={handleEditObjectif} />
         </section>
-      </div>
 
-      {showForm && (
-        <ObjectifForm objectif={editingObjectif} onClose={() => setShowForm(false)} onSave={handleSaveObjectif} />
-      )}
+        {showForm ? (
+          <ObjectifForm objectif={editingObjectif} onClose={() => setShowForm(false)} onSave={handleSaveObjectif} />
+        ) : null}
+      </div>
     </div>
   );
 }

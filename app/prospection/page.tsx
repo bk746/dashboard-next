@@ -1,22 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Plus, UserPlus, FileText, Bell, Sparkles } from "lucide-react";
 import type { Prospect, ProspectReponseClient } from "@/app/types";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
-import {
-  pageShellClass,
-  pageEyebrowClass,
-  pageTitleClass,
-  pageSubtitleClass,
-  pageDividerClass,
-  primaryButtonClass,
-  sectionIntroTitleClass,
-  sectionIntroDescClass,
-} from "@/app/components/appCardStyles";
+import DashboardToneKpiCard from "@/app/dashboard/dashboard_components/DashboardToneKpiCard";
 import {
   auditPasEncoreEnvoye,
-  besoinRelanceAppelSemaine,
-  besoinRelanceMailJ3,
+  besoinRelance,
   listeRendezVousAVenir,
   migrateProspect,
   prospectEnCours,
@@ -24,12 +15,18 @@ import {
 import ProspectForm from "./prospection_components/ProspectForm";
 import ProspectsTable from "./prospection_components/ProspectsTable";
 import RendezVousAVenirCard from "./prospection_components/RendezVousAVenirCard";
-import RelancesKpiCards from "./prospection_components/RelancesKpiCards";
+
+const prospectionShellClass =
+  "min-h-screen w-full bg-white text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12";
+
+const primaryButtonClass =
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(108,93,211,0.45)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-8px_rgba(108,93,211,0.55)] w-full sm:w-auto";
 
 export default function ProspectionPage() {
   const [prospects, setProspects] = useJsonBucket<Prospect[]>("prospection", []);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Prospect | null>(null);
+
   const saveProspect = (p: Prospect) => {
     const toSave = migrateProspect(p);
     const exists = prospects.some((x) => x.id === toSave.id);
@@ -48,55 +45,97 @@ export default function ProspectionPage() {
 
   const updateReponseProspect = (p: Prospect, reponse: ProspectReponseClient) => {
     setProspects(
-      prospects.map((x) =>
-        x.id === p.id
-          ? migrateProspect({ ...x, reponseClient: reponse, updatedAt: new Date().toISOString() })
-          : x
-      )
+      prospects.map((x) => {
+        if (x.id !== p.id) return x;
+        const patch: Partial<Prospect> = { reponseClient: reponse, updatedAt: new Date().toISOString() };
+        if (reponse === "valide" || reponse === "refuse") patch.dateProchaineRelance = undefined;
+        return migrateProspect({ ...x, ...patch });
+      })
     );
   };
 
   const prospectsM = useMemo(() => prospects.map(migrateProspect), [prospects]);
 
-  const { prospectsEnCours, auditsAEnvoyer, relancesMailAFaire, relancesAppelAFaire } = useMemo(() => {
+  const { prospectsEnCours, auditsAEnvoyer, relancesAFaire } = useMemo(() => {
     return {
       prospectsEnCours: prospectsM.filter((p) => prospectEnCours(p)).length,
       auditsAEnvoyer: prospectsM.filter((p) => auditPasEncoreEnvoye(p)).length,
-      relancesMailAFaire: prospectsM.filter((p) => besoinRelanceMailJ3(p)).length,
-      relancesAppelAFaire: prospectsM.filter((p) => besoinRelanceAppelSemaine(p)).length,
+      relancesAFaire: prospectsM.filter((p) => besoinRelance(p)).length,
     };
   }, [prospectsM]);
 
   const rendezVousAVenir = useMemo(() => listeRendezVousAVenir(prospectsM), [prospectsM]);
 
+  const dateLabel = useMemo(() => {
+    return new Date().toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
+
+  const openNew = () => {
+    setEditing(null);
+    setShowForm(true);
+  };
+
   return (
-    <div className={pageShellClass}>
-      <div className="md:max-w-[1600px] md:mx-auto">
-        <header className="px-4 sm:px-6 md:px-0 mb-7 md:mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p className={pageEyebrowClass}>Commercial</p>
-              <h1 className={pageTitleClass}>Prospection</h1>
-              <p className={pageSubtitleClass}>
-                Étape du contact (audit, mail, appel) et réponse à part (en attente par défaut, validé ou refusé). Relance
-                mail J+3 après audit, appel 7 j après le mail. RDV planifiables sur la fiche.
+    <div className={prospectionShellClass}>
+      <div className="md:max-w-[1600px] md:mx-auto space-y-6 md:space-y-8">
+        <header className="px-1">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#6C5DD3]/12 text-[#6C5DD3]">
+                  <Sparkles className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                </span>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6C5DD3]/80">
+                  Commercial
+                </p>
+              </div>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px] md:text-[32px]">
+                Prospection
+              </h1>
+              <p className="mt-1 text-sm text-[#6C5DD3]/70 sm:text-[15px]">
+                <span className="capitalize">{dateLabel}</span> · prospects, audits, appels et relances.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setEditing(null);
-                setShowForm(true);
-              }}
-              className={primaryButtonClass}
-            >
+
+            <button type="button" onClick={openNew} className={primaryButtonClass}>
+              <Plus className="h-4 w-4" strokeWidth={2.25} aria-hidden />
               Nouveau prospect
             </button>
           </div>
-          <div className={pageDividerClass} aria-hidden />
         </header>
 
-        <section className="px-4 sm:px-6 md:px-0 mb-8 md:mb-10" aria-label="Rendez-vous à venir">
+        <section aria-label="Indicateurs prospection">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
+            <DashboardToneKpiCard
+              tone="violet"
+              label="Prospects en cours"
+              subtitle="Réponse en attente"
+              value={prospectsEnCours}
+              icon={<UserPlus aria-hidden />}
+            />
+            <DashboardToneKpiCard
+              tone="pink"
+              label="Audit à faire"
+              subtitle="Pas encore envoyé"
+              value={auditsAEnvoyer}
+              icon={<FileText aria-hidden />}
+            />
+            <DashboardToneKpiCard
+              tone="pink"
+              label="À relancer"
+              subtitle="Échéance atteinte"
+              value={relancesAFaire}
+              icon={<Bell aria-hidden />}
+            />
+          </div>
+        </section>
+
+        <section aria-label="Rendez-vous à venir">
           <RendezVousAVenirCard
             items={rendezVousAVenir}
             onOpenProspect={(id) => {
@@ -109,23 +148,7 @@ export default function ProspectionPage() {
           />
         </section>
 
-        <section className="px-4 sm:px-6 md:px-0 mb-8 md:mb-10" aria-label="Relances à traiter">
-          <div className="mb-4">
-            <h2 className={sectionIntroTitleClass}>Priorités relances</h2>
-            <p className={sectionIntroDescClass}>
-              D&apos;abord les audits pas encore datés, puis les relances mail (J+3 après audit) et appel (7 j après le
-              mail de relance).
-            </p>
-          </div>
-          <RelancesKpiCards
-            prospectsEnCours={prospectsEnCours}
-            auditsAEnvoyer={auditsAEnvoyer}
-            relancesMailAFaire={relancesMailAFaire}
-            relancesAppelAFaire={relancesAppelAFaire}
-          />
-        </section>
-
-        <div className="px-4 sm:px-6 md:px-0">
+        <section aria-label="Liste des prospects">
           <ProspectsTable
             prospects={prospectsM}
             onEdit={(p) => {
@@ -135,11 +158,12 @@ export default function ProspectionPage() {
             onDelete={deleteProspect}
             onReponseChange={updateReponseProspect}
           />
-        </div>
+        </section>
       </div>
 
-      {showForm && (
+      {showForm ? (
         <ProspectForm
+          key={editing?.id ?? "nouveau-prospect"}
           prospect={editing}
           onClose={() => {
             setShowForm(false);
@@ -147,7 +171,7 @@ export default function ProspectionPage() {
           }}
           onSave={saveProspect}
         />
-      )}
+      ) : null}
     </div>
   );
 }

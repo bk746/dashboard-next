@@ -9,19 +9,13 @@ import {
   buildPrestationsFromEstimation,
   getLatestEstimationForClient,
 } from "@/app/estimation/estimation_utils";
+import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
 import {
-  overlayBackdropClass,
-  overlayPanelClass,
-  overlayHeaderClass,
-  overlayTitleClass,
-  overlayCloseButtonClass,
-  overlayScrollBodyClass,
-  overlayFooterClass,
-  inputFieldClass,
-  formLabelClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-} from "@/app/components/appCardStyles";
+  financeLightPanelWide,
+  financeLightInput,
+  financeLightLabel,
+  financeVioletPrimaryBtn,
+} from "@/app/finance/financeUi";
 
 interface DevisFormProps {
   devis?: Devis | null;
@@ -182,17 +176,22 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={overlayPanelClass}
+        className={financeLightPanelWide}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="devis-form-title"
       >
-        <div className={overlayHeaderClass}>
-          <h2 id="devis-form-title" className={overlayTitleClass}>
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+          <h2 id="devis-form-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
             {title}
           </h2>
-          <button type="button" onClick={onClose} className={overlayCloseButtonClass} aria-label="Fermer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+            aria-label="Fermer"
+          >
             <FaTimes className="h-5 w-5" />
           </button>
         </div>
@@ -200,22 +199,22 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className={overlayScrollBodyClass}>
             <div>
-              <label className={formLabelClass}>Numéro de devis</label>
+              <label className={financeLightLabel}>Numéro de devis</label>
               <input
                 type="text"
                 required
                 value={numeroDevis}
                 onChange={(e) => setNumeroDevis(e.target.value)}
-                className={inputFieldClass}
+                className={financeLightInput}
               />
             </div>
             <div>
-              <label className={formLabelClass}>Entreprise</label>
+              <label className={financeLightLabel}>Entreprise</label>
               <select
                 required
                 value={entreprise}
                 onChange={(e) => handleEntrepriseChange(e.target.value)}
-                className={inputFieldClass}
+                className={financeLightInput}
               >
                 <option value="">Sélectionner une entreprise</option>
                 {clients.map((c) => (
@@ -227,11 +226,11 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Statut</label>
+                <label className={financeLightLabel}>Statut</label>
                 <select
                   value={statut}
                   onChange={(e) => setStatut(e.target.value as Devis["statut"])}
-                  className={inputFieldClass}
+                  className={financeLightInput}
                 >
                   <option value="Brouillon">Brouillon</option>
                   <option value="Envoyé">Envoyé</option>
@@ -239,17 +238,17 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                   <option value="Refusé">Refusé</option>
                 </select>
                 {onCreateFacture ? (
-                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-2 text-xs text-zinc-500">
                     Une facture ne peut être générée qu&apos;à partir d&apos;un devis au statut « Accepté ».
                   </p>
                 ) : null}
               </div>
               <div>
-                <label className={formLabelClass}>Abonnement</label>
+                <label className={financeLightLabel}>Abonnement</label>
                 <select
                   value={abonnement}
                   onChange={(e) => setAbonnement(e.target.value as AbonnementOffre)}
-                  className={inputFieldClass}
+                  className={financeLightInput}
                 >
                   {ABONNEMENT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -261,18 +260,18 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={formLabelClass}>Date</label>
+                <label className={financeLightLabel}>Date</label>
                 <input
                   type="text"
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   placeholder="JJ/MM/AAAA"
-                  className={inputFieldClass}
+                  className={financeLightInput}
                 />
               </div>
               <div>
-                <label className={formLabelClass}>Validité</label>
+                <label className={financeLightLabel}>Validité</label>
                 <select
                   value={validitePreset}
                   onChange={(e) => {
@@ -280,7 +279,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                     setValiditePreset(v);
                     if (v !== "custom") setValiditeCustom("");
                   }}
-                  className={`${inputFieldClass} mb-2`}
+                  className={`${financeLightInput} mb-2`}
                 >
                   <option value="15j">15 jours</option>
                   <option value="30j">30 jours</option>
@@ -292,20 +291,20 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                     value={validiteCustom}
                     onChange={(e) => setValiditeCustom(e.target.value)}
                     placeholder="ex. 45 jours, 2 mois…"
-                    className={inputFieldClass}
+                    className={financeLightInput}
                   />
                 ) : null}
               </div>
             </div>
             <div>
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Prestations</span>
+                <span className="text-sm font-medium text-zinc-600">Prestations</span>
                 <div className="flex flex-wrap items-center gap-3">
                   {!devis && entreprise ? (
                     <button
                       type="button"
                       onClick={() => applyEstimationForClient(entreprise)}
-                      className="text-xs font-medium text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
+                      className="text-xs font-medium text-zinc-600 underline-offset-2 hover:underline"
                     >
                       Réimporter depuis l&apos;estimation
                     </button>
@@ -313,14 +312,14 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                   <button
                     type="button"
                     onClick={addPrestation}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#ED8600] transition-opacity hover:opacity-90 dark:text-[#8fa9c9]"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#6C5DD3] transition-opacity hover:opacity-90"
                   >
                     <FaPlus /> Ajouter une prestation
                   </button>
                 </div>
               </div>
               {!devis && estimationHint && (
-                <p className="mb-3 rounded-lg border border-[#ED8600]/20 bg-[#ED8600]/5 px-3 py-2 text-xs text-zinc-700 dark:border-[#8fa9c9]/25 dark:bg-[#8fa9c9]/10 dark:text-zinc-300">
+                <p className="mb-3 rounded-lg border-0 bg-[#6C5DD3]/[0.08] px-3 py-2 text-xs text-zinc-700">
                   {estimationHint}
                 </p>
               )}
@@ -332,7 +331,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                       value={p.designation}
                       onChange={(e) => updatePrestation(index, "designation", e.target.value)}
                       placeholder="ex. Refonte site vitrine, Site e-commerce..."
-                      className={`${inputFieldClass} flex-1 placeholder:text-zinc-400`}
+                      className={`${financeLightInput} flex-1 placeholder:text-zinc-400`}
                     />
                     <div className="flex items-center gap-2">
                       <input
@@ -341,7 +340,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                         value={p.prix || ""}
                         onChange={(e) => updatePrestation(index, "prix", Number(e.target.value) || 0)}
                         placeholder="Prix €"
-                        className={`${inputFieldClass} w-28`}
+                        className={`${financeLightInput} w-28`}
                       />
                       <span className="text-sm text-zinc-500">€</span>
                       <button
@@ -356,13 +355,13 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                   </div>
                 ))}
               </div>
-              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-zinc-600">
                 Total : <span className="font-semibold tabular-nums">{total.toLocaleString("fr-FR")} €</span>
               </p>
             </div>
           </div>
 
-          <div className={overlayFooterClass}>
+          <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-3 sm:px-6">
             <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
               Annuler
             </button>
@@ -377,7 +376,7 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                 Créer une facture à partir du devis
               </button>
             ) : null}
-            <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`}>
+            <button type="submit" className={financeVioletPrimaryBtn}>
               {devis ? "Enregistrer" : "Créer le devis"}
             </button>
           </div>

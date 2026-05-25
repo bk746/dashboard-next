@@ -1,28 +1,41 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FaSearch, FaSlidersH } from "react-icons/fa";
-import Link from "next/link";
-import { Building2, Calendar, Pencil, ScanEye, Trash2 } from "lucide-react";
-import { prospectAuditRecordId } from "@/app/audit-visuel/audit_visuel_utils";
+import {
+  Bell,
+  Building2,
+  Calendar,
+  ChevronDown,
+  ExternalLink,
+  Pencil,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+  X,
+} from "lucide-react";
 import type { Prospect, ProspectEtapeContact, ProspectReponseClient } from "@/app/types";
 import {
+  auditEnvoyeAuProspect,
   auditPasEncoreEnvoye,
-  besoinRelanceAppelSemaine,
-  besoinRelanceMailJ3,
+  besoinRelance,
+  dateEffectiveProchaineRelance,
   dateEtapeEnCours,
+  formatDateISOFr,
   estReponseClosee,
   ETAPES_CONTACT,
   prospectSiteHref,
 } from "@/app/prospection/prospection_utils";
-import { formLabelClass, inputFieldClass, panelSurfaceClass } from "@/app/components/appCardStyles";
+const floatingCard =
+  "overflow-hidden rounded-3xl border-0 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
+
+const inputClass =
+  "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 transition-colors focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15";
 
 export type FiltreProspection =
   | "tous"
   | "urgent"
   | "audit_a_envoyer"
-  | "relance_mail"
-  | "relance_appel"
+  | "relance"
   | "audit_actif";
 
 /** Filtre sur la réponse client (combinable avec étape et filtre relance). */
@@ -52,6 +65,7 @@ export default function ProspectsTable({
   const [filtrePriorite, setFiltrePriorite] = useState<FiltreProspection>("tous");
   const [filtreReponse, setFiltreReponse] = useState<FiltreReponseProspection>("tous");
   const [filtreEtape, setFiltreEtape] = useState<FiltreEtapeProspection>("tous");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const filtered = useMemo(() => {
     let list = [...prospects];
@@ -72,14 +86,11 @@ export default function ProspectsTable({
       case "audit_a_envoyer":
         list = list.filter((p) => auditPasEncoreEnvoye(p));
         break;
-      case "relance_mail":
-        list = list.filter((p) => besoinRelanceMailJ3(p));
-        break;
-      case "relance_appel":
-        list = list.filter((p) => besoinRelanceAppelSemaine(p));
+      case "relance":
+        list = list.filter((p) => besoinRelance(p));
         break;
       case "audit_actif":
-        list = list.filter((p) => !!p.dateAuditPersoEnvoye && !estReponseClosee(p));
+        list = list.filter((p) => auditEnvoyeAuProspect(p) && !estReponseClosee(p));
         break;
       default:
         break;
@@ -96,20 +107,19 @@ export default function ProspectsTable({
 
   const counts = useMemo(() => {
     return {
+      tous: prospects.length,
       urgent: prospects.filter((p) => !!p.urgent).length,
       audit_a_envoyer: prospects.filter((p) => auditPasEncoreEnvoye(p)).length,
-      relance_mail: prospects.filter((p) => besoinRelanceMailJ3(p)).length,
-      relance_appel: prospects.filter((p) => besoinRelanceAppelSemaine(p)).length,
+      relance: prospects.filter((p) => besoinRelance(p)).length,
     };
   }, [prospects]);
 
-  const segTrack =
-    "inline-flex flex-wrap gap-1 rounded-2xl border border-zinc-200/90 bg-zinc-100/90 p-1 dark:border-white/[0.1] dark:bg-zinc-900/60";
-  const segBtn =
-    "rounded-xl px-3 py-2 text-xs font-medium transition-all duration-150 sm:text-sm";
-  const segOff = "text-zinc-600 hover:bg-white/80 dark:text-zinc-300 dark:hover:bg-white/[0.08]";
-  const segOn =
-    "bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/80 dark:bg-[#3d4f63] dark:text-white dark:ring-white/10";
+  const QUICK_FILTERS: { value: FiltreProspection; label: string; count: number }[] = [
+    { value: "tous", label: "Tous", count: counts.tous },
+    { value: "relance", label: "À relancer", count: counts.relance },
+    { value: "audit_a_envoyer", label: "Audit à faire", count: counts.audit_a_envoyer },
+    { value: "urgent", label: "Urgent", count: counts.urgent },
+  ];
 
   const REPONSE_FILTRES: { value: FiltreReponseProspection; label: string }[] = [
     { value: "tous", label: "Toutes" },
@@ -118,340 +128,442 @@ export default function ProspectsTable({
     { value: "refuse", label: "Refusé" },
   ];
 
-  const filtreCardClass =
-    "rounded-2xl border border-zinc-200/90 bg-gradient-to-b from-white to-zinc-50/80 shadow-sm dark:border-white/[0.08] dark:from-zinc-900/40 dark:to-zinc-950/80 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]";
+  const hasAdvancedActive = filtreReponse !== "tous" || filtreEtape !== "tous";
+  const resetAll = () => {
+    setSearch("");
+    setFiltrePriorite("tous");
+    setFiltreReponse("tous");
+    setFiltreEtape("tous");
+  };
+  const isFiltering =
+    !!search.trim() || filtrePriorite !== "tous" || filtreReponse !== "tous" || filtreEtape !== "tous";
 
   return (
-    <div className="space-y-4">
-      <div className={`${filtreCardClass} p-4 sm:p-5 space-y-5`}>
-        <div className="flex items-start gap-3">
-          <div
-            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ED8600]/12 text-[#c26500] dark:bg-[#5b7fb8]/25 dark:text-[#a8c0e0]"
-            aria-hidden
-          >
-            <FaSlidersH className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 flex-1 space-y-1">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Filtrer la liste</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Combinez une <strong>vue priorité</strong> (relances à traiter), une <strong>réponse</strong> et une{" "}
-              <strong>étape</strong> — tout s&apos;applique ensemble.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-          <div className="min-w-0 flex-1">
-            <label htmlFor="prospect-search" className={formLabelClass}>
-              Recherche
-            </label>
-            <div className="relative">
-              <FaSearch
-                className="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-zinc-400 text-sm"
-                aria-hidden
-              />
-              <input
-                id="prospect-search"
-                type="search"
-                placeholder="Nom d’entreprise, contact, e-mail…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className={`${inputFieldClass} pl-9`}
-              />
-            </div>
-          </div>
-          <div className="w-full shrink-0 lg:max-w-sm">
-            <label htmlFor="filtre-priorite" className={formLabelClass}>
-              Vue priorité
-            </label>
-            <select
-              id="filtre-priorite"
-              value={filtrePriorite}
-              onChange={(e) => setFiltrePriorite(e.target.value as FiltreProspection)}
-              className={inputFieldClass}
-            >
-              <option value="tous">Toutes les fiches</option>
-              <option value="urgent">
-                Urgent uniquement (site critique)
-                {counts.urgent ? ` — ${counts.urgent}` : ""}
-              </option>
-              <option value="audit_a_envoyer">
-                Audits à dater (sans date d’envoi){counts.audit_a_envoyer ? ` — ${counts.audit_a_envoyer}` : ""}
-              </option>
-              <option value="relance_mail">
-                Relance mail J+3 à faire{counts.relance_mail ? ` — ${counts.relance_mail}` : ""}
-              </option>
-              <option value="relance_appel">
-                Relance appel (+7 j. après mail){counts.relance_appel ? ` — ${counts.relance_appel}` : ""}
-              </option>
-              <option value="audit_actif">Suivi audit en cours (pas clos)</option>
-            </select>
-            <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-500">
-              Raccourci vers les dossiers qui demandent une action (y compris urgence) — sans changer réponse ni étape.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-3" aria-label="Filtres réponse et étape">
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Réponse client
-            </p>
-            <div className={segTrack} role="group" aria-label="Filtrer par réponse">
-              {REPONSE_FILTRES.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setFiltreReponse(value)}
-                  className={`${segBtn} ${filtreReponse === value ? segOn : segOff}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Étape du pipeline
-            </p>
-            <div className={`${segTrack} gap-1.5`} role="group" aria-label="Filtrer par étape">
+    <div className={floatingCard}>
+      <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-4 sm:px-6">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative min-w-0 flex-1">
+            <Search
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+              aria-hidden
+            />
+            <input
+              type="search"
+              placeholder="Rechercher une entreprise, un contact, un site…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={`${inputClass} py-2.5 pl-10 pr-10`}
+              aria-label="Rechercher"
+            />
+            {search ? (
               <button
                 type="button"
-                onClick={() => setFiltreEtape("tous")}
-                className={`${segBtn} ${filtreEtape === "tous" ? segOn : segOff}`}
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                aria-label="Effacer la recherche"
               >
-                Toutes
+                <X className="h-3.5 w-3.5" />
               </button>
-              {ETAPES_CONTACT.map((s) => (
-                <button
-                  key={s.value}
-                  type="button"
-                  onClick={() => setFiltreEtape(s.value)}
-                  className={`${segBtn} inline-flex items-center gap-1.5 ${
-                    filtreEtape === s.value ? segOn : segOff
+            ) : null}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
+                hasAdvancedActive || showAdvanced
+                  ? "border-[#6C5DD3]/40 bg-[#6C5DD3]/10 text-[#5E549E]"
+                  : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+              }`}
+              aria-expanded={showAdvanced}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
+              Filtres avancés
+              {hasAdvancedActive ? (
+                <span className="ml-0.5 rounded-full bg-[#6C5DD3] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                  •
+                </span>
+              ) : null}
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+                aria-hidden
+              />
+            </button>
+            {isFiltering ? (
+              <button
+                type="button"
+                onClick={resetAll}
+                className="rounded-xl px-3 py-2 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 sm:text-sm"
+              >
+                Réinitialiser
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Vues rapides">
+          {QUICK_FILTERS.map(({ value, label, count }) => {
+            const active = filtrePriorite === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFiltrePriorite(value)}
+                className={`group/chip inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all sm:text-sm ${
+                  active
+                    ? "border-transparent bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] text-white shadow-md shadow-[#6C5DD3]/20"
+                    : "border-zinc-200 bg-white text-zinc-600 hover:border-[#6C5DD3]/30 hover:bg-[#6C5DD3]/[0.04]"
+                }`}
+              >
+                {label}
+                <span
+                  className={`tabular-nums text-[11px] font-semibold ${
+                    active ? "text-white/80" : "text-zinc-400"
                   }`}
                 >
-                  <span aria-hidden>{s.emoji}</span>
-                  {s.label}
-                </button>
-              ))}
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {showAdvanced ? (
+          <div className="mt-4 grid grid-cols-1 gap-3 border-t border-zinc-200/70 pt-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="filtre-reponse" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                Réponse du prospect
+              </label>
+              <select
+                id="filtre-reponse"
+                value={filtreReponse}
+                onChange={(e) => setFiltreReponse(e.target.value as FiltreReponseProspection)}
+                className={`${inputClass} py-2 text-sm`}
+              >
+                {REPONSE_FILTRES.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="filtre-etape" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                Statut du contact
+              </label>
+              <select
+                id="filtre-etape"
+                value={filtreEtape}
+                onChange={(e) => setFiltreEtape(e.target.value as FiltreEtapeProspection)}
+                className={`${inputClass} py-2 text-sm`}
+              >
+                <option value="tous">Toutes les étapes</option>
+                {ETAPES_CONTACT.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.emoji} {s.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-        </div>
+        ) : null}
+
+        <p className="mt-3 text-xs text-zinc-500">
+          {filtered.length} prospect{filtered.length > 1 ? "s" : ""} affiché
+          {isFiltering && filtered.length !== counts.tous ? (
+            <span className="text-zinc-400"> / {counts.tous}</span>
+          ) : null}
+        </p>
       </div>
 
-      <div className={`${panelSurfaceClass} overflow-hidden`}>
-        <div className="border-b border-zinc-200/80 px-4 py-3 dark:border-white/[0.06] sm:px-5">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Prospects</h2>
-            <p className="text-xs tabular-nums text-zinc-500 dark:text-zinc-500">
-              {filtered.length} dossier{filtered.length > 1 ? "s" : ""}
-            </p>
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+            <Building2 className="h-7 w-7" strokeWidth={1.5} aria-hidden />
           </div>
+          <p className="text-base font-semibold text-zinc-800">
+            {prospects.length === 0
+              ? "Aucun prospect pour l'instant"
+              : "Aucun résultat pour ces filtres"}
+          </p>
+          <p className="mt-2 max-w-sm text-sm text-zinc-500">
+            {prospects.length === 0
+              ? "Créez une fiche avec le bouton Nouveau prospect en haut de la page."
+              : "Élargissez la recherche ou changez les filtres."}
+          </p>
         </div>
-
-        <div className="p-3 sm:p-4">
-          {filtered.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-zinc-300/90 bg-zinc-50/40 px-6 py-14 text-center dark:border-white/[0.1] dark:bg-white/[0.02]">
-              <Building2 className="mx-auto mb-3 h-10 w-10 text-zinc-300 dark:text-zinc-600" aria-hidden />
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                {prospects.length === 0
-                  ? "Aucun prospect pour l’instant"
-                  : "Aucun résultat pour ces filtres"}
-              </p>
-              <p className="mt-1 text-xs text-zinc-500">
-                {prospects.length === 0
-                  ? "Créez une fiche avec le bouton « Nouveau prospect »."
-                  : "Élargissez la recherche ou changez les filtres."}
-              </p>
-            </div>
-          ) : (
-            <ul className="space-y-3">
-              {filtered.map((p) => {
-                const et = libelleEtape(p.etapeContact);
-                const dateAction = dateEtapeEnCours(p);
-                const rep = p.reponseClient ?? "en_attente";
-                const siteHref = prospectSiteHref(p.siteWeb);
-                const cardTint =
-                  rep === "valide"
-                    ? "border-emerald-400/40 bg-gradient-to-br from-emerald-100/90 to-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:from-emerald-950/50 dark:to-[#12131a] dark:shadow-none"
-                    : rep === "refuse"
-                      ? "border-rose-400/40 bg-gradient-to-br from-rose-100/90 to-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:from-rose-950/45 dark:to-[#12131a] dark:shadow-none"
-                      : "border-zinc-200/90 bg-white/80 dark:border-white/[0.08] dark:bg-[#12131a]/90";
-
-                return (
-                  <li key={p.id}>
-                    <article
-                      className={`group relative overflow-hidden rounded-2xl border p-4 transition-[box-shadow,transform,border-color] duration-200 sm:p-5 ${cardTint} hover:shadow-md dark:hover:border-white/[0.12]`}
-                      aria-label={`Prospect ${p.entreprise}`}
-                    >
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="flex min-w-0 flex-1 gap-3 sm:gap-4">
-                            <div
-                              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 ${
-                                rep === "valide"
-                                  ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
-                                  : rep === "refuse"
-                                    ? "bg-rose-500/15 text-rose-800 dark:text-rose-300"
-                                    : "bg-[#ED8600]/12 text-[#b45309] dark:bg-[#5b7fb8]/20 dark:text-[#a8c0e0]"
-                              }`}
-                            >
-                              <Building2 className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <h3 className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                                <span className="truncate">{p.entreprise}</span>
-                                {p.urgent ? (
-                                  <span
-                                    className="h-2 w-2 shrink-0 rounded-full bg-red-500 shadow-[0_0_0_1px_rgba(0,0,0,0.08)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
-                                    title="Urgent — site critique"
-                                    aria-label="Urgent — site critique"
-                                  />
-                                ) : null}
-                                {p.auditVisuel ? (
-                                  <Link
-                                    href={`/audit-visuel/${prospectAuditRecordId(p.id)}`}
-                                    className="inline-flex items-center gap-1 rounded-full border border-violet-200/90 bg-violet-50 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-violet-900 transition hover:bg-violet-100/90 dark:border-violet-500/25 dark:bg-violet-950/40 dark:text-violet-200 dark:hover:bg-violet-900/50"
-                                    title="Ouvrir l’audit visuel (plein écran)"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <ScanEye className="h-3 w-3 shrink-0 opacity-80" aria-hidden />
-                                    {p.auditVisuel.generated.noteSur100}/100
-                                  </Link>
-                                ) : null}
-                              </h3>
-                              {(p.contactNom || p.email) && (
-                                <p className="mt-0.5 truncate text-sm text-zinc-500 dark:text-zinc-400">
-                                  {[p.contactNom, p.email].filter(Boolean).join(" · ")}
-                                </p>
-                              )}
-                              {siteHref && (
-                                <p className="mt-1 min-w-0">
-                                  <a
-                                    href={siteHref}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="inline-block max-w-full truncate text-sm font-medium text-[#c26500] underline underline-offset-2 hover:text-[#a55500] dark:text-[#a8c0e0] dark:hover:text-[#c5d4ec]"
-                                  >
-                                    {siteHref}
-                                  </a>
-                                </p>
-                              )}
-                              <div className="mt-3 flex flex-wrap items-center gap-2 sm:hidden">
-                                <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200/90 bg-white/70 px-2.5 py-1 text-xs font-medium text-zinc-800 dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-zinc-200">
-                                  <span aria-hidden>{et?.emoji}</span>
-                                  {et?.label}
-                                </span>
-                                {dateAction ? (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100/90 px-2.5 py-1 text-xs tabular-nums text-zinc-700 dark:bg-white/[0.08] dark:text-zinc-300">
-                                    <Calendar className="h-3.5 w-3.5 opacity-70" aria-hidden />
-                                    {new Date(dateAction + "T12:00:00").toLocaleDateString("fr-FR")}
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-zinc-400">Pas de date</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="hidden shrink-0 flex-col items-end gap-2 sm:flex xl:flex-row xl:items-center">
-                            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-zinc-200/90 bg-white/70 px-3 py-1.5 text-xs font-medium text-zinc-800 shadow-sm dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-zinc-200">
-                              <span aria-hidden>{et?.emoji}</span>
-                              {et?.label}
-                            </span>
-                            {dateAction ? (
-                              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-zinc-100/90 px-3 py-1.5 text-sm tabular-nums text-zinc-800 dark:bg-white/[0.08] dark:text-zinc-200">
-                                <Calendar className="h-4 w-4 opacity-70" aria-hidden />
-                                {new Date(dateAction + "T12:00:00").toLocaleDateString("fr-FR")}
-                              </span>
-                            ) : (
-                              <span className="text-sm text-zinc-400">—</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3 border-t border-zinc-200/60 pt-4 dark:border-white/[0.06] sm:flex-row sm:items-center sm:justify-between">
-                          <div
-                            className="inline-flex w-full max-w-full rounded-xl border border-zinc-200/90 bg-zinc-100/80 p-0.5 dark:border-white/[0.12] dark:bg-zinc-900/80 sm:max-w-lg"
-                            role="group"
-                            aria-label="Réponse client"
-                          >
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onReponseChange(p, "en_attente");
-                              }}
-                              className={`min-w-0 flex-1 rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors sm:px-3 sm:text-sm ${
-                                rep === "en_attente"
-                                  ? "bg-zinc-300/95 text-zinc-900 shadow-sm ring-1 ring-zinc-400/40 dark:bg-zinc-600 dark:text-zinc-50 dark:ring-zinc-500/50"
-                                  : "text-zinc-600 hover:bg-white/90 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-zinc-200"
-                              }`}
-                            >
-                              En attente
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onReponseChange(p, "valide");
-                              }}
-                              className={`min-w-0 flex-1 rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors sm:px-3 sm:text-sm ${
-                                rep === "valide"
-                                  ? "bg-emerald-600 text-white shadow-sm"
-                                  : "text-zinc-600 hover:bg-white/90 hover:text-emerald-800 dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-emerald-300"
-                              }`}
-                            >
-                              Validé
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onReponseChange(p, "refuse");
-                              }}
-                              className={`min-w-0 flex-1 rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors sm:px-3 sm:text-sm ${
-                                rep === "refuse"
-                                  ? "bg-rose-600 text-white shadow-sm"
-                                  : "text-zinc-600 hover:bg-white/90 hover:text-rose-800 dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-rose-300"
-                              }`}
-                            >
-                              Refusé
-                            </button>
-                          </div>
-
-                          <div className="flex items-center justify-end gap-1 sm:gap-2">
-                            <button
-                              type="button"
-                              onClick={() => onEdit(p)}
-                              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-[#c26500] transition-colors hover:bg-[#ED8600]/10 dark:text-[#a8c0e0] dark:hover:bg-white/[0.06]"
-                            >
-                              <Pencil className="h-4 w-4 shrink-0" aria-hidden />
-                              <span className="hidden sm:inline">Modifier</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm(`Supprimer le prospect « ${p.entreprise} » ?`)) onDelete(p.id);
-                              }}
-                              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 dark:text-rose-400"
-                            >
-                              <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
-                              <span className="hidden sm:inline">Supprimer</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </div>
+      ) : (
+        <ul className="grid grid-cols-1 gap-3 p-4 sm:gap-4 sm:p-6">
+          {filtered.map((p) => (
+            <li key={p.id}>
+              <ProspectCard
+                prospect={p}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onReponseChange={onReponseChange}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
+}
+
+interface ProspectCardProps {
+  prospect: Prospect;
+  onEdit: (p: Prospect) => void;
+  onDelete: (id: string) => void;
+  onReponseChange: (p: Prospect, reponse: ProspectReponseClient) => void;
+}
+
+function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange }: ProspectCardProps) {
+  const et = libelleEtape(p.etapeContact);
+  const dateAction = dateEtapeEnCours(p);
+  const rep = p.reponseClient ?? "en_attente";
+  const siteHref = prospectSiteHref(p.siteWeb);
+  const relanceDue = besoinRelance(p);
+  const prochaineRelance = dateEffectiveProchaineRelance(p);
+
+  const cardTheme =
+    rep === "valide"
+      ? {
+          surface:
+            "bg-emerald-100 hover:bg-emerald-100 hover:shadow-[0_8px_24px_-12px_rgba(16,185,129,0.28)]",
+          divider: "border-emerald-300/50",
+          avatar: "bg-emerald-600 text-white shadow-sm shadow-emerald-600/25",
+          link: "text-emerald-800 hover:text-emerald-950",
+          segmentWrap: "bg-white/75 shadow-inner shadow-emerald-200/40",
+          editHover: "hover:bg-emerald-600/10 hover:text-emerald-800",
+        }
+      : rep === "refuse"
+        ? {
+            surface:
+              "bg-rose-100 hover:bg-rose-100 hover:shadow-[0_8px_24px_-12px_rgba(244,63,94,0.28)]",
+            divider: "border-rose-300/50",
+            avatar: "bg-rose-600 text-white shadow-sm shadow-rose-600/25",
+            link: "text-rose-800 hover:text-rose-950",
+            segmentWrap: "bg-white/75 shadow-inner shadow-rose-200/40",
+            editHover: "hover:bg-rose-600/10 hover:text-rose-800",
+          }
+        : {
+            surface: relanceDue
+              ? "bg-amber-50/90 hover:bg-amber-50 ring-1 ring-amber-200/70 hover:shadow-[0_8px_24px_-12px_rgba(245,158,11,0.15)]"
+              : "bg-zinc-50/80 hover:bg-white hover:shadow-[0_8px_24px_-12px_rgba(108,93,211,0.12)]",
+            divider: "border-zinc-200/60",
+            avatar:
+              "bg-gradient-to-br from-[#6C5DD3] to-[#5E549E] text-white shadow-sm shadow-[#6C5DD3]/20",
+            link: "text-[#6C5DD3] hover:text-[#5E549E]",
+            segmentWrap: "bg-white shadow-inner shadow-zinc-200/50",
+            editHover: "hover:bg-[#6C5DD3]/10 hover:text-[#6C5DD3]",
+          };
+
+  return (
+    <article
+      className={`group rounded-2xl border-0 p-4 transition-all duration-200 hover:-translate-y-0.5 sm:p-5 ${cardTheme.surface}`}
+      aria-label={`Prospect ${p.entreprise}`}
+    >
+      <div className="flex flex-col gap-4">
+        {/* Bandeau haut : identité + étape */}
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold sm:h-12 sm:w-12 ${cardTheme.avatar}`}
+            aria-hidden
+          >
+            {initiale(p.entreprise) ?? <Building2 className="h-5 w-5" />}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-base font-semibold tracking-tight text-zinc-900">
+                {p.entreprise}
+              </h3>
+              {p.urgent ? (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full bg-red-500/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700"
+                  title="Urgent — site critique"
+                >
+                  Urgent
+                </span>
+              ) : null}
+            </div>
+
+            {(p.contactNom || p.email) && (
+              <p className="mt-0.5 truncate text-sm text-zinc-500">
+                {[p.contactNom, p.email].filter(Boolean).join(" · ")}
+              </p>
+            )}
+            {siteHref && (
+              <a
+                href={siteHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`mt-1 inline-flex max-w-full items-center gap-1 text-xs font-medium hover:underline ${cardTheme.link}`}
+              >
+                <span className="truncate">{shortHost(siteHref)}</span>
+                <ExternalLink className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
+              </a>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              {et ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700">
+                  <span aria-hidden>{et.emoji}</span>
+                  {et.label}
+                </span>
+              ) : null}
+              {dateAction ? (
+                <span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs tabular-nums text-zinc-600">
+                  <Calendar className="h-3 w-3 opacity-60" aria-hidden />
+                  {new Date(dateAction + "T12:00:00").toLocaleDateString("fr-FR")}
+                </span>
+              ) : null}
+              {relanceDue ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-semibold text-amber-900">
+                  <Bell className="h-3 w-3" aria-hidden />
+                  À relancer
+                </span>
+              ) : prochaineRelance ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#6C5DD3]/10 px-2.5 py-1 text-xs font-medium text-[#5E549E]">
+                  Relance {formatDateISOFr(prochaineRelance)}
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Actions desktop (icon-only) */}
+          <div className="hidden shrink-0 items-center gap-1 sm:flex">
+            <button
+              type="button"
+              onClick={() => onEdit(p)}
+              className={`rounded-lg p-2 text-zinc-500 transition-colors ${cardTheme.editHover}`}
+              title="Modifier"
+              aria-label={`Modifier ${p.entreprise}`}
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm(`Supprimer le prospect « ${p.entreprise} » ?`)) onDelete(p.id);
+              }}
+              className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600"
+              title="Supprimer"
+              aria-label={`Supprimer ${p.entreprise}`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Bas : réponse + actions mobile */}
+        <div
+          className={`flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between ${cardTheme.divider}`}
+        >
+          <div
+            className={`inline-flex w-full rounded-xl p-1 sm:max-w-sm ${cardTheme.segmentWrap}`}
+            role="group"
+            aria-label="Réponse client"
+          >
+            <ReponseSegment
+              active={rep === "en_attente"}
+              tone="neutral"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReponseChange(p, "en_attente");
+              }}
+              label="En attente"
+            />
+            <ReponseSegment
+              active={rep === "valide"}
+              tone="success"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReponseChange(p, "valide");
+              }}
+              label="Validé"
+            />
+            <ReponseSegment
+              active={rep === "refuse"}
+              tone="danger"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReponseChange(p, "refuse");
+              }}
+              label="Refusé"
+            />
+          </div>
+
+          {/* Actions mobile */}
+          <div className="flex items-center justify-end gap-1 sm:hidden">
+            <button
+              type="button"
+              onClick={() => onEdit(p)}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium ${cardTheme.editHover}`}
+            >
+              <Pencil className="h-4 w-4" /> Modifier
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm(`Supprimer le prospect « ${p.entreprise} » ?`)) onDelete(p.id);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-500/10"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+interface ReponseSegmentProps {
+  active: boolean;
+  tone: "neutral" | "success" | "danger";
+  onClick: (e: React.MouseEvent) => void;
+  label: string;
+}
+
+function ReponseSegment({ active, tone, onClick, label }: ReponseSegmentProps) {
+  const activeStyles = {
+    neutral: "bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/80",
+    success: "bg-emerald-600 text-white shadow-sm",
+    danger: "bg-rose-600 text-white shadow-sm",
+  };
+  const inactiveStyles = {
+    neutral: "text-zinc-600 hover:bg-white/80 hover:text-zinc-900",
+    success: "text-zinc-600 hover:bg-white/80 hover:text-emerald-700",
+    danger: "text-zinc-600 hover:bg-white/80 hover:text-rose-700",
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`min-w-0 flex-1 rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors sm:text-sm ${
+        active ? activeStyles[tone] : inactiveStyles[tone]
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function initiale(name: string): string | null {
+  const cleaned = name.trim();
+  if (!cleaned) return null;
+  const words = cleaned.split(/\s+/);
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + (words[1]?.[0] ?? "")).toUpperCase();
+}
+
+function shortHost(href: string): string {
+  try {
+    const u = new URL(href);
+    return u.host.replace(/^www\./, "") + (u.pathname !== "/" ? u.pathname : "");
+  } catch {
+    return href;
+  }
 }

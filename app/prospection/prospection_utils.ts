@@ -1,16 +1,100 @@
 import type {
+  AuditVisuelRecord,
   Prospect,
+  ProspectDatesAppels,
   ProspectEtapeContact,
   ProspectNote,
+  ProspectRelanceCanal,
   ProspectReponseClient,
 } from "@/app/types";
 
+export function removeProspectAuditBucket(list: AuditVisuelRecord[], prospectId: string): AuditVisuelRecord[] {
+  return list.filter((a) => a.id !== `prospect-${prospectId}`);
+}
+
+export const RELANCE_DELAI_JOURS_OUVRES = 3;
+
 export const ETAPES_CONTACT: { value: ProspectEtapeContact; label: string; emoji: string }[] = [
   { value: "aucun", label: "Aucun", emoji: "—" },
-  { value: "audit_envoye", label: "Audit envoyé", emoji: "📊" },
-  { value: "mail_envoye", label: "Mail envoyé", emoji: "📩" },
   { value: "appel_passe", label: "Appel passé", emoji: "📞" },
+  { value: "appel_passe_2", label: "2ème appel passé", emoji: "📞" },
+  { value: "appel_passe_3", label: "3ème appel passé", emoji: "📞" },
+  { value: "appel_passe_4", label: "4ème appel passé", emoji: "📞" },
 ];
+
+const ETAPES_CONTACT_VALIDES = new Set<string>(ETAPES_CONTACT.map((e) => e.value));
+
+export function numeroAppelEtape(etape: ProspectEtapeContact): 0 | 1 | 2 | 3 | 4 {
+  switch (etape) {
+    case "appel_passe":
+      return 1;
+    case "appel_passe_2":
+      return 2;
+    case "appel_passe_3":
+      return 3;
+    case "appel_passe_4":
+      return 4;
+    default:
+      return 0;
+  }
+}
+
+export function normaliserDatesAppels(p: Prospect): ProspectDatesAppels {
+  const d = p.datesAppels ?? {};
+  const legacy = p.dateAppelPasse?.trim() || p.dateMailEnvoye?.trim();
+  return {
+    appel1: d.appel1?.trim() || legacy || undefined,
+    appel2: d.appel2?.trim() || undefined,
+    appel3: d.appel3?.trim() || undefined,
+    appel4: d.appel4?.trim() || undefined,
+  };
+}
+
+export function getDateAppel(p: Prospect, n: 1 | 2 | 3 | 4): string | undefined {
+  const d = normaliserDatesAppels(p);
+  switch (n) {
+    case 1:
+      return d.appel1;
+    case 2:
+      return d.appel2;
+    case 3:
+      return d.appel3;
+    case 4:
+      return d.appel4;
+  }
+}
+
+export function patchDateAppel(prev: Prospect, n: 1 | 2 | 3 | 4, date: string | undefined): Partial<Prospect> {
+  const d = normaliserDatesAppels(prev);
+  const key = `appel${n}` as keyof ProspectDatesAppels;
+  return {
+    datesAppels: {
+      ...d,
+      [key]: date?.trim() || undefined,
+    },
+  };
+}
+
+function migrateEtapeContact(p: Prospect): Prospect {
+  let etape = p.etapeContact as string;
+  const dates = normaliserDatesAppels(p);
+
+  if (etape === "audit_envoye") {
+    etape = "aucun";
+  } else if (etape === "mail_envoye") {
+    etape = "appel_passe";
+    if (!dates.appel1 && p.dateMailEnvoye?.trim()) dates.appel1 = p.dateMailEnvoye.trim();
+  } else if (!ETAPES_CONTACT_VALIDES.has(etape)) {
+    etape = "aucun";
+  }
+
+  const { dateMailEnvoye: _m, dateAppelPasse: _a, ...rest } = p;
+  return {
+    ...rest,
+    etapeContact: etape as ProspectEtapeContact,
+    datesAppels: dates,
+  };
+}
 
 export const REPONSES_CLIENT: { value: ProspectReponseClient; label: string; emoji: string }[] = [
   { value: "en_attente", label: "En attente", emoji: "⏳" },
@@ -22,8 +106,8 @@ export const NOTE_TYPES: { value: ProspectNote["type"]; label: string }[] = [
   { value: "mail", label: "Mail" },
   { value: "appel", label: "Appel" },
   { value: "audit", label: "Audit personnalisé" },
-  { value: "relance_mail", label: "Relance mail (J+3)" },
-  { value: "relance_appel", label: "Relance appel (semaine)" },
+  { value: "relance_mail", label: "Relance mail" },
+  { value: "relance_appel", label: "Relance appel" },
   { value: "rdv", label: "RDV / échange" },
   { value: "autre", label: "Autre" },
 ];
@@ -42,56 +126,198 @@ export function prospectEnCours(p: Prospect): boolean {
  * Normalise les anciennes fiches (champ `statut`) vers `etapeContact` + `reponseClient`.
  * Par défaut la réponse est « en attente » si non renseignée.
  */
-export function migrateProspect(raw: Prospect): Prospect {
-  if (raw.etapeContact != null && raw.reponseClient != null) {
-    const { statut: _a, ...clean } = raw as Prospect & { statut?: string };
-    return clean as Prospect;
+function parseDateISO(dateStr: string): Date | null {
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return null;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const t = new Date(y, m, day);
+  return isNaN(t.getTime()) ? null : t;
+}
+
+function formatDateISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+
+function isWeekendDate(d: Date): boolean {
+  const day = d.getDay();
+  return day === 0 || day === 6;
+}
+
+/** Ajoute N jours ouvrés (lun–ven) à une date yyyy-mm-dd. */
+export function addBusinessDaysToDateISO(dateStr: string, businessDays: number): string | null {
+  const start = parseDateISO(dateStr);
+  if (!start || businessDays <= 0) return businessDays === 0 ? dateStr : null;
+  const cur = new Date(start);
+  let added = 0;
+  while (added < businessDays) {
+    cur.setDate(cur.getDate() + 1);
+    if (!isWeekendDate(cur)) added++;
   }
-  if (raw.etapeContact != null) {
-    const { statut: _b, ...rest } = raw as Prospect & { statut?: string };
-    return { ...rest, reponseClient: raw.reponseClient ?? "en_attente" } as Prospect;
+  return formatDateISO(cur);
+}
+
+/** Date limite atteinte ou dépassée (comparaison calendaire au jour près). */
+export function dateISOEstPasseeOuAujourdhui(dateStr: string | undefined): boolean {
+  const j = joursDepuisDateISO(dateStr);
+  return j !== null && j >= 0;
+}
+
+/** Au moins un appel passé selon le statut contact (pas les anciennes dates seules). */
+export function aEuPremierAppel(p: Prospect): boolean {
+  return numeroAppelEtape(p.etapeContact) >= 1;
+}
+
+/** Première relance : 3 jours ouvrés après la date du 1er appel (pas après l’audit). */
+export function datePremiereRelanceApresPremierAppel(p: Prospect): string | undefined {
+  const ref = getDateAppel(p, 1);
+  if (!ref) return undefined;
+  return addBusinessDaysToDateISO(ref, RELANCE_DELAI_JOURS_OUVRES) ?? undefined;
+}
+
+/** Date à laquelle la prochaine relance doit être faite. */
+export function dateEffectiveProchaineRelance(p: Prospect): string | undefined {
+  if (!aEuPremierAppel(p)) return undefined;
+  if (p.dateProchaineRelance?.trim()) return p.dateProchaineRelance.trim();
+  if (!p.relancesSansReponse?.length) return datePremiereRelanceApresPremierAppel(p);
+  return undefined;
+}
+
+export function patchRelanceSansReponse(
+  prev: Prospect,
+  canal: ProspectRelanceCanal,
+  date?: string
+): Partial<Prospect> {
+  const d = date?.trim() || todayDateISO();
+  const next = addBusinessDaysToDateISO(d, RELANCE_DELAI_JOURS_OUVRES);
+  return {
+    relancesSansReponse: [...(prev.relancesSansReponse ?? []), { date: d, canal }],
+    dateProchaineRelance: next ?? undefined,
+  };
+}
+
+function migrateRelanceFields(p: Prospect): Prospect {
+  let relancesSansReponse = p.relancesSansReponse ?? [];
+  let dateProchaineRelance = p.dateProchaineRelance;
+
+  if (p.etapeContact === "aucun") {
+    dateProchaineRelance = undefined;
   }
 
-  const old = raw.statut as string | undefined;
-  let etape: ProspectEtapeContact = "audit_envoye";
-  let reponse: ProspectReponseClient = "en_attente";
-
-  switch (old) {
-    case "mail_envoye":
-      etape = "mail_envoye";
-      break;
-    case "appel_effectue":
-      etape = "appel_passe";
-      break;
-    case "audit_envoye":
-      etape = "audit_envoye";
-      break;
-    case "signe":
-      reponse = "valide";
-      etape = "appel_passe";
-      break;
-    case "refuse":
-    case "echec":
-      reponse = "refuse";
-      etape = "appel_passe";
-      break;
-    case "en_discussion":
-      reponse = "en_attente";
-      etape = "appel_passe";
-      break;
-    case "non_contacte":
-    default:
-      etape = "audit_envoye";
-      reponse = "en_attente";
-      break;
+  if (p.etapeContact !== "aucun" && p.dateRelanceMailEnvoye?.trim()) {
+    const exists = relancesSansReponse.some(
+      (r) => r.date === p.dateRelanceMailEnvoye && r.canal === "mail"
+    );
+    if (!exists) {
+      relancesSansReponse = [
+        ...relancesSansReponse,
+        { date: p.dateRelanceMailEnvoye!, canal: "mail" as const },
+      ];
+    }
+    if (!dateProchaineRelance) {
+      dateProchaineRelance =
+        addBusinessDaysToDateISO(p.dateRelanceMailEnvoye, RELANCE_DELAI_JOURS_OUVRES) ?? undefined;
+    }
   }
 
-  const { statut: _s, ...rest } = raw;
+  const dateAppel1 = getDateAppel(p, 1);
+  if (p.etapeContact !== "aucun" && p.relanceAppelSemaineFait && dateAppel1) {
+    const exists = relancesSansReponse.some((r) => r.date === dateAppel1 && r.canal === "appel");
+    if (!exists) {
+      relancesSansReponse = [...relancesSansReponse, { date: dateAppel1, canal: "appel" as const }];
+    }
+    if (!dateProchaineRelance) {
+      dateProchaineRelance = addBusinessDaysToDateISO(dateAppel1, RELANCE_DELAI_JOURS_OUVRES) ?? undefined;
+    }
+  }
+
+  if (!aEuPremierAppel(p)) {
+    dateProchaineRelance = undefined;
+  }
+
+  if (estReponseClosee(p)) {
+    dateProchaineRelance = undefined;
+  }
+
+  const {
+    relanceMailJ3Fait: _m,
+    dateRelanceMailEnvoye: _dm,
+    relanceAppelSemaineFait: _a,
+    ...rest
+  } = p;
+
   return {
     ...rest,
-    etapeContact: etape,
-    reponseClient: reponse,
+    relancesSansReponse,
+    dateProchaineRelance,
   };
+}
+
+export function migrateProspect(raw: Prospect): Prospect {
+  let base: Prospect;
+  if (raw.etapeContact != null && raw.reponseClient != null) {
+    const { statut: _a, ...clean } = raw as Prospect & { statut?: string };
+    base = clean as Prospect;
+  } else if (raw.etapeContact != null) {
+    const { statut: _b, ...rest } = raw as Prospect & { statut?: string };
+    base = { ...rest, reponseClient: raw.reponseClient ?? "en_attente" } as Prospect;
+  } else {
+    const old = raw.statut as string | undefined;
+    let etape: ProspectEtapeContact = "aucun";
+    let reponse: ProspectReponseClient = "en_attente";
+
+    switch (old) {
+      case "mail_envoye":
+        etape = "appel_passe";
+        break;
+      case "appel_effectue":
+        etape = "appel_passe";
+        break;
+      case "audit_envoye":
+        etape = "aucun";
+        break;
+      case "signe":
+        reponse = "valide";
+        etape = "appel_passe";
+        break;
+      case "refuse":
+      case "echec":
+        reponse = "refuse";
+        etape = "appel_passe";
+        break;
+      case "en_discussion":
+        reponse = "en_attente";
+        etape = "appel_passe";
+        break;
+      case "non_contacte":
+      default:
+        etape = "aucun";
+        reponse = "en_attente";
+        break;
+    }
+
+    const { statut: _s, ...rest } = raw;
+    base = {
+      ...rest,
+      etapeContact: etape,
+      reponseClient: reponse,
+    };
+  }
+  return migrateRelanceFields(migrateEtapeContact(migrateAuditFields(base)));
+}
+
+function migrateAuditFields(p: Prospect): Prospect {
+  let dateAuditFait = p.dateAuditFait?.trim() || undefined;
+  let dateAuditEnvoye = p.dateAuditEnvoye?.trim() || undefined;
+  if (!dateAuditFait && p.dateAuditPersoEnvoye?.trim()) {
+    dateAuditFait = p.dateAuditPersoEnvoye.trim();
+  }
+  const { dateAuditPersoEnvoye: _legacy, ...rest } = p;
+  return { ...rest, dateAuditFait, dateAuditEnvoye };
 }
 
 function startOfDay(d: Date): number {
@@ -129,42 +355,22 @@ export function patchDatesForEtapeContact(
   nextEtape: ProspectEtapeContact
 ): Partial<Prospect> {
   if (nextEtape === "aucun") {
-    return {
-      etapeContact: "aucun",
-      dateAuditPersoEnvoye: undefined,
-      dateMailEnvoye: undefined,
-      dateAppelPasse: undefined,
-    };
+    return { etapeContact: "aucun", dateProchaineRelance: undefined };
   }
+  const n = numeroAppelEtape(nextEtape);
+  if (n === 0) return { etapeContact: nextEtape };
   const t = todayDateISO();
-  const patch: Partial<Prospect> = { etapeContact: nextEtape };
-  if (nextEtape === "audit_envoye") {
-    if (!prev.dateAuditPersoEnvoye?.trim()) patch.dateAuditPersoEnvoye = t;
-  }
-  if (nextEtape === "mail_envoye") {
-    if (!prev.dateAuditPersoEnvoye?.trim()) patch.dateAuditPersoEnvoye = t;
-    if (!prev.dateMailEnvoye?.trim()) patch.dateMailEnvoye = t;
-  }
-  if (nextEtape === "appel_passe") {
-    if (!prev.dateAuditPersoEnvoye?.trim()) patch.dateAuditPersoEnvoye = t;
-    if (!prev.dateMailEnvoye?.trim()) patch.dateMailEnvoye = t;
-    if (!prev.dateAppelPasse?.trim()) patch.dateAppelPasse = t;
-  }
-  return patch;
+  const d = normaliserDatesAppels(prev);
+  const key = `appel${n}` as keyof ProspectDatesAppels;
+  if (!d[key]) d[key] = t;
+  return { etapeContact: nextEtape, datesAppels: d };
 }
 
-/** Date (yyyy-mm-dd) saisie pour l’étape en cours : audit, mail d’étape ou appel. */
+/** Date (yyyy-mm-dd) de l’appel correspondant au statut contact en cours. */
 export function dateEtapeEnCours(p: Prospect): string | undefined {
-  switch (p.etapeContact) {
-    case "aucun":
-      return undefined;
-    case "audit_envoye":
-      return p.dateAuditPersoEnvoye?.trim() || undefined;
-    case "mail_envoye":
-      return p.dateMailEnvoye?.trim() || undefined;
-    case "appel_passe":
-      return p.dateAppelPasse?.trim() || undefined;
-  }
+  const n = numeroAppelEtape(p.etapeContact);
+  if (n === 0) return undefined;
+  return getDateAppel(p, n);
 }
 
 /** Ajoute des jours à une date yyyy-mm-dd, retourne yyyy-mm-dd. */
@@ -183,40 +389,39 @@ export function addDaysToDateISO(dateStr: string, days: number): string | null {
   return `${yy}-${mm}-${dd}`;
 }
 
-/**
- * Date de référence pour l’appel : date du mail de relance, ou à défaut J+3 après l’audit si « mail fait » coché.
- */
-export function dateReferenceRelanceMail(p: Prospect): string | undefined {
-  if (p.dateRelanceMailEnvoye?.trim()) return p.dateRelanceMailEnvoye;
-  if (p.dateMailEnvoye?.trim()) return p.dateMailEnvoye;
-  if (p.relanceMailJ3Fait && p.dateAuditPersoEnvoye) {
-    return addDaysToDateISO(p.dateAuditPersoEnvoye, 3) ?? undefined;
-  }
-  return undefined;
+/** Audit réalisé (suivi interne, date renseignée). */
+export function auditPersonnaliseFait(p: Prospect): boolean {
+  return !!(p.dateAuditFait?.trim() || p.dateAuditPersoEnvoye?.trim());
 }
 
-/** Audit personnalisé pas encore envoyé (pas de date) — hors dossiers clos (validé / refusé). */
+/** Audit envoyé au prospect. */
+export function auditEnvoyeAuProspect(p: Prospect): boolean {
+  return !!p.dateAuditEnvoye?.trim();
+}
+
+/** @deprecated Alias — audit envoyé au prospect */
+export const auditPersonnaliseEnvoye = auditEnvoyeAuProspect;
+
+/** Audit pas encore envoyé au prospect — hors dossiers clos (validé / refusé). */
 export function auditPasEncoreEnvoye(p: Prospect): boolean {
   if (estReponseClosee(p)) return false;
-  return !p.dateAuditPersoEnvoye?.trim();
+  return !auditEnvoyeAuProspect(p);
 }
 
-/** Après envoi audit perso : mail de relance conseillé à J+3 si pas encore fait. */
-export function besoinRelanceMailJ3(p: Prospect): boolean {
-  if (!p.dateAuditPersoEnvoye || p.relanceMailJ3Fait) return false;
+/** Relance à traiter : après le 1er appel, date prévue atteinte (+3 j ouvrés ou sans réponse). */
+export function besoinRelance(p: Prospect): boolean {
   if (estReponseClosee(p)) return false;
-  const j = joursDepuisDateISO(p.dateAuditPersoEnvoye);
-  return j !== null && j >= 3;
+  if (!aEuPremierAppel(p)) return false;
+  const next = dateEffectiveProchaineRelance(p);
+  if (!next) return false;
+  return dateISOEstPasseeOuAujourdhui(next);
 }
 
-/** Appel de relance : 7 jours ou plus après l’envoi du mail de relance (date saisie ou J+3 estimé si mail coché). */
-export function besoinRelanceAppelSemaine(p: Prospect): boolean {
-  if (p.relanceAppelSemaineFait) return false;
-  if (estReponseClosee(p)) return false;
-  const ref = dateReferenceRelanceMail(p);
-  if (!ref) return false;
-  const j = joursDepuisDateISO(ref);
-  return j !== null && j >= 7;
+export function formatDateISOFr(dateStr: string | undefined): string {
+  if (!dateStr?.trim()) return "—";
+  const t = parseDateISO(dateStr);
+  if (!t) return dateStr;
+  return t.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 }
 
 /** Ligne pour afficher un RDV prospect dans le planning (à partir d’aujourd’hui). */
@@ -282,12 +487,10 @@ export function emptyProspect(): Prospect {
     siteWeb: "",
     urgent: false,
     telephone: "",
-    etapeContact: "audit_envoye",
+    etapeContact: "aucun",
     reponseClient: "en_attente",
-    dateAuditPersoEnvoye: todayDateISO(),
-    relanceMailJ3Fait: false,
-    dateRelanceMailEnvoye: undefined,
-    relanceAppelSemaineFait: false,
+    relancesSansReponse: [],
+    dateProchaineRelance: undefined,
     notes: [],
     rdv: [],
     createdAt: now,
