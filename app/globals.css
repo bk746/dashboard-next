@@ -106,8 +106,17 @@ body {
     width: 100% !important;
     max-width: 100% !important;
     background: white !important;
-    padding: 24px !important;
+    color: #000 !important;
+    padding: 0 !important;
     box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .devis-print-area thead tr,
+  .facture-print-area thead tr {
+    background: #000 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   /* Ne pas mettre .no-print sur un ancêtre de .devis-print-area / .facture-print-area : display:none supprime tout l’arbre à l’impression. */
   .no-print {

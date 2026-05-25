@@ -5,7 +5,7 @@ import { useCompany } from "@/app/hooks/useCompany";
 import type { Client, Facture } from "@/app/types";
 import { getMontantAcompteFacture, getResteAPayerFacture } from "@/app/finance/utils";
 import { formatCompanyAddressLine, type CompanySettings } from "@/app/config/company";
-import { overlayBackdropClass, overlayDocumentViewerClass, overlayCloseButtonClass } from "@/app/components/appCardStyles";
+import { overlayBackdropClass } from "@/app/components/appCardStyles";
 
 interface FactureDocumentProps {
   facture: Facture;
@@ -34,110 +34,192 @@ function buildFactureMailto(facture: Facture, client: Client | null | undefined,
   return `${base}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+const toolbarBtn =
+  "inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-100";
+
+function designationFacture(facture: Facture): string {
+  if (facture.abonnement && facture.abonnement !== "Aucun") {
+    return `Prestation / Abonnement — ${facture.abonnement}`;
+  }
+  return "Prestation / Abonnement";
+}
+
 export default function FactureDocument({ facture, client, onClose }: FactureDocumentProps) {
   const [company] = useCompany();
   const mailtoHref = buildFactureMailto(facture, client, company);
   const montantAcompte = getMontantAcompteFacture(facture);
   const resteAPayer = getResteAPayerFacture(facture);
+  const hasAcompte = montantAcompte > 0;
+
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={overlayDocumentViewerClass}
+        className="no-print mx-2 flex max-h-[min(92vh,900px)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.35)] sm:mx-4"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="facture-preview-title"
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-700/80 px-4 py-3 sm:px-5">
-          <h2 id="facture-preview-title" className="text-base font-semibold tracking-tight text-zinc-100">
+        <div className="no-print flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-3 sm:px-5">
+          <h2 id="facture-preview-title" className="text-base font-semibold tracking-tight text-neutral-900">
             Aperçu de la facture
           </h2>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#5b7fb8] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4e6fa3]"
-            >
-              <FaPrint /> <span className="hidden sm:inline">Imprimer ou PDF</span>
+            <button type="button" onClick={() => window.print()} className={toolbarBtn}>
+              <FaPrint aria-hidden />
+              <span className="hidden sm:inline">Imprimer ou PDF</span>
               <span className="sm:hidden">PDF</span>
             </button>
-            <a
-              href={mailtoHref}
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
-            >
+            <a href={mailtoHref} className={toolbarBtn}>
               <FaEnvelope aria-hidden />
               <span className="hidden sm:inline">Envoyer par mail</span>
               <span className="sm:hidden">Mail</span>
             </a>
-            <button type="button" onClick={onClose} className={`${overlayCloseButtonClass} text-zinc-400 hover:bg-white/10 hover:text-white`} aria-label="Fermer">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+              aria-label="Fermer"
+            >
               <FaTimes className="h-5 w-5" />
             </button>
           </div>
         </div>
-        <div className="overflow-y-auto p-4 flex-1">
-          <div className="facture-print-area bg-white text-black rounded-lg shadow-xl p-8 md:p-10 mx-auto" style={{ maxWidth: "210mm" }}>
-            <div className="border-b border-neutral-300 pb-6 mb-6">
-              <h1 className="text-xl font-bold text-[#7c3aed] print:text-[#7c3aed]">{company.denomination}</h1>
-              <p className="text-sm text-neutral-600 mt-1">
-                {company.formeJuridique} – SIRET {company.siret}
-              </p>
-              <p className="text-sm text-neutral-600">{formatCompanyAddressLine(company)}</p>
-              <p className="text-sm text-neutral-600">{company.email} – {company.telephone}</p>
-              <p className="text-sm text-neutral-500 mt-1">{company.tva}</p>
-            </div>
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-neutral-900">FACTURE</h2>
-              <p className="text-neutral-600 mt-1">N° {facture.numeroFacture}</p>
-              <p className="text-neutral-600">Date : {facture.date}</p>
-            </div>
-            <div className="mb-8">
-              <h3 className="text-xs font-semibold uppercase text-neutral-500 mb-2">Client</h3>
-              <p className="font-medium text-neutral-900">{facture.entreprise}</p>
-              {client?.patron && <p className="text-sm text-neutral-600">{client.patron}</p>}
-              {client?.email && <p className="text-sm text-neutral-600">{client.email}</p>}
-              {client?.telephone && <p className="text-sm text-neutral-600">{client.telephone}</p>}
-            </div>
-            <div className="border border-neutral-200 rounded-lg overflow-hidden mb-6">
-              <table className="w-full text-sm">
+
+        <div className="no-print flex-1 overflow-y-auto p-4 sm:p-6">
+          <article
+            className="facture-print-area mx-auto bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+            style={{ maxWidth: "210mm", minHeight: "297mm" }}
+          >
+            <header className="border-b-2 border-black px-8 pt-10 pb-8 md:px-12 md:pt-12">
+              <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500">
+                    Émetteur
+                  </p>
+                  <h1 className="mt-2 text-2xl font-bold tracking-tight text-black md:text-[1.65rem]">
+                    {company.denomination}
+                  </h1>
+                  <div className="mt-4 space-y-0.5 text-[13px] leading-relaxed text-neutral-600">
+                    <p>
+                      {company.formeJuridique}
+                      {company.siret ? ` — SIRET ${company.siret}` : ""}
+                    </p>
+                    <p>{formatCompanyAddressLine(company)}</p>
+                    <p>
+                      {company.email}
+                      {company.telephone ? ` — ${company.telephone}` : ""}
+                    </p>
+                    {company.tva ? <p className="text-neutral-500">{company.tva}</p> : null}
+                  </div>
+                </div>
+
+                <div className="shrink-0 text-left sm:text-right">
+                  <p className="text-3xl font-bold uppercase tracking-[0.12em] text-black md:text-4xl">Facture</p>
+                  <dl className="mt-4 space-y-1.5 text-sm">
+                    <div className="flex gap-3 sm:justify-end">
+                      <dt className="font-medium text-neutral-500">N°</dt>
+                      <dd className="font-semibold tabular-nums text-black">{facture.numeroFacture}</dd>
+                    </div>
+                    <div className="flex gap-3 sm:justify-end">
+                      <dt className="font-medium text-neutral-500">Date</dt>
+                      <dd className="tabular-nums text-black">{facture.date}</dd>
+                    </div>
+                    <div className="flex gap-3 sm:justify-end">
+                      <dt className="font-medium text-neutral-500">Statut</dt>
+                      <dd className="font-semibold text-black">{facture.statut}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </header>
+
+            <section className="px-8 py-8 md:px-12">
+              <div className="border border-neutral-300 bg-neutral-50 px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Client</p>
+                <p className="mt-2 text-lg font-semibold text-black">{facture.entreprise}</p>
+                <div className="mt-2 space-y-0.5 text-sm text-neutral-600">
+                  {client?.patron ? <p>{client.patron}</p> : null}
+                  {client?.email ? <p>{client.email}</p> : null}
+                  {client?.telephone ? <p>{client.telephone}</p> : null}
+                </div>
+              </div>
+            </section>
+
+            <section className="px-8 md:px-12">
+              <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="bg-neutral-100">
-                    <th className="text-left p-3 font-semibold text-neutral-700">Désignation</th>
-                    <th className="text-right p-3 font-semibold text-neutral-700 w-28">Montant TTC</th>
+                  <tr className="border-y-2 border-black bg-black text-left text-white">
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wide">Désignation</th>
+                    <th className="w-32 px-4 py-3 text-right font-semibold uppercase tracking-wide">Montant TTC</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-t border-neutral-200">
-                    <td className="p-3 text-neutral-800">Prestation / Abonnement</td>
-                    <td className="p-3 text-right font-medium">{facture.prix.toLocaleString("fr-FR")} €</td>
+                  <tr className="border-b border-neutral-200 bg-white">
+                    <td className="px-4 py-3.5 text-black">{designationFacture(facture)}</td>
+                    <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-black">
+                      {facture.prix.toLocaleString("fr-FR")} €
+                    </td>
                   </tr>
                 </tbody>
               </table>
-            </div>
-            {montantAcompte > 0 ? (
-              <div className="mb-4 space-y-1 text-right text-sm text-neutral-700">
-                <p>
-                  <span className="text-neutral-600">Acompte versé :</span>{" "}
-                  <span className="font-medium tabular-nums">− {montantAcompte.toLocaleString("fr-FR")} €</span>
-                </p>
-                <p>
-                  <span className="text-neutral-600">Reste à payer :</span>{" "}
-                  <span className="font-semibold tabular-nums text-neutral-900">
-                    {resteAPayer.toLocaleString("fr-FR")} €
-                  </span>
-                </p>
+            </section>
+
+            <section className="px-8 py-8 md:px-12">
+              <div className="flex justify-end">
+                <div className="min-w-[16rem] border-2 border-black">
+                  <div className="flex items-baseline justify-between gap-6 border-b border-neutral-200 px-6 py-4">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-600">
+                      Total TTC
+                    </span>
+                    <span className="text-2xl font-bold tabular-nums text-black">
+                      {facture.prix.toLocaleString("fr-FR")} €
+                    </span>
+                  </div>
+                  {hasAcompte ? (
+                    <>
+                      <div className="flex items-baseline justify-between gap-6 border-b border-neutral-200 px-6 py-3 text-sm">
+                        <span className="text-neutral-600">Acompte versé</span>
+                        <span className="font-medium tabular-nums text-neutral-700">
+                          − {montantAcompte.toLocaleString("fr-FR")} €
+                        </span>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-6 bg-neutral-50 px-6 py-4">
+                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-600">
+                          Reste à payer
+                        </span>
+                        <span className="text-xl font-bold tabular-nums text-black">
+                          {resteAPayer.toLocaleString("fr-FR")} €
+                        </span>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
               </div>
-            ) : null}
-            <div className="flex justify-end mb-6">
-              <div className="text-right">
-                <span className="text-neutral-600 mr-4">Total TTC :</span>
-                <span className="text-lg font-bold">{facture.prix.toLocaleString("fr-FR")} €</span>
+            </section>
+
+            <footer className="mt-auto border-t border-neutral-300 px-8 py-8 md:px-12">
+              <p className="mb-6 text-sm text-neutral-600">
+                <span className="font-semibold text-black">Paiement :</span>{" "}
+                {facture.statut === "Payé"
+                  ? "Facture réglée. Merci pour votre confiance."
+                  : "Merci de régler cette facture selon les modalités convenues. En cas de retard, des pénalités pourront être appliquées conformément à la réglementation en vigueur."}
+              </p>
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                <p className="text-sm text-neutral-600">
+                  Fait à {company.ville || "—"}, le {facture.date}
+                </p>
+                <div className="sm:text-right">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-500">
+                    Mentions légales
+                  </p>
+                  <p className="mt-2 max-w-xs text-xs leading-relaxed text-neutral-500">
+                    {company.tva || "TVA non applicable, art. 293 B du CGI."}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="mt-10 pt-6 border-t border-neutral-200">
-              <p className="text-sm text-neutral-500">Statut : <strong>{facture.statut}</strong></p>
-              <p className="text-sm text-neutral-500 mt-4">Fait à {company.ville}, le {facture.date}</p>
-            </div>
-          </div>
+            </footer>
+          </article>
         </div>
       </div>
     </div>
