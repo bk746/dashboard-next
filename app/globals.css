@@ -29,8 +29,6 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   min-height: 100vh;
-  /* Évite la bande noire au rubber-band (iOS / Safari) */
-  overscroll-behavior-y: none;
 }
 
 /* Cartes — entrée douce (fallback sans JS) */
@@ -41,19 +39,6 @@ body {
 /* GSAP prend le relais quand MotionProvider est actif */
 html.motion-js .motion-card {
   animation: none;
-}
-
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
 }
 
 @keyframes motion-card-fade {
@@ -110,10 +95,6 @@ html.lenis body {
   }
   .stagger-cards > * {
     animation-delay: 0s !important;
-  }
-  html.lenis,
-  html.lenis body {
-    scroll-behavior: auto;
   }
 }
 

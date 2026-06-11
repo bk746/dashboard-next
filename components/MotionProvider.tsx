@@ -1,29 +1,16 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
-import Lenis from "lenis";
 import { ensureGsapPlugins, gsap, ScrollTrigger } from "@/lib/motion/gsap";
-
-type MotionMode = "window" | "element";
 
 interface MotionProviderProps {
   children: React.ReactNode;
-  mode?: MotionMode;
-  /** Conteneur scrollable (ex. `<main>`) — requis si mode = element */
-  wrapperRef?: RefObject<HTMLElement | null>;
-  /** Contenu à l'intérieur du wrapper — requis si mode = element */
-  contentRef?: RefObject<HTMLElement | null>;
 }
 
 function prefersReducedMotion() {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function getScrollRoot(mode: MotionMode, wrapperRef: RefObject<HTMLElement | null>) {
-  if (mode === "element" && wrapperRef.current) return wrapperRef.current;
-  return undefined;
 }
 
 function runPageEnter(root: ParentNode | Document, reduced: boolean) {
@@ -76,11 +63,7 @@ function runPageEnter(root: ParentNode | Document, reduced: boolean) {
   }
 }
 
-function setupScrollReveals(
-  scroller: HTMLElement | Window | undefined,
-  root: ParentNode | Document,
-  reduced: boolean
-) {
+function setupScrollReveals(root: ParentNode | Document, reduced: boolean) {
   ScrollTrigger.getAll().forEach((st) => st.kill());
 
   if (reduced) return;
@@ -100,7 +83,6 @@ function setupScrollReveals(
         ease: "power2.out",
         scrollTrigger: {
           trigger: el,
-          scroller: scroller ?? window,
           start: "top 90%",
           toggleActions: "play none none none",
           once: true,
@@ -110,19 +92,13 @@ function setupScrollReveals(
   });
 }
 
-export default function MotionProvider({
-  children,
-  mode = "window",
-  wrapperRef,
-  contentRef,
-}: MotionProviderProps) {
+/** Animations GSAP au changement de page — scroll natif (sans Lenis). */
+export default function MotionProvider({ children }: MotionProviderProps) {
   const pathname = usePathname();
-  const lenisRef = useRef<Lenis | null>(null);
-  const reducedRef = useRef(false);
 
   useLayoutEffect(() => {
-    reducedRef.current = prefersReducedMotion();
-    if (!reducedRef.current) {
+    const reduced = prefersReducedMotion();
+    if (!reduced) {
       document.documentElement.classList.add("motion-js");
     }
     return () => {
@@ -131,64 +107,25 @@ export default function MotionProvider({
   }, []);
 
   useEffect(() => {
-    if (reducedRef.current) return;
-
     ensureGsapPlugins();
 
-    let cancelled = false;
-    let lenis: Lenis | null = null;
+    const root = document.querySelector<HTMLElement>("[data-page-shell]") ?? document;
+    const reduced = prefersReducedMotion();
 
-    const mountLenis = () => {
-      if (cancelled) return;
+    runPageEnter(root, reduced);
+    setupScrollReveals(root, reduced);
 
-      const wrapperEl = mode === "element" ? wrapperRef?.current : null;
-      const contentEl = mode === "element" ? contentRef?.current : null;
-
-      if (mode === "element" && (!wrapperEl || !contentEl)) {
-        requestAnimationFrame(mountLenis);
-        return;
-      }
-
-      lenis = new Lenis({
-        wrapper: wrapperEl ?? window,
-        content: contentEl ?? document.documentElement,
-        duration: 1.1,
-        easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
-        smoothWheel: true,
-        syncTouch: false,
-        autoRaf: true,
-      });
-
-      lenisRef.current = lenis;
-      lenis.on("scroll", ScrollTrigger.update);
-    };
-
-    mountLenis();
+    const refresh = () => ScrollTrigger.refresh();
+    requestAnimationFrame(refresh);
+    window.addEventListener("load", refresh);
+    window.addEventListener("resize", refresh);
 
     return () => {
-      cancelled = true;
-      lenis?.destroy();
-      lenisRef.current = null;
+      window.removeEventListener("load", refresh);
+      window.removeEventListener("resize", refresh);
       ScrollTrigger.getAll().forEach((st) => st.kill());
     };
-  }, [mode, wrapperRef, contentRef]);
-
-  useEffect(() => {
-    ensureGsapPlugins();
-
-    const root =
-      mode === "element" && contentRef?.current ? contentRef.current : document;
-    const scroller = getScrollRoot(mode, wrapperRef ?? { current: null });
-
-    runPageEnter(root, reducedRef.current);
-    setupScrollReveals(scroller, root, reducedRef.current);
-
-    requestAnimationFrame(() => ScrollTrigger.refresh());
-
-    return () => {
-      ScrollTrigger.getAll().forEach((st) => st.kill());
-    };
-  }, [pathname, mode, wrapperRef, contentRef]);
+  }, [pathname]);
 
   return <>{children}</>;
 }

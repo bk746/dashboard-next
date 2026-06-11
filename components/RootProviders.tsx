@@ -39,7 +39,7 @@ export default function RootProviders({ children }: { children: React.ReactNode 
       <AuthProvider>
         <DataSyncProvider>
           <LaunchSplash>
-            <MotionProvider mode="window">
+            <MotionProvider>
               <div data-page-shell className="min-h-screen bg-[#0a0a0c]">
                 {children}
               </div>
@@ -62,11 +62,11 @@ export default function RootProviders({ children }: { children: React.ReactNode 
               <Sidebar />
               <main
                 id="app-scroll"
-                className={`relative z-0 w-full flex-1 pt-20 md:ml-[104px] md:pt-0 ${
+                className={`relative z-0 w-full flex-1 pt-20 pb-[max(2.5rem,env(safe-area-inset-bottom))] md:ml-[104px] md:pb-8 md:pt-0 ${
                   isLightPage ? "bg-[#F5F5F7]" : "bg-[#0a0a0c]"
                 }`}
               >
-                <MotionProvider mode="window">
+                <MotionProvider>
                   <div data-page-shell>
                     <CacheBuster>{children}</CacheBuster>
                   </div>
