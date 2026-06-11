@@ -6,6 +6,9 @@ export const parametresShellClass =
 export const parametresPrimaryBtn =
   "inline-flex items-center justify-center gap-2 rounded-full bg-[#007AFF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0066D6] active:bg-[#0055B3] w-full sm:w-auto";
 
+export const parametresSecondaryBtn =
+  "inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-zinc-800 ring-1 ring-zinc-200/80 transition-colors hover:bg-zinc-50 w-full sm:w-auto";
+
 export const parametresFloatingCard =
   "rounded-2xl bg-white p-6 md:p-8 ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 

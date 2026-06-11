@@ -5,6 +5,7 @@ import { useCompany } from "@/app/hooks/useCompany";
 import type { CompanySettings } from "@/app/config/company";
 import ChangePinPanel from "@/app/parametres/ChangePinPanel";
 import DashboardLayoutPanel from "@/app/parametres/DashboardLayoutPanel";
+import PushNotificationsPanel from "@/app/parametres/PushNotificationsPanel";
 import {
   parametresShellClass,
   parametresPrimaryBtn,
@@ -17,7 +18,7 @@ import {
   parametresTabInactive,
 } from "./parametresUi";
 
-type Tab = "entreprise" | "dashboard" | "code";
+type Tab = "entreprise" | "dashboard" | "notifications" | "code";
 
 export default function Parametres() {
   const [tab, setTab] = useState<Tab>("entreprise");
@@ -91,6 +92,15 @@ export default function Parametres() {
               <button
                 type="button"
                 role="tab"
+                aria-selected={tab === "notifications"}
+                onClick={() => setTab("notifications")}
+                className={tab === "notifications" ? parametresTabActive : parametresTabInactive}
+              >
+                Notifications
+              </button>
+              <button
+                type="button"
+                role="tab"
                 aria-selected={tab === "code"}
                 onClick={() => setTab("code")}
                 className={tab === "code" ? parametresTabActive : parametresTabInactive}
@@ -103,6 +113,8 @@ export default function Parametres() {
 
         {tab === "code" ? (
           <ChangePinPanel />
+        ) : tab === "notifications" ? (
+          <PushNotificationsPanel />
         ) : tab === "dashboard" ? (
           <DashboardLayoutPanel />
         ) : (

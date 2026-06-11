@@ -79,7 +79,7 @@ export default function MobileNav() {
   return (
     <>
       {/* Barre du haut — même dégradé que la sidebar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 px-3 pt-3 pb-2">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#F5F5F7] px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <nav
           className={`flex items-center justify-between gap-3 rounded-[1.25rem] px-3 py-2.5 ${sidebarGradient} ${sidebarShadow}`}
           aria-label="Navigation mobile"

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["playwright"],
+  serverExternalPackages: ["playwright", "web-push"],
   experimental: {
     staleTimes: {
       dynamic: 0,
@@ -18,6 +18,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   workboxOptions: {
     skipWaiting: true,
     clientsClaim: true,
+    importScripts: ["/push-sw.js"],
   },
 });
 

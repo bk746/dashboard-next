@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0c",
+  themeColor: "#F5F5F7",
 };
 
 export const dynamic = "force-dynamic";
@@ -52,13 +52,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="dark bg-[#0a0a0c]" suppressHydrationWarning>
+    <html lang="fr" className="dark bg-[#F5F5F7]" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0c] text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F5F5F7] text-zinc-900`}
       >
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{document.documentElement.classList.add('dark');localStorage.setItem('theme','dark');}catch(e){}})();`,
+            __html: `(function(){try{document.documentElement.classList.add('dark');document.documentElement.style.backgroundColor='#F5F5F7';document.body.style.backgroundColor='#F5F5F7';localStorage.setItem('theme','dark');}catch(e){}})();`,
           }}
         />
         <ThemeProvider>

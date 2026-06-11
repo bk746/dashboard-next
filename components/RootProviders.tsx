@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/context/AuthContext";
 import { DataSyncProvider } from "@/context/DataSyncContext";
@@ -24,6 +25,14 @@ export default function RootProviders({ children }: { children: React.ReactNode 
     pathname === "/deals-projets" ||
     pathname === "/objectifs" ||
     pathname === "/parametres";
+
+  /** Fond racine = même teinte que la page (évite la bande noire au overscroll iOS). */
+  useEffect(() => {
+    const bg = isPublicAuth || !isLightPage ? "#0a0a0c" : "#F5F5F7";
+    document.documentElement.style.backgroundColor = bg;
+    document.body.style.backgroundColor = bg;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", bg);
+  }, [isPublicAuth, isLightPage]);
 
   if (isPublicAuth) {
     return (
