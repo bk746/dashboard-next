@@ -1,7 +1,7 @@
 "use client";
 
 import { FileCheck, Send, Ban } from "lucide-react";
-import DashboardToneKpiCard from "@/app/dashboard/dashboard_components/DashboardToneKpiCard";
+import FinanceStatCard from "./FinanceStatCard";
 import type { Devis } from "@/app/types";
 
 interface DevisKpiStripProps {
@@ -22,26 +22,25 @@ export default function DevisKpiStrip({ devis, embedded }: DevisKpiStripProps) {
   const nbRefuses = devis.filter((d) => d.statut === "Refusé").length;
 
   const grid = (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-      <DashboardToneKpiCard
-        tone="violet"
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+      <FinanceStatCard
         label="Acceptés"
-        subtitle={`${acceptes.length} devis — portefeuille complet`}
         value={formatEuro(montantAcceptes)}
+        hint={`${acceptes.length} devis — portefeuille complet`}
+        tone="positive"
         icon={<FileCheck aria-hidden />}
       />
-      <DashboardToneKpiCard
-        tone="pink"
+      <FinanceStatCard
         label="En pipeline"
-        subtitle={`${pipeline.length} devis (brouillon / envoyé)`}
         value={formatEuro(montantPipeline)}
+        hint={`${pipeline.length} devis (brouillon / envoyé)`}
         icon={<Send aria-hidden />}
       />
-      <DashboardToneKpiCard
-        tone="pink"
+      <FinanceStatCard
         label="Refusés"
-        subtitle="Devis refusés"
         value={nbRefuses}
+        hint="Devis refusés"
+        tone={nbRefuses > 0 ? "negative" : "neutral"}
         icon={<Ban aria-hidden />}
       />
     </div>

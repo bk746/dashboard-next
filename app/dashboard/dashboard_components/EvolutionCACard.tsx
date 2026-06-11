@@ -13,14 +13,14 @@ interface CustomTooltipProps {
   label?: string | number;
 }
 
-const LINE_COLOR = "#FF8FA8";
+const LINE_COLOR = "#6C5DD3";
 const GRADIENT_ID = "evCAgradientViolet";
 
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload?.length && payload[0]?.value != null) {
     return (
-      <div className="rounded-2xl border-0 bg-[#3d3568]/95 px-3.5 py-2.5 shadow-lg backdrop-blur-sm">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-white/70">
+      <div className="rounded-xl bg-zinc-900/90 px-3.5 py-2.5 shadow-lg backdrop-blur-sm">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-white/60">
           {String(label ?? "")}
         </p>
         <p className="mt-0.5 text-base font-semibold tabular-nums text-white">
@@ -32,7 +32,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   return null;
 };
 
-const tickLight = { fill: "rgba(255,255,255,0.72)", fontSize: 11 };
+const tickLight = { fill: "#a1a1aa", fontSize: 11 };
 
 export default function EvolutionCACard({ data }: EvolutionCACardProps) {
   const total = data.reduce((s, d) => s + (d.revenue || 0), 0);
@@ -40,49 +40,40 @@ export default function EvolutionCACard({ data }: EvolutionCACardProps) {
   const maxMonth = max > 0 ? data.find((d) => d.revenue === max)?.month ?? null : null;
 
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-[#6C5DD3] via-[#5E549E] to-[#4a4088] p-5 shadow-[0_12px_40px_-12px_rgba(108,93,211,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_-12px_rgba(108,93,211,0.65)] md:p-6">
-      <div
-        className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/10 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-24 -left-16 h-48 w-48 rounded-full bg-[#FF8FA8]/15 blur-3xl"
-        aria-hidden
-      />
-
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white p-5 ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-shadow duration-300 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.10)] md:p-6">
       <div className="relative mb-5 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 text-white shadow-sm backdrop-blur-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#6C5DD3]/10 text-[#6C5DD3]">
             <LineChart className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
           </div>
           <div>
-            <h3 className="text-base font-semibold tracking-tight text-white md:text-[17px]">
+            <h3 className="text-base font-semibold tracking-tight text-zinc-900 md:text-[17px]">
               Évolution du CA
             </h3>
-            <p className="text-xs text-white/65">12 mois glissants — factures payées</p>
+            <p className="text-xs text-zinc-400">12 mois glissants — factures payées</p>
           </div>
         </div>
         <div className="hidden text-right sm:block">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">Total</p>
-          <p className="text-sm font-semibold tabular-nums text-white">
+          <p className="text-[11px] font-medium text-zinc-400">Total</p>
+          <p className="text-sm font-semibold tabular-nums text-zinc-900">
             {total.toLocaleString("fr-FR")} €
           </p>
           {maxMonth ? (
-            <p className="mt-0.5 text-[11px] text-white/60">pic en {maxMonth}</p>
+            <p className="mt-0.5 text-[11px] text-zinc-400">pic en {maxMonth}</p>
           ) : null}
         </div>
       </div>
 
-      <div className="relative min-h-[240px] w-full flex-1 rounded-2xl bg-white/[0.06] p-2 backdrop-blur-[2px] sm:min-h-[300px] sm:p-3">
+      <div className="relative min-h-[240px] w-full flex-1 sm:min-h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 8, left: -8, bottom: 0 }}>
             <defs>
               <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={LINE_COLOR} stopOpacity={0.45} />
+                <stop offset="0%" stopColor={LINE_COLOR} stopOpacity={0.25} />
                 <stop offset="100%" stopColor={LINE_COLOR} stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 6" stroke="rgba(255,255,255,0.14)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 6" stroke="rgba(0,0,0,0.06)" vertical={false} />
             <XAxis dataKey="month" axisLine={false} tickLine={false} tick={tickLight} />
             <YAxis
               axisLine={false}
@@ -93,7 +84,7 @@ export default function EvolutionCACard({ data }: EvolutionCACardProps) {
             />
             <Tooltip
               content={(props) => <CustomTooltip {...props} />}
-              cursor={{ stroke: "rgba(255,255,255,0.25)", strokeWidth: 1, strokeDasharray: "4 4" }}
+              cursor={{ stroke: "rgba(0,0,0,0.15)", strokeWidth: 1, strokeDasharray: "4 4" }}
             />
             <Area
               type="monotone"

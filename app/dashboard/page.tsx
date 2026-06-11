@@ -35,10 +35,10 @@ import {
 } from "@/app/prospection/prospection_utils";
 import DevisKpiStrip from "@/app/finance/finance_components/DevisKpiStrip";
 import RendezVousAVenirCard from "@/app/prospection/prospection_components/RendezVousAVenirCard";
-import { primaryButtonClass, staggerCardsGridClass } from "@/app/components/appCardStyles";
+import { staggerCardsGridClass } from "@/app/components/appCardStyles";
 
 const dashboardShellClass =
-  "min-h-screen w-full bg-white text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12 [&_.motion-card]:!rounded-3xl [&_.motion-card]:!border-0";
+  "min-h-screen w-full bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12 [&_.motion-card]:!rounded-2xl [&_.motion-card]:!border-0 [&_.motion-card]:!ring-1 [&_.motion-card]:!ring-black/[0.05] [&_.motion-card]:!shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 import { Sparkles, Settings } from "lucide-react";
 import EvolutionCACard from "./dashboard_components/EvolutionCACard";
 import CACard from "./dashboard_components/CACard";
@@ -481,16 +481,13 @@ export default function Dashboard() {
         if (id === "devisKpiStrip") {
           out.push(
             <section key={`devis-${out.length}`} className="px-4 sm:px-6 md:px-0 mb-8" aria-labelledby="dash-devis-kpi">
-              <div className="mb-4 flex items-center gap-2.5">
-                <span className="block h-5 w-1 rounded-full bg-gradient-to-b from-violet-500 to-violet-500/30" aria-hidden />
-                <div>
-                  <h2 id="dash-devis-kpi" className="text-base font-semibold tracking-tight text-zinc-900">
-                    Vue d&apos;ensemble devis
-                  </h2>
-                  <p className="text-xs text-zinc-500">
-                    Signés, pipeline (brouillon + envoyé) et refus — mêmes indicateurs que dans Finance.
-                  </p>
-                </div>
+              <div className="mb-4">
+                <h2 id="dash-devis-kpi" className="text-[17px] font-semibold tracking-tight text-zinc-900">
+                  Vue d&apos;ensemble devis
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  Signés, pipeline (brouillon + envoyé) et refus — mêmes indicateurs que dans Finance.
+                </p>
               </div>
               <DevisKpiStrip devis={devis} embedded />
             </section>
@@ -563,25 +560,17 @@ export default function Dashboard() {
         <header className="relative mb-6 overflow-hidden px-4 sm:px-6 md:mb-8 md:px-0">
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#6C5DD3]/12 text-[#6C5DD3]">
-                  <Sparkles className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-                </span>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6C5DD3]/80">
-                  Dashboard
-                </p>
-              </div>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px] md:text-[32px]">
+              <h1 className="text-[32px] font-semibold tracking-tight text-zinc-900 sm:text-4xl">
                 {greeting}{" "}
                 <span aria-hidden>👋</span>
               </h1>
-              <p className="mt-1 text-sm text-[#6C5DD3]/70 sm:text-[15px]">
+              <p className="mt-1 text-sm text-zinc-500 sm:text-[15px]">
                 <span className="capitalize">{dateLabel}</span> · voici un aperçu de votre activité.
               </p>
             </div>
             <Link
               href="/parametres"
-              className="inline-flex shrink-0 items-center gap-2 self-start rounded-2xl border border-neutral-200/80 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)] sm:self-end"
+              className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-4 py-2 text-sm font-medium text-zinc-700 ring-1 ring-zinc-200/80 transition-colors hover:bg-zinc-50 sm:self-end"
             >
               <Settings className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
               Personnaliser
@@ -593,13 +582,9 @@ export default function Dashboard() {
 
         {hasNoData ? (
           <div className="px-4 sm:px-6 md:px-0 mb-8">
-            <div className="relative overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-[#FFF8F1] via-white to-white p-8 text-center shadow-[0_8px_24px_-12px_rgba(0,0,0,0.06)]">
-              <div
-                className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[#ED8600]/15 blur-3xl dark:bg-[#5b7fb8]/15"
-                aria-hidden
-              />
+            <div className="relative overflow-hidden rounded-2xl bg-white p-8 text-center ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
               <div className="relative">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#ED8600]/15 text-[#c2410c] dark:bg-[#5b7fb8]/20 dark:text-[#a8c0e0]">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#6C5DD3]/10 text-[#6C5DD3]">
                   <Sparkles className="h-5 w-5" strokeWidth={1.75} aria-hidden />
                 </div>
                 <p className="font-medium text-zinc-800">Votre tableau de bord est vide</p>
@@ -607,10 +592,13 @@ export default function Dashboard() {
                   Ajoutez des clients, des factures et des objectifs pour voir les graphiques et les tendances.
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <Link href="/finance" className={primaryButtonClass}>
+                  <Link
+                    href="/finance"
+                    className="inline-flex items-center justify-center rounded-full bg-[#6C5DD3] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5B4CC7]"
+                  >
                     Aller à Finance
                   </Link>
-                  <Link href="/clients" className="py-2.5 px-4 text-sm font-medium text-[#ED8600] dark:text-[#8fa9c9]">
+                  <Link href="/clients" className="py-2.5 px-4 text-sm font-medium text-[#6C5DD3]">
                     Clients
                   </Link>
                 </div>

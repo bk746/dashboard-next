@@ -47,10 +47,8 @@ const links: QuickLink[] = [
   },
 ];
 
-const cardShadow =
-  "shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
-const cardShadowHover =
-  "hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_14px_32px_-4px_rgba(0,0,0,0.14),0_24px_48px_-8px_rgba(0,0,0,0.10)]";
+const cardShadow = "shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
+const cardShadowHover = "hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.10)]";
 
 export default function DashboardQuickLinks() {
   return (
@@ -62,7 +60,7 @@ export default function DashboardQuickLinks() {
         <Link
           key={href}
           href={href}
-          className={`group relative flex items-center gap-3 overflow-hidden rounded-3xl border-0 bg-white px-4 py-3.5 ${cardShadow} transition-all duration-300 hover:-translate-y-1 ${cardShadowHover}`}
+          className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] px-4 py-3.5 ${cardShadow} transition-all duration-300 hover:-translate-y-1 ${cardShadowHover}`}
         >
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover:scale-105 ${iconBg} ${iconColor}`}

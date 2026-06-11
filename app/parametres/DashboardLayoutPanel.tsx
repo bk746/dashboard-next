@@ -108,7 +108,7 @@ export default function DashboardLayoutPanel() {
               <div className="flex shrink-0 items-center gap-2 pl-7 sm:pl-0">
                 <button
                   type="button"
-                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#6C5DD3]/40 hover:bg-[#6C5DD3]/[0.04] hover:text-[#5E549E] disabled:opacity-40"
+                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#6C5DD3]/40 hover:bg-[#6C5DD3]/[0.04] hover:text-[#5B4CC7] disabled:opacity-40"
                   disabled={prefs.order.indexOf(id) === 0}
                   onClick={() => move(id, -1)}
                   aria-label="Monter"
@@ -117,7 +117,7 @@ export default function DashboardLayoutPanel() {
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#6C5DD3]/40 hover:bg-[#6C5DD3]/[0.04] hover:text-[#5E549E] disabled:opacity-40"
+                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#6C5DD3]/40 hover:bg-[#6C5DD3]/[0.04] hover:text-[#5B4CC7] disabled:opacity-40"
                   disabled={prefs.order.indexOf(id) === prefs.order.length - 1}
                   onClick={() => move(id, 1)}
                   aria-label="Descendre"

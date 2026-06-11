@@ -174,7 +174,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
   return (
     <div className={dealsFloatingCard}>
       <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-4 sm:px-6">
-        <p className="mb-3 text-sm font-semibold text-[#5E549E]">Suivi des projets</p>
+        <p className="mb-3 text-sm font-semibold text-zinc-900">Suivi des projets</p>
         <div className="flex flex-col gap-4">
           <div className={dealsSegmentedBar} role="tablist" aria-label="Portée de la liste">
             <button

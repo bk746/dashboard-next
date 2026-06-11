@@ -48,7 +48,7 @@ export default function ProspectRelanceBlock({ form, onChange }: ProspectRelance
     <div className="md:col-span-2 space-y-3">
       <div className="flex items-center gap-2">
         <Bell className="h-5 w-5 shrink-0 text-[#6C5DD3]" aria-hidden />
-        <h3 className="text-sm font-semibold text-[#5E549E]">Relances</h3>
+        <h3 className="text-sm font-semibold text-zinc-900">Relances</h3>
       </div>
 
       <div className={lightPanelSurface}>

@@ -20,7 +20,7 @@ function BadgeRow({ badge, hint }: { badge: ReactNode; hint?: string }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {badge}
-      {hint ? <span className="text-xs text-white/65">{hint}</span> : null}
+      {hint ? <span className="text-xs text-zinc-400">{hint}</span> : null}
     </div>
   );
 }
@@ -108,7 +108,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
           value={`${ctx.depenseTotal.toLocaleString("fr-FR")} €`}
           icon={<FaWallet aria-hidden />}
           footer={
-            <div className="flex flex-col gap-1.5 text-xs text-white/70">
+            <div className="flex flex-col gap-1.5 text-xs text-zinc-500">
               {ctx.depenseRecurrent > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <DashboardToneBadge>Récurrent / mois</DashboardToneBadge>
@@ -134,8 +134,8 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
           label="Synthèse nette"
           subtitle={`Encaissé − dépenses (${ctx.periodLabelFinance})`}
           value={`${ctx.syntheseNette.toLocaleString("fr-FR")} €`}
-          valueClassName={`text-3xl font-semibold tabular-nums tracking-tight md:text-[36px] md:leading-[1.05] ${
-            positive ? "text-emerald-100" : "text-rose-100"
+          valueClassName={`text-[28px] font-semibold tabular-nums tracking-tight md:text-[32px] md:leading-[1.05] ${
+            positive ? "text-emerald-600" : "text-rose-600"
           }`}
           icon={<FaBalanceScale aria-hidden />}
         />
@@ -172,7 +172,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
           tone="pink"
           label="Prochaine échéance"
           value={ctx.prochaineEcheanceStr ?? "Aucune"}
-          valueClassName="text-2xl font-semibold tracking-tight text-white md:text-[32px]"
+          valueClassName="text-2xl font-semibold tracking-tight text-zinc-900 md:text-[28px]"
           icon={<FaCalendarAlt aria-hidden />}
           footer={
             <BadgeRow
@@ -228,19 +228,17 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
           icon={<Target strokeWidth={1.75} aria-hidden />}
           footer={
             <div>
-              <div className="mb-2 flex justify-between text-[11px] font-medium text-white/70">
+              <div className="mb-2 flex justify-between text-[11px] font-medium text-zinc-400">
                 <span>Avancement</span>
                 <span>{Math.round(pct)}%</span>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/20">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${
-                    done ? "bg-emerald-300" : "bg-gradient-to-r from-emerald-400 to-emerald-300"
-                  }`}
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-700"
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              {done ? <p className="mt-1.5 text-right text-xs font-medium text-emerald-100">Objectif réussi</p> : null}
+              {done ? <p className="mt-1.5 text-right text-xs font-medium text-emerald-600">Objectif réussi</p> : null}
             </div>
           }
         />

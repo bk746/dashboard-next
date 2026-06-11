@@ -42,7 +42,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
       case "Financier":
         return "bg-emerald-500/12 text-emerald-800";
       case "Client":
-        return "bg-[#6C5DD3]/12 text-[#5E549E]";
+        return "bg-[#6C5DD3]/12 text-[#6C5DD3]";
       default:
         return "bg-zinc-100 text-zinc-600";
     }
@@ -57,7 +57,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
   return (
     <div className={objectifsFloatingCard}>
       <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-4 sm:px-6">
-        <p className="mb-3 text-sm font-semibold text-[#5E549E]">Liste détaillée</p>
+        <p className="mb-3 text-sm font-semibold text-zinc-900">Liste détaillée</p>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 flex-1">
             <label htmlFor="objectifs-search" className="mb-1.5 block text-xs font-medium text-zinc-600">

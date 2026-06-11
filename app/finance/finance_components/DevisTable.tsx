@@ -52,8 +52,8 @@ export default function DevisTable({ devis, totalInDatabase, onDelete, onEdit, o
 
   return (
     <div className={financeFloatingCard}>
-      <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-4 sm:px-6">
-        <p className="mb-3 text-sm font-semibold text-[#5E549E]">Liste des devis</p>
+      <div className="border-b border-zinc-100 px-4 py-4 sm:px-6 sm:py-5">
+        <p className="mb-3 text-[17px] font-semibold tracking-tight text-zinc-900">Devis</p>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0 flex-1">
               <label htmlFor="finance-search-devis" className="mb-1.5 block text-xs font-medium text-zinc-600">
@@ -143,24 +143,14 @@ export default function DevisTable({ devis, totalInDatabase, onDelete, onEdit, o
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-200/90">
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Numéro
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Entreprise
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Statut
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Date
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Montant
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Actions
+                <tr className="border-b border-zinc-100">
+                  <th className="p-4 text-left text-xs font-medium text-zinc-400">Numéro</th>
+                  <th className="p-4 text-left text-xs font-medium text-zinc-400">Entreprise</th>
+                  <th className="p-4 text-left text-xs font-medium text-zinc-400">Statut</th>
+                  <th className="p-4 text-left text-xs font-medium text-zinc-400">Date</th>
+                  <th className="p-4 text-left text-xs font-medium text-zinc-400">Montant</th>
+                  <th className="p-4 text-left text-xs font-medium text-zinc-400">
+                    <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
@@ -190,33 +180,33 @@ export default function DevisTable({ devis, totalInDatabase, onDelete, onEdit, o
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => onView(d)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100/80 px-3.5 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200/70"
                         >
                           <FaEye className="text-xs" /> Voir
                         </button>
                         <button
                           type="button"
                           onClick={() => onCreateFacture(d)}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] px-3 py-1.5 text-sm font-medium text-white shadow-sm shadow-[#6C5DD3]/20 transition-all hover:opacity-95"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#6C5DD3] px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#5B4CC7]"
                         >
                           <FaFileInvoice className="text-xs" /> Facture
                         </button>
                         <button
                           type="button"
                           onClick={() => onEdit(d)}
-                          className="p-2 text-zinc-500 transition-colors hover:text-zinc-800"
-                          aria-label="Plus d’options"
+                          className="rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+                          aria-label="Modifier"
                         >
                           <FaEllipsisV className="text-sm" />
                         </button>
                         <button
                           type="button"
                           onClick={() => onDelete(d.id)}
-                          className="text-sm text-red-600 hover:text-red-700"
+                          className="rounded-full px-3 py-1.5 text-sm font-medium text-rose-500 transition-colors hover:bg-rose-50"
                         >
                           Supprimer
                         </button>

@@ -22,11 +22,9 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
-const sidebarGradient =
-  "bg-gradient-to-b from-[#6C5DD3] via-[#5E549E] to-[#5349A8]";
+const sidebarGradient = "bg-white/85 backdrop-blur-xl ring-1 ring-black/[0.05]";
 
-const sidebarShadow =
-  "shadow-[0_12px_40px_-8px_rgba(108,93,211,0.55),0_4px_16px_rgba(0,0,0,0.08)]";
+const sidebarShadow = "shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)]";
 
 const mainItems: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -61,15 +59,15 @@ export default function MobileNav() {
         group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200
         ${
           active
-            ? "bg-[#4a4088] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
-            : "text-white/90 hover:bg-white/12 hover:text-white"
+            ? "bg-[#6C5DD3]/12 text-[#6C5DD3]"
+            : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
         }
       `}
     >
       <span
         className={`
           flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors
-          ${active ? "bg-white/15 text-white" : "bg-white/10 text-white/90 group-hover:bg-white/15"}
+          ${active ? "bg-[#6C5DD3]/15 text-[#6C5DD3]" : "bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200/70"}
         `}
       >
         <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
@@ -88,20 +86,20 @@ export default function MobileNav() {
         >
           <Link
             href="/dashboard"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white transition-colors hover:bg-white/22"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#6C5DD3] text-white transition-colors hover:bg-[#5B4CC7]"
             aria-label="Accueil BK Copilot"
           >
             <Bell className="h-5 w-5" strokeWidth={1.75} aria-hidden />
           </Link>
 
-          <p className="min-w-0 flex-1 text-center text-sm font-semibold tracking-tight text-white">
+          <p className="min-w-0 flex-1 text-center text-sm font-semibold tracking-tight text-zinc-900">
             BK Copilot
           </p>
 
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white transition-colors hover:bg-white/22"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 transition-colors hover:bg-zinc-200/70"
             aria-expanded={isOpen}
             aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
@@ -116,7 +114,7 @@ export default function MobileNav() {
 
       {isOpen ? (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-[#5349A8]/40 backdrop-blur-[2px]"
+          className="md:hidden fixed inset-0 z-40 bg-zinc-950/25 backdrop-blur-[2px]"
           onClick={close}
           aria-hidden
         />
@@ -135,20 +133,20 @@ export default function MobileNav() {
       >
         <div className="flex items-center justify-between px-5 pb-4 pt-6">
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/50">Menu</p>
-            <p className="mt-0.5 text-base font-semibold text-white">BK Copilot</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400">Menu</p>
+            <p className="mt-0.5 text-base font-semibold text-zinc-900">BK Copilot</p>
           </div>
           <button
             type="button"
             onClick={close}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 text-white transition-colors hover:bg-white/22"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 transition-colors hover:bg-zinc-200/70"
             aria-label="Fermer"
           >
             <X className="h-5 w-5" strokeWidth={1.75} />
           </button>
         </div>
 
-        <div className="mx-5 h-px bg-white/20" aria-hidden />
+        <div className="mx-5 h-px bg-zinc-200" aria-hidden />
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 [&::-webkit-scrollbar]:hidden">
           {mainItems.map((item) => (
@@ -158,25 +156,25 @@ export default function MobileNav() {
           ))}
         </nav>
 
-        <div className="mx-5 h-px bg-white/20" aria-hidden />
+        <div className="mx-5 h-px bg-zinc-200" aria-hidden />
 
         <div className="space-y-2 px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {!cloud ? (
-            <div className="rounded-2xl border border-amber-300/30 bg-amber-400/15 px-3 py-2.5">
-              <p className="text-[10px] leading-snug text-amber-100">
+            <div className="rounded-2xl bg-amber-50 px-3 py-2.5 ring-1 ring-amber-200/70">
+              <p className="text-[10px] leading-snug text-amber-700">
                 Pas de sync cloud — ajoutez les variables sur Vercel.
               </p>
               <Link
                 href="/login"
                 onClick={close}
-                className="mt-2 flex items-center gap-2 text-xs font-semibold text-amber-50"
+                className="mt-2 flex items-center gap-2 text-xs font-semibold text-amber-700"
               >
                 <LogIn className="h-3.5 w-3.5" aria-hidden />
                 Connexion &amp; aide
               </Link>
             </div>
           ) : user ? (
-            <p className="truncate px-3 text-[10px] text-white/50" title={user.email ?? ""}>
+            <p className="truncate px-3 text-[10px] text-zinc-400" title={user.email ?? ""}>
               {user.email}
             </p>
           ) : null}
@@ -190,9 +188,9 @@ export default function MobileNav() {
                 close();
                 void signOut();
               }}
-              className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/12"
+              className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white/90 group-hover:bg-white/15">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200/70">
                 <LogOut className="h-5 w-5" strokeWidth={1.75} aria-hidden />
               </span>
               Déconnexion

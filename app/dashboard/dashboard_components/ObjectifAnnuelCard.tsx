@@ -15,10 +15,8 @@ interface ObjectifAnnuelCardProps {
   encaisseDescription?: string;
 }
 
-const cardShadow =
-  "shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
-const cardShadowHover =
-  "hover:shadow-[0_4px_8px_rgba(0,0,0,0.04),0_14px_32px_-4px_rgba(0,0,0,0.14),0_24px_48px_-8px_rgba(0,0,0,0.10)]";
+const cardShadow = "shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
+const cardShadowHover = "hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.10)]";
 
 export default function ObjectifAnnuelCard({
   montantActuel,
@@ -31,7 +29,7 @@ export default function ObjectifAnnuelCard({
   const isCompleted = progression >= 100;
   const percentage = Math.min(Math.max(progression, 0), 100);
 
-  const cardClass = `group relative h-full overflow-hidden rounded-3xl border-0 bg-white p-6 ${cardShadow} transition-all duration-300 hover:-translate-y-1 ${cardShadowHover} md:p-7`;
+  const cardClass = `group relative h-full overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] p-6 ${cardShadow} transition-all duration-300 hover:-translate-y-1 ${cardShadowHover} md:p-7`;
 
   if (!hasObjectif) {
     return (

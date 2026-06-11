@@ -63,7 +63,7 @@ export default function ObjectifForm({ objectif, onClose, onSave }: ObjectifForm
         aria-labelledby="objectif-form-title"
       >
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
-          <h2 id="objectif-form-title" className="text-lg font-semibold text-[#5E549E]">
+          <h2 id="objectif-form-title" className="text-lg font-semibold text-zinc-900">
             {title}
           </h2>
           <button

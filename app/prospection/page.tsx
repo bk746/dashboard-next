@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, UserPlus, FileText, Bell, Sparkles } from "lucide-react";
+import { Plus, UserPlus, FileText, Bell } from "lucide-react";
 import type { Prospect, ProspectReponseClient } from "@/app/types";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
 import DashboardToneKpiCard from "@/app/dashboard/dashboard_components/DashboardToneKpiCard";
@@ -18,10 +18,10 @@ import ProspectsTable from "./prospection_components/ProspectsTable";
 import RendezVousAVenirCard from "./prospection_components/RendezVousAVenirCard";
 
 const prospectionShellClass =
-  "min-h-screen w-full bg-white text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12";
+  "min-h-screen w-full bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12";
 
 const primaryButtonClass =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(108,93,211,0.45)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-8px_rgba(108,93,211,0.55)] w-full sm:w-auto";
+  "inline-flex items-center justify-center gap-2 rounded-full bg-[#6C5DD3] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5B4CC7] w-full sm:w-auto";
 
 export default function ProspectionPage() {
   const [prospects, setProspects] = useJsonBucket<Prospect[]>("prospection", []);
@@ -100,18 +100,10 @@ export default function ProspectionPage() {
         <header className="px-1">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#6C5DD3]/12 text-[#6C5DD3]">
-                  <Sparkles className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-                </span>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6C5DD3]/80">
-                  Commercial
-                </p>
-              </div>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px] md:text-[32px]">
+              <h1 className="text-[32px] font-semibold tracking-tight text-zinc-900 sm:text-4xl">
                 Prospection
               </h1>
-              <p className="mt-1 text-sm text-[#6C5DD3]/70 sm:text-[15px]">
+              <p className="mt-1 text-sm text-zinc-500 sm:text-[15px]">
                 <span className="capitalize">{dateLabel}</span> · prospects, audits, appels et relances.
               </p>
             </div>

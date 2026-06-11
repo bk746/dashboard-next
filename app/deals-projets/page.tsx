@@ -89,7 +89,7 @@ export default function DealsProjets() {
       <div className="md:max-w-[1600px] md:mx-auto space-y-6 md:space-y-8">
         <header className="px-1 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px]">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-[28px]">
               Deals / Projets
             </h1>
             <p className="mt-1 text-sm text-zinc-500 capitalize">{dateLabel}</p>

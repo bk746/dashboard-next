@@ -83,7 +83,7 @@ export default function EstimationListPage() {
       <div className="md:max-w-[1600px] md:mx-auto space-y-6 md:space-y-8">
         <header className="px-1 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px]">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-[28px]">
               Estimations
             </h1>
             <p className="mt-1 text-sm text-zinc-500 capitalize">{dateLabel}</p>
@@ -121,7 +121,7 @@ export default function EstimationListPage() {
         ) : (
           <div className={estimationFloatingCard}>
             <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-3 sm:px-6">
-              <p className="text-sm font-semibold text-[#5E549E]">
+              <p className="text-sm font-semibold text-zinc-900">
                 {sorted.length} estimation{sorted.length > 1 ? "s" : ""}
               </p>
             </div>
@@ -207,7 +207,7 @@ export default function EstimationListPage() {
         <div className={overlayBackdropClass} role="dialog" aria-modal="true" aria-labelledby="new-est-title">
           <div className={estimationLightPanel} onClick={(e) => e.stopPropagation()}>
             <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6">
-              <h2 id="new-est-title" className="text-lg font-semibold tracking-tight text-[#5E549E]">
+              <h2 id="new-est-title" className="text-lg font-semibold tracking-tight text-zinc-900">
                 Nouvelle estimation
               </h2>
               <button

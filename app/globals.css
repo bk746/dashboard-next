@@ -26,9 +26,27 @@ body {
   min-height: 100vh;
 }
 
-/* Cartes — entrée douce + grille en cascade */
+/* Cartes — entrée douce (fallback sans JS) */
 .motion-card {
   animation: motion-card-fade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* GSAP prend le relais quand MotionProvider est actif */
+html.motion-js .motion-card {
+  animation: none;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
 }
 
 @keyframes motion-card-fade {
@@ -86,6 +104,10 @@ body {
   .stagger-cards > * {
     animation-delay: 0s !important;
   }
+  html.lenis,
+  html.lenis body {
+    scroll-behavior: auto;
+  }
 }
 
 @media print {
@@ -113,8 +135,6 @@ body {
   }
   .devis-print-area thead tr,
   .facture-print-area thead tr {
-    background: #000 !important;
-    color: #fff !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

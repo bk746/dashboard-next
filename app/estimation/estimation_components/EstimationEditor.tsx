@@ -418,7 +418,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
           </Link>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 flex-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px]">
+              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-[28px]">
                 {entrepriseLabel}
               </h1>
               <p className="mt-1 text-sm text-zinc-500">
@@ -448,7 +448,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
             {categoriesMerged.map((cat) => (
               <section key={cat.id} className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
-                  <h2 className="text-base font-semibold text-[#5E549E]">
+                  <h2 className="text-base font-semibold text-zinc-900">
                     <span className="mr-1.5" aria-hidden>
                       {cat.emoji}
                     </span>
@@ -491,7 +491,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
 
             <section className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
-                <h2 className="text-base font-semibold text-[#5E549E]">
+                <h2 className="text-base font-semibold text-zinc-900">
                   <span className="mr-1.5" aria-hidden>
                     🔄
                   </span>
@@ -558,7 +558,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
 
           <aside className="order-1 lg:order-2 mb-6 lg:mb-0 lg:sticky lg:top-6">
             <div className={`${estimationFloatingCard} p-4 sm:p-5`}>
-              <h3 className="text-sm font-semibold text-[#5E549E]">Récapitulatif</h3>
+              <h3 className="text-sm font-semibold text-zinc-900">Récapitulatif</h3>
               {lines.length === 0 && !maintenanceId ? (
                 <p className="text-sm text-zinc-500">
                   Sélectionnez des options pour voir le total.
@@ -617,7 +617,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6">
-              <h2 id="estimation-modal-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
+              <h2 id="estimation-modal-title" className="text-lg font-semibold tracking-tight text-zinc-900 pr-2">
                 Tarifs — {editingCategory.emoji} {editingCategory.title}
               </h2>
               <button
@@ -767,7 +767,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
         >
           <div className={estimationLightPanel} onClick={(e) => e.stopPropagation()}>
             <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6">
-              <h2 id="estimation-maint-modal-title" className="text-lg font-semibold tracking-tight text-[#5E549E]">
+              <h2 id="estimation-maint-modal-title" className="text-lg font-semibold tracking-tight text-zinc-900">
                 Tarifs — Maintenance
               </h2>
               <button

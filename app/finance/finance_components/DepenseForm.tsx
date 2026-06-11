@@ -59,7 +59,7 @@ export default function DepenseForm({ depense, onClose, onSave }: DepenseFormPro
         aria-labelledby="depense-form-title"
       >
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
-          <h2 id="depense-form-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
+          <h2 id="depense-form-title" className="text-lg font-semibold tracking-tight text-zinc-900 pr-2">
             {title}
           </h2>
           <button

@@ -54,7 +54,7 @@ export default function Parametres() {
       <div className="md:max-w-[900px] md:mx-auto space-y-6 md:space-y-8">
         <header className="px-1 space-y-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px]">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-[28px]">
               Paramètres
             </h1>
             <p className="mt-1 text-sm text-zinc-500 capitalize">{dateLabel}</p>

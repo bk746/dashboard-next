@@ -9,7 +9,7 @@ interface RendezVousAVenirCardProps {
 }
 
 const floatingCard =
-  "overflow-hidden rounded-3xl border-0 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
+  "overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 
 function isTodayFr(d: Date): boolean {
   const now = new Date();
@@ -31,7 +31,7 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
             <CalendarClock className="h-5 w-5" strokeWidth={1.75} aria-hidden />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[#5E549E]">Rendez-vous à venir</p>
+            <p className="text-[15px] font-semibold tracking-tight text-zinc-900">Rendez-vous à venir</p>
             <p className="text-xs text-zinc-500">
               {count === 0
                 ? "Aucun RDV planifié"
@@ -72,7 +72,7 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
                   <div
                     className={`flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl text-center ${
                       today
-                        ? "bg-gradient-to-br from-[#6C5DD3] to-[#5E549E] text-white shadow-sm shadow-[#6C5DD3]/25"
+                        ? "bg-[#6C5DD3] text-white"
                         : "bg-zinc-100 text-zinc-700"
                     }`}
                   >
@@ -94,7 +94,7 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
                         />
                       ) : null}
                       {today ? (
-                        <span className="rounded-full bg-[#6C5DD3]/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-[#5E549E]">
+                        <span className="rounded-full bg-[#6C5DD3]/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-[#6C5DD3]">
                           Aujourd&apos;hui
                         </span>
                       ) : null}

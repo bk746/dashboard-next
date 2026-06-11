@@ -39,7 +39,7 @@ export default function NouveauxClientsCard({ data }: NouveauxClientsCardProps) 
   const avg = data.length > 0 ? total / data.length : 0;
 
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border-0 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_-12px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.10)] dark:bg-[#12131a] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] md:p-6">
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_-12px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.10)] dark:bg-[#12131a] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] md:p-6">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/12 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300">

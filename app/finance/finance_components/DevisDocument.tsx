@@ -51,7 +51,7 @@ function buildDevisMailto(devis: Devis, client: Client | null | undefined, compa
 }
 
 const toolbarBtn =
-  "inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-100";
+  "inline-flex items-center gap-2 rounded-full bg-zinc-100/80 px-4 py-2 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-200/70";
 
 export default function DevisDocument({ devis, client, onClose }: DevisDocumentProps) {
   const [company] = useCompany();
@@ -64,15 +64,15 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className="no-print mx-2 flex max-h-[min(92vh,900px)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.35)] sm:mx-4"
+        className="mx-2 flex max-h-[min(92vh,900px)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-[#F5F5F7] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25)] ring-1 ring-black/[0.05] sm:mx-4"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="devis-preview-title"
       >
-        <div className="no-print flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-3 sm:px-5">
-          <h2 id="devis-preview-title" className="text-base font-semibold tracking-tight text-neutral-900">
-            Aperçu du devis
+        <div className="no-print flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-zinc-200/70 bg-white/80 px-4 py-3 backdrop-blur sm:px-5">
+          <h2 id="devis-preview-title" className="text-base font-semibold tracking-tight text-zinc-900">
+            Devis {devis.numeroDevis}
           </h2>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <button type="button" onClick={() => window.print()} className={toolbarBtn}>
@@ -88,7 +88,7 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+              className="rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
               aria-label="Fermer"
             >
               <FaTimes className="h-5 w-5" />
@@ -96,22 +96,37 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
           </div>
         </div>
 
-        <div className="no-print flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           <article
-            className="devis-print-area mx-auto bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+            className="devis-print-area mx-auto rounded-lg bg-white text-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
             style={{ maxWidth: "210mm", minHeight: "297mm" }}
           >
             {/* En-tête */}
-            <header className="border-b-2 border-black px-8 pt-10 pb-8 md:px-12 md:pt-12">
-              <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+            <header className="px-8 pt-12 pb-10 md:px-14 md:pt-16">
+              <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500">
-                    Émetteur
-                  </p>
-                  <h1 className="mt-2 text-2xl font-bold tracking-tight text-black md:text-[1.65rem]">
-                    {company.denomination}
-                  </h1>
-                  <div className="mt-4 space-y-0.5 text-[13px] leading-relaxed text-neutral-600">
+                  <h1 className="text-[2rem] font-semibold tracking-tight text-zinc-900">Devis</h1>
+                  <dl className="mt-3 space-y-1 text-sm text-zinc-500">
+                    <div className="flex gap-2">
+                      <dt>N°</dt>
+                      <dd className="font-medium tabular-nums text-zinc-900">{devis.numeroDevis}</dd>
+                    </div>
+                    <div className="flex gap-2">
+                      <dt>Date</dt>
+                      <dd className="tabular-nums text-zinc-900">{devis.date}</dd>
+                    </div>
+                    {devis.validite ? (
+                      <div className="flex gap-2">
+                        <dt>Validité</dt>
+                        <dd className="text-zinc-900">{devis.validite}</dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                </div>
+
+                <div className="shrink-0 text-left sm:text-right">
+                  <p className="text-base font-semibold text-zinc-900">{company.denomination}</p>
+                  <div className="mt-2 space-y-0.5 text-[13px] leading-relaxed text-zinc-500">
                     <p>
                       {company.formeJuridique}
                       {company.siret ? ` — SIRET ${company.siret}` : ""}
@@ -121,38 +136,18 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
                       {company.email}
                       {company.telephone ? ` — ${company.telephone}` : ""}
                     </p>
-                    {company.tva ? <p className="text-neutral-500">{company.tva}</p> : null}
+                    {company.tva ? <p>{company.tva}</p> : null}
                   </div>
-                </div>
-
-                <div className="shrink-0 text-left sm:text-right">
-                  <p className="text-3xl font-bold uppercase tracking-[0.12em] text-black md:text-4xl">Devis</p>
-                  <dl className="mt-4 space-y-1.5 text-sm">
-                    <div className="flex gap-3 sm:justify-end">
-                      <dt className="font-medium text-neutral-500">N°</dt>
-                      <dd className="font-semibold tabular-nums text-black">{devis.numeroDevis}</dd>
-                    </div>
-                    <div className="flex gap-3 sm:justify-end">
-                      <dt className="font-medium text-neutral-500">Date</dt>
-                      <dd className="tabular-nums text-black">{devis.date}</dd>
-                    </div>
-                    {devis.validite ? (
-                      <div className="flex gap-3 sm:justify-end">
-                        <dt className="font-medium text-neutral-500">Validité</dt>
-                        <dd className="text-black">{devis.validite}</dd>
-                      </div>
-                    ) : null}
-                  </dl>
                 </div>
               </div>
             </header>
 
             {/* Client */}
-            <section className="px-8 py-8 md:px-12">
-              <div className="border border-neutral-300 bg-neutral-50 px-5 py-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Client</p>
-                <p className="mt-2 text-lg font-semibold text-black">{devis.entreprise}</p>
-                <div className="mt-2 space-y-0.5 text-sm text-neutral-600">
+            <section className="px-8 md:px-14">
+              <div className="border-t border-zinc-200 pt-8">
+                <p className="text-xs font-medium text-zinc-400">Adressé à</p>
+                <p className="mt-1.5 text-lg font-semibold text-zinc-900">{devis.entreprise}</p>
+                <div className="mt-1 space-y-0.5 text-sm text-zinc-500">
                   {client?.patron ? <p>{client.patron}</p> : null}
                   {client?.email ? <p>{client.email}</p> : null}
                   {client?.telephone ? <p>{client.telephone}</p> : null}
@@ -161,33 +156,30 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
             </section>
 
             {/* Prestations */}
-            <section className="px-8 md:px-12">
+            <section className="px-8 pt-10 md:px-14">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-y-2 border-black bg-black text-left text-white">
-                    <th className="px-4 py-3 font-semibold uppercase tracking-wide">Désignation</th>
-                    <th className="w-32 px-4 py-3 text-right font-semibold uppercase tracking-wide">Montant TTC</th>
+                  <tr className="border-b border-zinc-200 text-left">
+                    <th className="py-3 pr-4 text-xs font-medium text-zinc-400">Désignation</th>
+                    <th className="w-32 py-3 text-right text-xs font-medium text-zinc-400">Montant TTC</th>
                   </tr>
                 </thead>
                 <tbody>
                   {lignes.map((p, i) => {
                     const inclus = estLigneInclusForfait(p);
                     return (
-                      <tr
-                        key={i}
-                        className={`border-b border-neutral-200 ${i % 2 === 1 ? "bg-neutral-50/80" : "bg-white"}`}
-                      >
-                        <td className={`px-4 py-3.5 text-black ${inclus ? "pl-6 text-neutral-600" : ""}`}>
+                      <tr key={i} className="border-b border-zinc-100">
+                        <td className={`py-4 pr-4 ${inclus ? "pl-5 text-zinc-500" : "text-zinc-900"}`}>
                           {inclus ? (
-                            <span className="mr-2 text-neutral-400" aria-hidden>
+                            <span className="mr-2 text-zinc-300" aria-hidden>
                               —
                             </span>
                           ) : null}
                           {designationLigneDevis(p) || "Prestation"}
                         </td>
                         <td
-                          className={`px-4 py-3.5 text-right tabular-nums ${
-                            inclus ? "font-normal text-neutral-500" : "font-semibold text-black"
+                          className={`py-4 text-right tabular-nums ${
+                            inclus ? "font-normal text-zinc-400" : "font-medium text-zinc-900"
                           }`}
                         >
                           {montantLigneDevis(p)}
@@ -200,14 +192,12 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
             </section>
 
             {/* Total */}
-            <section className="px-8 py-8 md:px-12">
+            <section className="px-8 py-10 md:px-14">
               <div className="flex justify-end">
-                <div className="min-w-[14rem] border-2 border-black px-6 py-4">
-                  <div className="flex items-baseline justify-between gap-6">
-                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-600">
-                      Total TTC
-                    </span>
-                    <span className="text-2xl font-bold tabular-nums text-black">
+                <div className="min-w-[15rem]">
+                  <div className="flex items-baseline justify-between gap-8 border-t border-zinc-900 pt-4">
+                    <span className="text-sm font-medium text-zinc-500">Total TTC</span>
+                    <span className="text-[28px] font-semibold tracking-tight tabular-nums text-zinc-900">
                       {devis.prix.toLocaleString("fr-FR")} €
                     </span>
                   </div>
@@ -216,27 +206,27 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
             </section>
 
             {/* Pied de page */}
-            <footer className="mt-auto border-t border-neutral-300 px-8 py-8 md:px-12">
-              {devis.validite ? (
-                <p className="mb-6 text-sm text-neutral-600">
-                  <span className="font-semibold text-black">Conditions :</span> Ce devis est valable{" "}
-                  {devis.validite}. Toute commande implique l&apos;acceptation de nos conditions générales de vente.
-                </p>
-              ) : (
-                <p className="mb-6 text-sm text-neutral-600">
-                  Toute commande implique l&apos;acceptation de nos conditions générales de vente.
-                </p>
-              )}
-              <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-                <p className="text-sm text-neutral-600">
-                  Fait à {company.ville || "—"}, le {devis.date}
-                </p>
-                <div className="sm:text-right">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-500">
-                    Bon pour accord
+            <footer className="mt-auto px-8 pb-12 md:px-14">
+              <div className="border-t border-zinc-200 pt-8">
+                {devis.validite ? (
+                  <p className="mb-8 text-[13px] leading-relaxed text-zinc-500">
+                    Ce devis est valable {devis.validite}. Toute commande implique l&apos;acceptation de nos
+                    conditions générales de vente.
                   </p>
-                  <div className="mt-10 border-b border-black w-48 sm:ml-auto" aria-hidden />
-                  <p className="mt-2 text-xs text-neutral-500">Date et signature du client</p>
+                ) : (
+                  <p className="mb-8 text-[13px] leading-relaxed text-zinc-500">
+                    Toute commande implique l&apos;acceptation de nos conditions générales de vente.
+                  </p>
+                )}
+                <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+                  <p className="text-[13px] text-zinc-500">
+                    Fait à {company.ville || "—"}, le {devis.date}
+                  </p>
+                  <div className="sm:text-right">
+                    <p className="text-xs font-medium text-zinc-400">Bon pour accord</p>
+                    <div className="mt-12 w-48 border-b border-zinc-300 sm:ml-auto" aria-hidden />
+                    <p className="mt-2 text-xs text-zinc-400">Date et signature du client</p>
+                  </div>
                 </div>
               </div>
             </footer>

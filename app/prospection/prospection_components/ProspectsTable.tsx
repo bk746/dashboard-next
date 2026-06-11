@@ -26,7 +26,7 @@ import {
 } from "@/app/prospection/prospection_utils";
 import { prospectMatchesSearch } from "@/app/prospection/prospectionSearch";
 const floatingCard =
-  "overflow-hidden rounded-3xl border-0 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
+  "overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 
 const inputClass =
   "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 transition-colors focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15";
@@ -147,7 +147,7 @@ export default function ProspectsTable({
 
   return (
     <div className={floatingCard}>
-      <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-4 sm:px-6">
+      <div className="border-b border-zinc-100 px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative min-w-0 flex-1">
             <Search
@@ -181,8 +181,8 @@ export default function ProspectsTable({
               onClick={() => setShowAdvanced((v) => !v)}
               className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
                 hasAdvancedActive || showAdvanced
-                  ? "border-[#6C5DD3]/40 bg-[#6C5DD3]/10 text-[#5E549E]"
-                  : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+                  ? "border-transparent bg-[#6C5DD3]/10 text-[#6C5DD3]"
+                  : "border-transparent bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70"
               }`}
               aria-expanded={showAdvanced}
             >
@@ -220,8 +220,8 @@ export default function ProspectsTable({
                 onClick={() => setFiltrePriorite(value)}
                 className={`group/chip inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all sm:text-sm ${
                   active
-                    ? "border-transparent bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] text-white shadow-md shadow-[#6C5DD3]/20"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:border-[#6C5DD3]/30 hover:bg-[#6C5DD3]/[0.04]"
+                    ? "border-transparent bg-zinc-900 text-white"
+                    : "border-transparent bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70"
                 }`}
               >
                 {label}
@@ -280,7 +280,7 @@ export default function ProspectsTable({
         <p className="mt-3 text-xs text-zinc-500">
           {searchActive ? (
             <>
-              <span className="font-medium text-[#5E549E]">Recherche sur tous les prospects</span>
+              <span className="font-medium text-zinc-700">Recherche sur tous les prospects</span>
               {" · "}
             </>
           ) : null}
@@ -373,10 +373,9 @@ function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditF
               ? "bg-amber-50/90 hover:bg-amber-50 ring-1 ring-amber-200/70 hover:shadow-[0_8px_24px_-12px_rgba(245,158,11,0.15)]"
               : "bg-zinc-50/80 hover:bg-white hover:shadow-[0_8px_24px_-12px_rgba(108,93,211,0.12)]",
             divider: "border-zinc-200/60",
-            avatar:
-              "bg-gradient-to-br from-[#6C5DD3] to-[#5E549E] text-white shadow-sm shadow-[#6C5DD3]/20",
-            link: "text-[#6C5DD3] hover:text-[#5E549E]",
-            segmentWrap: "bg-white shadow-inner shadow-zinc-200/50",
+            avatar: "bg-[#6C5DD3]/10 text-[#6C5DD3]",
+            link: "text-[#6C5DD3] hover:text-[#5B4CC7]",
+            segmentWrap: "bg-zinc-100/80",
             editHover: "hover:bg-[#6C5DD3]/10 hover:text-[#6C5DD3]",
           };
 
@@ -415,7 +414,7 @@ function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditF
                     e.stopPropagation();
                     onAuditFaitChange(p, false);
                   }}
-                  className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F08A9B] to-rose-400 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm shadow-rose-300/40 transition-opacity hover:opacity-90"
+                  className="inline-flex items-center gap-1 rounded-full bg-rose-500/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-600 transition-colors hover:bg-rose-500/20"
                   title="Retirer le statut audit fait"
                 >
                   Audit fait
@@ -460,7 +459,7 @@ function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditF
                   À relancer
                 </span>
               ) : prochaineRelance ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#6C5DD3]/10 px-2.5 py-1 text-xs font-medium text-[#5E549E]">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#6C5DD3]/10 px-2.5 py-1 text-xs font-medium text-[#6C5DD3]">
                   Relance {formatDateISOFr(prochaineRelance)}
                 </span>
               ) : null}

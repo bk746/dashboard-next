@@ -13,10 +13,10 @@ interface ClientsTableProps {
 }
 
 const floatingCard =
-  "overflow-hidden rounded-3xl border-0 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02),0_8px_24px_-4px_rgba(0,0,0,0.10),0_16px_40px_-8px_rgba(0,0,0,0.06)]";
+  "overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 
 const inputClass =
-  "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 transition-colors focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15";
+  "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/35";
 
 function parseActivityTime(s: string): number {
   try {
@@ -131,7 +131,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
 
   return (
     <div className={floatingCard}>
-      <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-4 sm:px-6">
+      <div className="border-b border-zinc-100 px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex flex-col gap-4">
           <div className="relative">
             <Search
@@ -214,7 +214,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
           </div>
           <p className="text-base font-semibold text-zinc-800">Aucun client pour l&apos;instant</p>
           <p className="mt-2 max-w-sm text-sm text-zinc-500">
-            Ajoutez un client avec le bouton <span className="font-medium text-[#5E549E]">Nouveau client</span> en haut
+            Ajoutez un client avec le bouton <span className="font-medium text-zinc-700">Nouveau client</span> en haut
             de la page.
           </p>
         </div>
@@ -237,7 +237,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
               <article key={client.id} className="rounded-2xl p-3 transition-colors hover:bg-zinc-50/80">
                 <div className="flex items-start gap-3">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6C5DD3] to-[#5E549E] text-sm font-semibold text-white"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#6C5DD3]/10 text-sm font-semibold text-[#6C5DD3]"
                     aria-hidden
                   >
                     {getInitials(client.entreprise)}
@@ -256,7 +256,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                         {normalizeAbonnement(client.abonnement)}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm font-semibold tabular-nums text-[#5E549E]">
+                    <p className="mt-2 text-sm font-semibold tabular-nums text-zinc-900">
                       {(client.caTotal ?? 0).toLocaleString("fr-FR")} €
                     </p>
                     <p className="text-xs text-zinc-500">Activité {client.derniereActivite}</p>
@@ -287,37 +287,25 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-100 bg-zinc-50/40">
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Client
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Contact
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Statut
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    CA total
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Abonnement
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Activité
-                  </th>
-                  <th className="px-5 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Actions
+                <tr className="border-b border-zinc-100">
+                  <th className="px-5 py-3.5 text-left text-xs font-medium text-zinc-400">Client</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-medium text-zinc-400">Contact</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-medium text-zinc-400">Statut</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-medium text-zinc-400">CA total</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-medium text-zinc-400">Abonnement</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-medium text-zinc-400">Activité</th>
+                  <th className="px-5 py-3.5 text-right text-xs font-medium text-zinc-400">
+                    <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
                 {sortedClients.map((client) => (
-                  <tr key={client.id} className="transition-colors hover:bg-[#6C5DD3]/[0.03]">
+                  <tr key={client.id} className="transition-colors hover:bg-zinc-50/80">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6C5DD3] to-[#5E549E] text-xs font-semibold text-white"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#6C5DD3]/10 text-xs font-semibold text-[#6C5DD3]"
                           aria-hidden
                         >
                           {getInitials(client.entreprise)}
@@ -338,7 +326,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="text-sm font-semibold tabular-nums text-[#5E549E]">
+                      <span className="text-sm font-semibold tabular-nums text-zinc-900">
                         {(client.caTotal ?? 0).toLocaleString("fr-FR")} €
                       </span>
                     </td>

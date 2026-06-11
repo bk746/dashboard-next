@@ -7,13 +7,11 @@ import {
   AlertTriangle,
   Wallet,
   Scale,
-  FileText,
+  Plus,
 } from "lucide-react";
 import type { Client, Depense, Devis, Facture } from "@/app/types";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
-import DashboardToneKpiCard, {
-  DashboardToneBadge,
-} from "@/app/dashboard/dashboard_components/DashboardToneKpiCard";
+import FinanceStatCard from "./finance_components/FinanceStatCard";
 import {
   financeShellClass,
   financePrimaryBtn,
@@ -181,7 +179,7 @@ export default function Finance() {
         <header className="px-1 space-y-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              <h1 className="text-2xl font-semibold tracking-tight text-[#5E549E] sm:text-[28px]">
+              <h1 className="text-[32px] font-semibold tracking-tight text-zinc-900 sm:text-4xl">
                 Finance
               </h1>
               <p className="mt-1 text-sm text-zinc-500 capitalize">{dateLabel}</p>
@@ -235,8 +233,8 @@ export default function Finance() {
                   }}
                   className={financePrimaryBtn}
                 >
-                  <FileText className="h-4 w-4" aria-hidden />
-                  Devis
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Nouveau devis
                 </button>
                 <button
                   type="button"
@@ -246,7 +244,7 @@ export default function Finance() {
                   }}
                   className={financeSecondaryBtn}
                 >
-                  <Wallet className="h-4 w-4" aria-hidden />
+                  <Wallet className="h-4 w-4 text-zinc-400" aria-hidden />
                   Dépense
                 </button>
               </div>
@@ -257,60 +255,43 @@ export default function Finance() {
         {tab === "factures" && (
           <>
             <section aria-label="Indicateurs finance">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5">
-                <DashboardToneKpiCard
-                  tone="violet"
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
+                <FinanceStatCard
                   label="Revenu encaissé"
-                  subtitle={hintRevenue}
                   value={formatEuro(revenueEncaisse)}
+                  hint={hintRevenue}
                   icon={<Euro aria-hidden />}
                 />
-                <DashboardToneKpiCard
-                  tone="pink"
+                <FinanceStatCard
                   label="En attente"
-                  subtitle={hintAttente}
                   value={formatEuro(enAttente)}
+                  hint={hintAttente}
+                  tone={enAttente > 0 ? "warning" : "neutral"}
                   icon={<Clock aria-hidden />}
-                  footer={<DashboardToneBadge variant="warn">Non payé</DashboardToneBadge>}
                 />
-                <DashboardToneKpiCard
-                  tone="pink"
+                <FinanceStatCard
                   label="En retard"
-                  subtitle="Impayées, date passée — toutes périodes"
                   value={formatEuro(enRetard)}
+                  hint="Impayées, date passée — toutes périodes"
+                  tone={enRetard > 0 ? "negative" : "neutral"}
                   icon={<AlertTriangle aria-hidden />}
-                  footer={<DashboardToneBadge variant="warn">À relancer</DashboardToneBadge>}
                 />
-                <DashboardToneKpiCard
-                  tone="violet"
+                <FinanceStatCard
                   label="Dépenses"
-                  subtitle={hintDepense}
                   value={formatEuro(depenseTotals.total)}
+                  hint={
+                    depenseTotals.totalRecurrent > 0 || depenseTotals.totalOccasionnel > 0
+                      ? `Réc. ${formatEuro(depenseTotals.totalRecurrent)} · Occ. ${formatEuro(depenseTotals.totalOccasionnel)}`
+                      : hintDepense
+                  }
                   icon={<Wallet aria-hidden />}
-                  footer={
-                    depenseTotals.totalRecurrent > 0 || depenseTotals.totalOccasionnel > 0 ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {depenseTotals.totalRecurrent > 0 ? (
-                          <DashboardToneBadge>Réc. {formatEuro(depenseTotals.totalRecurrent)}</DashboardToneBadge>
-                        ) : null}
-                        {depenseTotals.totalOccasionnel > 0 ? (
-                          <DashboardToneBadge>Occ. {formatEuro(depenseTotals.totalOccasionnel)}</DashboardToneBadge>
-                        ) : null}
-                      </div>
-                    ) : null
-                  }
                 />
-                <DashboardToneKpiCard
-                  tone={soldeNet >= 0 ? "violet" : "pink"}
-                  label="Synthèse nette"
-                  subtitle={`Encaissé − dépenses (${periodLabelLong})`}
+                <FinanceStatCard
+                  label="Solde net"
                   value={formatEuro(soldeNet)}
+                  hint={`Encaissé − dépenses (${periodLabelLong})`}
+                  tone={soldeNet >= 0 ? "positive" : "negative"}
                   icon={<Scale aria-hidden />}
-                  footer={
-                    <DashboardToneBadge variant={soldeNet >= 0 ? "success" : "warn"}>
-                      {soldeNet >= 0 ? "Positif" : "Négatif"}
-                    </DashboardToneBadge>
-                  }
                 />
               </div>
             </section>

@@ -128,12 +128,12 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
   const title = client ? "Modifier le client" : "Nouveau client";
 
   const lightPanelClass =
-    "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-3xl border-0 bg-white shadow-[0_24px_80px_-12px_rgba(108,93,211,0.22)] mx-2 sm:mx-4";
+    "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25)] mx-2 sm:mx-4";
   const lightInputClass =
-    "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2 text-zinc-800 placeholder:text-zinc-400 focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15 transition-colors";
-  const lightLabelClass = "block text-sm text-zinc-600 mb-2";
+    "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/35";
+  const lightLabelClass = "block text-[13px] font-medium text-zinc-500 mb-1.5";
   const violetPrimaryBtn =
-    "px-5 py-2.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#6C5DD3] to-[#5E549E] shadow-md shadow-[#6C5DD3]/25 hover:shadow-lg transition-all w-full sm:w-auto";
+    "px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-[#6C5DD3] transition-colors hover:bg-[#5B4CC7] w-full sm:w-auto";
 
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
@@ -145,7 +145,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
         aria-labelledby="client-form-title"
       >
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
-          <h2 id="client-form-title" className="text-lg font-semibold tracking-tight text-[#5E549E] pr-2">
+          <h2 id="client-form-title" className="text-lg font-semibold tracking-tight text-zinc-900 pr-2">
             {title}
           </h2>
           <button

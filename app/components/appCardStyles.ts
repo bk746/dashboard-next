@@ -137,7 +137,7 @@ export const sectionIntroDescClass = "mt-0.5 text-xs text-zinc-500 dark:text-zin
 /** Overlays / modales */
 export const overlayBackdropClass =
   "fixed inset-0 z-[70] flex items-start md:items-center justify-center p-4 pt-20 md:pt-4 " +
-  "bg-zinc-950/55 dark:bg-black/65 backdrop-blur-md";
+  "bg-zinc-950/55 dark:bg-black/65 backdrop-blur-md data-lenis-prevent";
 
 export const overlayPanelClass =
   "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-2xl " +
@@ -172,7 +172,7 @@ export const overlayCloseButtonClass =
   "rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/[0.06] dark:hover:text-zinc-200";
 
 export const overlayScrollBodyClass =
-  "flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6 space-y-4";
+  "flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6 space-y-4 data-lenis-prevent";
 
 export const overlayFooterClass =
   "flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 dark:border-white/[0.06] " +

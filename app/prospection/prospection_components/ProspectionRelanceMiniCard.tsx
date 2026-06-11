@@ -55,7 +55,7 @@ export default function ProspectionRelanceMiniCard({ kind, value }: ProspectionR
   const Icon = c.Icon;
   return (
     <div
-      className={`group relative overflow-hidden rounded-3xl border-0 p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_-12px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-12px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.6)] ${c.surface}`}
+      className={`group relative overflow-hidden rounded-2xl p-5 ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_-12px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-12px_rgba(0,0,0,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.6)] ${c.surface}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div
