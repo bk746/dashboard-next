@@ -13,7 +13,7 @@ const clientsShellClass =
   "min-h-screen w-full bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12";
 
 const primaryButtonClass =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-[#6C5DD3] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5B4CC7] w-full sm:w-auto";
+  "inline-flex items-center justify-center gap-2 rounded-full bg-[#007AFF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0066D6] w-full sm:w-auto";
 
 export default function Clients() {
   const [clients, setClients] = useJsonBucket<Client[]>("clients", []);
@@ -111,7 +111,7 @@ export default function Clients() {
               icon={<Users aria-hidden />}
             />
             <DashboardToneKpiCard
-              tone="violet"
+              tone="blue"
               label="Activité ce mois"
               subtitle="Dernière activité datée ce mois-ci"
               value={activiteCeMois}

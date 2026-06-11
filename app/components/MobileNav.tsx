@@ -59,7 +59,7 @@ export default function MobileNav() {
         group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200
         ${
           active
-            ? "bg-[#6C5DD3]/12 text-[#6C5DD3]"
+            ? "bg-[#007AFF]/12 text-[#007AFF]"
             : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
         }
       `}
@@ -67,7 +67,7 @@ export default function MobileNav() {
       <span
         className={`
           flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors
-          ${active ? "bg-[#6C5DD3]/15 text-[#6C5DD3]" : "bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200/70"}
+          ${active ? "bg-[#007AFF]/15 text-[#007AFF]" : "bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200/70"}
         `}
       >
         <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
@@ -86,7 +86,7 @@ export default function MobileNav() {
         >
           <Link
             href="/dashboard"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#6C5DD3] text-white transition-colors hover:bg-[#5B4CC7]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#007AFF] text-white transition-colors hover:bg-[#0066D6]"
             aria-label="Accueil BK Copilot"
           >
             <Bell className="h-5 w-5" strokeWidth={1.75} aria-hidden />

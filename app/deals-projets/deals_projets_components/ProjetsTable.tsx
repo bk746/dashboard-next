@@ -245,7 +245,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
           ) : (
             <>
               {projetsEnCoursCount} en cours sur {projets.length} · tri par échéance ·{" "}
-              <Link href="/finance" className="font-medium text-[#6C5DD3] hover:underline">
+              <Link href="/finance" className="font-medium text-[#007AFF] hover:underline">
                 Finance
               </Link>
             </>
@@ -256,7 +256,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
       <div className="overflow-x-auto">
           {isDatabaseEmpty ? (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
                 <FolderKanban className="h-7 w-7" strokeWidth={1.25} aria-hidden />
               </div>
               <p className="text-base font-semibold text-zinc-800">Aucun projet enregistré</p>
@@ -273,7 +273,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
               <button
                 type="button"
                 onClick={() => setVueScope("tous")}
-                className="mt-5 text-sm font-medium text-[#6C5DD3] underline-offset-4 hover:underline"
+                className="mt-5 text-sm font-medium text-[#007AFF] underline-offset-4 hover:underline"
               >
                 Afficher tous les projets
               </button>
@@ -287,7 +287,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
               <button
                 type="button"
                 onClick={resetFilters}
-                className="mt-5 text-sm font-medium text-[#6C5DD3] underline-offset-4 hover:underline"
+                className="mt-5 text-sm font-medium text-[#007AFF] underline-offset-4 hover:underline"
               >
                 Réinitialiser recherche et filtres
               </button>
@@ -326,7 +326,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                         <button
                           type="button"
                           onClick={() => onEdit(projet)}
-                          className="text-sm font-medium text-[#6C5DD3]"
+                          className="text-sm font-medium text-[#007AFF]"
                         >
                           Modifier
                         </button>
@@ -385,7 +385,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
                     return (
                       <tr
                         key={projet.id}
-                        className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-[#6C5DD3]/[0.04]"
+                        className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-[#007AFF]/[0.04]"
                       >
                         <td className="p-4">
                           <span className="text-sm font-medium text-zinc-800">{projet.nom}</span>

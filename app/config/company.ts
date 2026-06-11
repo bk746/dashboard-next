@@ -18,6 +18,12 @@ export interface CompanySettings {
   tva: string;
   dateImmatriculation: string;
   departement: string;
+  /** IBAN affiché sur les factures (paiement par virement). */
+  iban: string;
+  /** BIC associé à l'IBAN. */
+  bic: string;
+  /** Délai de paiement par défaut en jours (échéance facture). */
+  delaiPaiementJours: number;
 }
 
 /** Anciennes valeurs remplacées automatiquement par « Vallerio Studio » (affichage + fusion). */
@@ -66,6 +72,9 @@ export const COMPANY_DEFAULT: CompanySettings = {
   tva: "TVA non applicable, art. 293 B du CGI",
   dateImmatriculation: "23/02/2026",
   departement: "74 - Haute-Savoie",
+  iban: "",
+  bic: "",
+  delaiPaiementJours: 30,
 };
 
 const STORAGE_KEY = "companySettings";

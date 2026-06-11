@@ -312,14 +312,14 @@ export default function DevisForm({ devis, clients, onClose, onSave, onCreateFac
                   <button
                     type="button"
                     onClick={addPrestation}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#6C5DD3] transition-opacity hover:opacity-90"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#007AFF] transition-opacity hover:opacity-90"
                   >
                     <FaPlus /> Ajouter une prestation
                   </button>
                 </div>
               </div>
               {!devis && estimationHint && (
-                <p className="mb-3 rounded-lg border-0 bg-[#6C5DD3]/[0.08] px-3 py-2 text-xs text-zinc-700">
+                <p className="mb-3 rounded-lg border-0 bg-[#007AFF]/[0.08] px-3 py-2 text-xs text-zinc-700">
                   {estimationHint}
                 </p>
               )}

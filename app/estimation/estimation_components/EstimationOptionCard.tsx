@@ -64,7 +64,7 @@ export function EstimationOptionCard({
         </div>
         <span
           className={`shrink-0 text-sm font-semibold tabular-nums ${
-            priceLabel === "inclus" ? "text-emerald-700" : "text-[#6C5DD3]"
+            priceLabel === "inclus" ? "text-emerald-700" : "text-[#007AFF]"
           }`}
         >
           {priceLabel === "inclus" ? "Inclus" : priceLabel}
@@ -113,7 +113,7 @@ export function EstimationOptionCard({
             min={item.priceMin}
             max={item.priceMax}
             step={Math.max(50, Math.round((item.priceMax - item.priceMin) / 40))}
-            className="w-full accent-[#6C5DD3]"
+            className="w-full accent-[#007AFF]"
             value={rangeValue}
             onChange={(e) => onRangeChange(parseInt(e.target.value, 10))}
           />
@@ -150,7 +150,7 @@ export function MaintenanceOptionCard({
           <p className="text-sm font-semibold text-zinc-900">{label}</p>
           {description ? <p className="mt-1 text-xs text-zinc-500 line-clamp-2">{description}</p> : null}
         </div>
-        <span className="shrink-0 text-sm font-semibold tabular-nums text-[#6C5DD3]">{priceLabel}</span>
+        <span className="shrink-0 text-sm font-semibold tabular-nums text-[#007AFF]">{priceLabel}</span>
       </div>
     </button>
   );

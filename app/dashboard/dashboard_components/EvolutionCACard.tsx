@@ -13,8 +13,8 @@ interface CustomTooltipProps {
   label?: string | number;
 }
 
-const LINE_COLOR = "#6C5DD3";
-const GRADIENT_ID = "evCAgradientViolet";
+const LINE_COLOR = "#007AFF";
+const GRADIENT_ID = "evCAgradientBlue";
 
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload?.length && payload[0]?.value != null) {
@@ -43,7 +43,7 @@ export default function EvolutionCACard({ data }: EvolutionCACardProps) {
     <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white p-5 ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-shadow duration-300 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.10)] md:p-6">
       <div className="relative mb-5 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#6C5DD3]/10 text-[#6C5DD3]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#007AFF]/10 text-[#007AFF]">
             <LineChart className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
           </div>
           <div>

@@ -27,7 +27,7 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
     <div className={floatingCard}>
       <div className="flex items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
             <CalendarClock className="h-5 w-5" strokeWidth={1.75} aria-hidden />
           </div>
           <div className="min-w-0">
@@ -39,7 +39,7 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
             </p>
           </div>
         </div>
-        <p className="text-3xl font-semibold tabular-nums tracking-tight text-[#6C5DD3]">{count}</p>
+        <p className="text-3xl font-semibold tabular-nums tracking-tight text-[#007AFF]">{count}</p>
       </div>
 
       {count === 0 ? (
@@ -67,12 +67,12 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
                 <button
                   type="button"
                   onClick={() => onOpenProspect(row.prospectId)}
-                  className="group flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-[#6C5DD3]/[0.04] sm:px-6"
+                  className="group flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-[#007AFF]/[0.04] sm:px-6"
                 >
                   <div
                     className={`flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl text-center ${
                       today
-                        ? "bg-[#6C5DD3] text-white"
+                        ? "bg-[#007AFF] text-white"
                         : "bg-zinc-100 text-zinc-700"
                     }`}
                   >
@@ -94,7 +94,7 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
                         />
                       ) : null}
                       {today ? (
-                        <span className="rounded-full bg-[#6C5DD3]/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-[#6C5DD3]">
+                        <span className="rounded-full bg-[#007AFF]/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-[#007AFF]">
                           Aujourd&apos;hui
                         </span>
                       ) : null}
@@ -107,7 +107,7 @@ export default function RendezVousAVenirCard({ items, onOpenProspect }: RendezVo
                     </p>
                   </div>
                   <ChevronRight
-                    className="h-4 w-4 shrink-0 text-zinc-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#6C5DD3]"
+                    className="h-4 w-4 shrink-0 text-zinc-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#007AFF]"
                     aria-hidden
                   />
                 </button>

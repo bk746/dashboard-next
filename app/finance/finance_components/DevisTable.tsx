@@ -115,7 +115,7 @@ export default function DevisTable({ devis, totalInDatabase, onDelete, onEdit, o
             </div>
           ) : isDatabaseEmpty ? (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
                 <FileText className="h-7 w-7" strokeWidth={1.25} aria-hidden />
               </div>
               <p className="text-base font-semibold text-zinc-800">Aucun devis enregistré</p>
@@ -135,7 +135,7 @@ export default function DevisTable({ devis, totalInDatabase, onDelete, onEdit, o
                   setSearchTerm("");
                   setStatusFilter("Tous les statuts");
                 }}
-                className="mt-5 text-sm font-medium text-[#6C5DD3] underline-offset-4 hover:underline"
+                className="mt-5 text-sm font-medium text-[#007AFF] underline-offset-4 hover:underline"
               >
                 Réinitialiser recherche et filtre
               </button>
@@ -191,7 +191,7 @@ export default function DevisTable({ devis, totalInDatabase, onDelete, onEdit, o
                         <button
                           type="button"
                           onClick={() => onCreateFacture(d)}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-[#6C5DD3] px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#5B4CC7]"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#007AFF] px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#0066D6]"
                         >
                           <FaFileInvoice className="text-xs" /> Facture
                         </button>

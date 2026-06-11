@@ -351,6 +351,7 @@ export default function Finance() {
           facture={editingFacture}
           fromDevis={factureFromDevis}
           clients={clients}
+          factures={factures}
           onClose={() => {
             setShowFactureForm(false);
             setEditingFacture(null);

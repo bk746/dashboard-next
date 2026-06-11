@@ -16,7 +16,7 @@ const floatingCard =
   "overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 
 const inputClass =
-  "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/35";
+  "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#007AFF]/35";
 
 function parseActivityTime(s: string): number {
   try {
@@ -61,7 +61,7 @@ function abonnementBadge(abonnement?: string) {
   const a = normalizeAbonnement(abonnement);
   switch (a) {
     case "Croissance":
-      return "bg-violet-500/12 text-violet-800";
+      return "bg-[#007AFF]/12 text-[#007AFF]";
     case "Performance":
       return "bg-emerald-500/12 text-emerald-800";
     case "Essentiel":
@@ -200,7 +200,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
           <p className="mt-3 text-xs text-zinc-500">
             {sortedClients.length} client{sortedClients.length > 1 ? "s" : ""} affiché
             {sortedClients.length !== clients.length ? ` sur ${clients.length}` : ""} · CA depuis{" "}
-            <Link href="/finance" className="font-medium text-[#6C5DD3] hover:underline">
+            <Link href="/finance" className="font-medium text-[#007AFF] hover:underline">
               Finance
             </Link>
           </p>
@@ -209,7 +209,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
 
       {isDatabaseEmpty ? (
         <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
             <Users className="h-7 w-7" strokeWidth={1.5} aria-hidden />
           </div>
           <p className="text-base font-semibold text-zinc-800">Aucun client pour l&apos;instant</p>
@@ -225,7 +225,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
           <button
             type="button"
             onClick={resetFilters}
-            className="mt-4 text-sm font-semibold text-[#6C5DD3] hover:underline"
+            className="mt-4 text-sm font-semibold text-[#007AFF] hover:underline"
           >
             Réinitialiser les filtres
           </button>
@@ -237,7 +237,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
               <article key={client.id} className="rounded-2xl p-3 transition-colors hover:bg-zinc-50/80">
                 <div className="flex items-start gap-3">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#6C5DD3]/10 text-sm font-semibold text-[#6C5DD3]"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#007AFF]/10 text-sm font-semibold text-[#007AFF]"
                     aria-hidden
                   >
                     {getInitials(client.entreprise)}
@@ -264,7 +264,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                       <button
                         type="button"
                         onClick={() => onEdit(client)}
-                        className="inline-flex items-center gap-1 text-sm font-medium text-[#6C5DD3]"
+                        className="inline-flex items-center gap-1 text-sm font-medium text-[#007AFF]"
                       >
                         <Pencil className="h-3.5 w-3.5" aria-hidden />
                         Modifier
@@ -305,7 +305,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#6C5DD3]/10 text-xs font-semibold text-[#6C5DD3]"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#007AFF]/10 text-xs font-semibold text-[#007AFF]"
                           aria-hidden
                         >
                           {getInitials(client.entreprise)}
@@ -343,7 +343,7 @@ export default function ClientsTable({ clients, onDelete, onEdit }: ClientsTable
                         <button
                           type="button"
                           onClick={() => onEdit(client)}
-                          className="inline-flex items-center gap-1 text-sm font-medium text-[#6C5DD3] hover:underline"
+                          className="inline-flex items-center gap-1 text-sm font-medium text-[#007AFF] hover:underline"
                         >
                           <Pencil className="h-3.5 w-3.5" aria-hidden />
                           Modifier

@@ -246,6 +246,57 @@ export default function Parametres() {
               </div>
             </div>
 
+            <div className={parametresFloatingCard}>
+              <h3 className={parametresSectionTitle}>Paiement &amp; facturation</h3>
+              <p className="mt-1 text-sm text-zinc-500">
+                Affiché sur vos factures : coordonnées bancaires et échéance par défaut.
+              </p>
+
+              <div className="mt-6 space-y-4">
+                <div>
+                  <label className={parametresLabelClass}>IBAN</label>
+                  <input
+                    type="text"
+                    value={form.iban}
+                    onChange={(e) => update("iban", e.target.value)}
+                    placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
+                    className={parametresInputClass}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={parametresLabelClass}>BIC</label>
+                    <input
+                      type="text"
+                      value={form.bic}
+                      onChange={(e) => update("bic", e.target.value)}
+                      placeholder="ex. AGRIFRPP881"
+                      className={parametresInputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={parametresLabelClass}>Délai de paiement (jours)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="90"
+                      value={form.delaiPaiementJours}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          delaiPaiementJours: Math.max(0, parseInt(e.target.value, 10) || 0),
+                        }))
+                      }
+                      className={parametresInputClass}
+                    />
+                    <p className="mt-1.5 text-xs text-zinc-400">
+                      L&apos;échéance des nouvelles factures est pré-remplie : date d&apos;émission + ce délai.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-4">
               <button type="submit" className={parametresPrimaryBtn}>
                 Enregistrer

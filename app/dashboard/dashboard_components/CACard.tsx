@@ -19,7 +19,7 @@ export default function CACard({ caMoisEncaisse, variationPct }: CACardProps) {
       <div className="relative flex h-full flex-col justify-between gap-6">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#6C5DD3]/10 text-[#6C5DD3] transition-transform group-hover:scale-105">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#007AFF]/10 text-[#007AFF] transition-transform group-hover:scale-105">
               <FaEuroSign className="h-4 w-4" aria-hidden />
             </div>
             <div>

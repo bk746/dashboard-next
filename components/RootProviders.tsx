@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/context/AuthContext";
 import { DataSyncProvider } from "@/context/DataSyncContext";
@@ -14,8 +13,6 @@ import MotionProvider from "@/components/MotionProvider";
 
 export default function RootProviders({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const mainScrollRef = useRef<HTMLElement>(null);
-  const mainContentRef = useRef<HTMLDivElement>(null);
   const isPublicAuth = pathname === "/login" || pathname === "/auth/callback";
   const isLightPage =
     pathname === "/dashboard" ||
@@ -55,22 +52,13 @@ export default function RootProviders({ children }: { children: React.ReactNode 
               <MobileNav />
               <Sidebar />
               <main
-                ref={mainScrollRef}
                 id="app-scroll"
-                className={`relative z-0 min-h-screen w-full flex-1 overflow-auto pt-20 md:ml-[104px] md:pt-0 ${
+                className={`relative z-0 w-full flex-1 pt-20 md:ml-[104px] md:pt-0 ${
                   isLightPage ? "bg-[#F5F5F7]" : "bg-[#0a0a0c]"
                 }`}
               >
-                <MotionProvider
-                  mode="element"
-                  wrapperRef={mainScrollRef}
-                  contentRef={mainContentRef}
-                >
-                  <div
-                    ref={mainContentRef}
-                    data-page-shell
-                    className="h-auto md:min-h-screen"
-                  >
+                <MotionProvider mode="window">
+                  <div data-page-shell>
                     <CacheBuster>{children}</CacheBuster>
                   </div>
                 </MotionProvider>

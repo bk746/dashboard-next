@@ -59,10 +59,10 @@ export function getMontantEncaisseFacture(f: Facture): number {
   return getMontantAcompteFacture(f);
 }
 
-/** Facture impayée dont la date est strictement avant aujourd'hui (échéance = date de facture). */
+/** Facture impayée dont l'échéance est dépassée (échéance = dateEcheance, sinon date de facture). */
 export function isFactureEnRetard(f: Facture): boolean {
   if (f.statut !== "Non payé") return false;
-  const d = parseDateFr(f.date);
+  const d = parseDateFr(f.dateEcheance ?? "") ?? parseDateFr(f.date);
   if (!d) return false;
   const today = startOfDay(new Date());
   return startOfDay(d).getTime() < today.getTime();

@@ -95,7 +95,7 @@ export default function DashboardLayoutPanel() {
               <label className="flex cursor-pointer items-start gap-3 sm:min-w-0 sm:flex-1">
                 <input
                   type="checkbox"
-                  className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-zinc-300 text-[#6C5DD3] focus:ring-[#6C5DD3]/30"
+                  className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-zinc-300 text-[#007AFF] focus:ring-[#007AFF]/30"
                   checked={!hidden}
                   onChange={(e) => setHidden(id, !e.target.checked)}
                 />
@@ -108,7 +108,7 @@ export default function DashboardLayoutPanel() {
               <div className="flex shrink-0 items-center gap-2 pl-7 sm:pl-0">
                 <button
                   type="button"
-                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#6C5DD3]/40 hover:bg-[#6C5DD3]/[0.04] hover:text-[#5B4CC7] disabled:opacity-40"
+                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#007AFF]/40 hover:bg-[#007AFF]/[0.04] hover:text-[#0066D6] disabled:opacity-40"
                   disabled={prefs.order.indexOf(id) === 0}
                   onClick={() => move(id, -1)}
                   aria-label="Monter"
@@ -117,7 +117,7 @@ export default function DashboardLayoutPanel() {
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#6C5DD3]/40 hover:bg-[#6C5DD3]/[0.04] hover:text-[#5B4CC7] disabled:opacity-40"
+                  className="rounded-lg border border-zinc-200/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-[#007AFF]/40 hover:bg-[#007AFF]/[0.04] hover:text-[#0066D6] disabled:opacity-40"
                   disabled={prefs.order.indexOf(id) === prefs.order.length - 1}
                   onClick={() => move(id, 1)}
                   aria-label="Descendre"

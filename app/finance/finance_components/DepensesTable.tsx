@@ -41,7 +41,7 @@ export default function DepensesTable({ depenses, totalInDatabase, onEdit, onDel
         </div>
       ) : isEmpty ? (
         <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
             <Wallet className="h-7 w-7" strokeWidth={1.25} aria-hidden />
           </div>
           <p className="text-base font-semibold text-zinc-800">Aucune dépense</p>

@@ -2,10 +2,10 @@
 
 import type { ReactNode } from "react";
 
-export type DashboardTone = "violet" | "pink";
+export type DashboardTone = "blue" | "pink";
 
 const iconToneStyles: Record<DashboardTone, string> = {
-  violet: "bg-[#6C5DD3]/10 text-[#6C5DD3]",
+  blue: "bg-[#007AFF]/10 text-[#007AFF]",
   pink: "bg-[#E97B9C]/12 text-[#D84A75]",
 };
 

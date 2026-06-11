@@ -411,7 +411,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
         <header className="px-1 space-y-4">
           <Link
             href="/estimation"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#6C5DD3] hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#007AFF] hover:underline"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
             Retour aux estimations
@@ -422,7 +422,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
                 {entrepriseLabel}
               </h1>
               <p className="mt-1 text-sm text-zinc-500">
-                <Link href="/clients" className="font-medium text-[#6C5DD3] hover:underline">
+                <Link href="/clients" className="font-medium text-[#007AFF] hover:underline">
                   Fiche client
                 </Link>
               </p>
@@ -457,7 +457,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
                   <button
                     type="button"
                     onClick={() => openCategoryModal(cat.id)}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-[#6C5DD3] hover:bg-[#6C5DD3]/10"
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-[#007AFF] hover:bg-[#007AFF]/10"
                   >
                     <Pencil className="h-3 w-3" aria-hidden />
                     Tarifs
@@ -500,7 +500,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
                 <button
                   type="button"
                   onClick={openMaintenanceModal}
-                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-[#6C5DD3] hover:bg-[#6C5DD3]/10"
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-[#007AFF] hover:bg-[#007AFF]/10"
                 >
                   <Pencil className="h-3 w-3" aria-hidden />
                   Tarifs
@@ -583,7 +583,7 @@ export default function EstimationEditor({ estimationId }: { estimationId: strin
               <div className="space-y-2">
                 <div className="flex justify-between items-baseline gap-3">
                   <span className="text-sm font-medium text-zinc-700">Total projet</span>
-                  <span className="text-xl font-semibold tabular-nums text-[#6C5DD3]">
+                  <span className="text-xl font-semibold tabular-nums text-[#007AFF]">
                     {eur.format(totalOneShot)}
                   </span>
                 </div>

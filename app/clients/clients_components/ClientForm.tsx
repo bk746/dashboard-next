@@ -130,10 +130,10 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
   const lightPanelClass =
     "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25)] mx-2 sm:mx-4";
   const lightInputClass =
-    "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/35";
+    "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#007AFF]/35";
   const lightLabelClass = "block text-[13px] font-medium text-zinc-500 mb-1.5";
   const violetPrimaryBtn =
-    "px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-[#6C5DD3] transition-colors hover:bg-[#5B4CC7] w-full sm:w-auto";
+    "px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-[#007AFF] transition-colors hover:bg-[#0066D6] w-full sm:w-auto";
 
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
@@ -161,11 +161,11 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className={overlayScrollBodyClass}>
             {!client ? (
-              <div className="mb-5 rounded-2xl border-0 bg-[#6C5DD3]/[0.06] p-4">
+              <div className="mb-5 rounded-2xl border-0 bg-[#007AFF]/[0.06] p-4">
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#6C5DD3] focus:ring-[#6C5DD3] disabled:opacity-50"
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#007AFF] focus:ring-[#007AFF] disabled:opacity-50"
                     checked={importFromProspection}
                     disabled={prospects.length === 0}
                                        onChange={(e) => {

@@ -24,7 +24,7 @@ export default function ObjectifCard({ type, objectif, actuel, libelle, periode 
     <div className={objectifsGoalCard}>
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#6C5DD3]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#007AFF]">
             Objectif {type}
             <span className="font-normal normal-case text-zinc-500"> · {periodeLabelFr(periode)}</span>
           </p>
@@ -38,7 +38,7 @@ export default function ObjectifCard({ type, objectif, actuel, libelle, periode 
             {type === "Financier" ? " €" : ""}
           </p>
         </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#007AFF]/12 text-[#007AFF]">
           <Target className="h-5 w-5" strokeWidth={1.75} aria-hidden />
         </div>
       </div>

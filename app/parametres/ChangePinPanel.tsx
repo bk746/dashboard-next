@@ -227,7 +227,7 @@ export default function ChangePinPanel() {
               <button
                 type="button"
                 onClick={cancelFlow}
-                className="text-sm font-medium text-[#6C5DD3] transition-opacity hover:opacity-80"
+                className="text-sm font-medium text-[#007AFF] transition-opacity hover:opacity-80"
               >
                 Annuler
               </button>
@@ -239,7 +239,7 @@ export default function ChangePinPanel() {
       {platformBio ? (
         <div className={parametresFloatingCard}>
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
               <BiometricIcon className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">

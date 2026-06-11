@@ -29,7 +29,7 @@ import {
 } from "@/app/prospection/prospection_utils";
 import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
 
-const lightPanelSurface = "rounded-2xl border-0 bg-[#6C5DD3]/[0.06] p-4 sm:p-5 space-y-4";
+const lightPanelSurface = "rounded-2xl border-0 bg-[#007AFF]/[0.06] p-4 sm:p-5 space-y-4";
 
 interface ProspectFormProps {
   prospect?: Prospect | null;
@@ -185,10 +185,10 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
   const lightPanelWideClass =
     "w-full max-w-3xl max-h-[min(92vh,900px)] flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25)] mx-2 sm:mx-4";
   const lightInputClass =
-    "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2 text-zinc-800 placeholder:text-zinc-400 focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15 transition-colors";
+    "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2 text-zinc-800 placeholder:text-zinc-400 focus:border-[#007AFF] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/15 transition-colors";
   const lightLabelClass = "block text-sm text-zinc-600 mb-2";
   const violetPrimaryBtn =
-    "px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-[#6C5DD3] transition-colors hover:bg-[#5B4CC7]";
+    "px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-[#007AFF] transition-colors hover:bg-[#0066D6]";
 
   const rdvTri = [...form.rdv].sort(
     (a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime()
@@ -305,7 +305,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                       href={siteHrefPreview}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="break-all font-medium text-[#6C5DD3] underline underline-offset-2 hover:text-[#5B4CC7]"
+                      className="break-all font-medium text-[#007AFF] underline underline-offset-2 hover:text-[#0066D6]"
                     >
                       {siteHrefPreview}
                     </a>
@@ -316,12 +316,12 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
               </div>
 
               <div className="md:col-span-2">
-                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border-0 bg-[#6C5DD3]/[0.06] px-4 py-3">
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border-0 bg-[#007AFF]/[0.06] px-4 py-3">
                   <input
                     type="checkbox"
                     checked={form.urgent ?? false}
                     onChange={(e) => setForm({ ...form, urgent: e.target.checked })}
-                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#6C5DD3] focus:ring-[#6C5DD3]"
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#007AFF] focus:ring-[#007AFF]"
                   />
                   <span>
                     <span className="block text-sm font-medium text-zinc-900">Urgent — site critique</span>
@@ -458,7 +458,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar
-                      className="h-5 w-5 shrink-0 text-[#6C5DD3]"
+                      className="h-5 w-5 shrink-0 text-[#007AFF]"
                       aria-hidden
                     />
                     <h3 className="text-sm font-semibold text-zinc-800">Rendez-vous</h3>
@@ -481,8 +481,8 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
                     aria-checked={rdvActif}
                     aria-labelledby="rdv-switch-label"
                     onClick={() => setRdvActif((a) => !a)}
-                    className={`relative h-8 w-[3.35rem] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6C5DD3] focus-visible:ring-offset-2 ${
-                      rdvActif ? "bg-[#6C5DD3]" : "bg-zinc-300/90"
+                    className={`relative h-8 w-[3.35rem] shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      rdvActif ? "bg-[#007AFF]" : "bg-zinc-300/90"
                     }`}
                   >
                     <span

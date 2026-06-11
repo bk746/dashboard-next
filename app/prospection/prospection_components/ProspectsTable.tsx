@@ -29,7 +29,7 @@ const floatingCard =
   "overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 
 const inputClass =
-  "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 transition-colors focus:border-[#6C5DD3] focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]/15";
+  "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 transition-colors focus:border-[#007AFF] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/15";
 
 export type FiltreProspection =
   | "tous"
@@ -181,7 +181,7 @@ export default function ProspectsTable({
               onClick={() => setShowAdvanced((v) => !v)}
               className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
                 hasAdvancedActive || showAdvanced
-                  ? "border-transparent bg-[#6C5DD3]/10 text-[#6C5DD3]"
+                  ? "border-transparent bg-[#007AFF]/10 text-[#007AFF]"
                   : "border-transparent bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70"
               }`}
               aria-expanded={showAdvanced}
@@ -189,7 +189,7 @@ export default function ProspectsTable({
               <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
               Filtres avancés
               {hasAdvancedActive ? (
-                <span className="ml-0.5 rounded-full bg-[#6C5DD3] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                <span className="ml-0.5 rounded-full bg-[#007AFF] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
                   •
                 </span>
               ) : null}
@@ -297,7 +297,7 @@ export default function ProspectsTable({
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
             <Building2 className="h-7 w-7" strokeWidth={1.5} aria-hidden />
           </div>
           <p className="text-base font-semibold text-zinc-800">
@@ -373,10 +373,10 @@ function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditF
               ? "bg-amber-50/90 hover:bg-amber-50 ring-1 ring-amber-200/70 hover:shadow-[0_8px_24px_-12px_rgba(245,158,11,0.15)]"
               : "bg-zinc-50/80 hover:bg-white hover:shadow-[0_8px_24px_-12px_rgba(108,93,211,0.12)]",
             divider: "border-zinc-200/60",
-            avatar: "bg-[#6C5DD3]/10 text-[#6C5DD3]",
-            link: "text-[#6C5DD3] hover:text-[#5B4CC7]",
+            avatar: "bg-[#007AFF]/10 text-[#007AFF]",
+            link: "text-[#007AFF] hover:text-[#0066D6]",
             segmentWrap: "bg-zinc-100/80",
-            editHover: "hover:bg-[#6C5DD3]/10 hover:text-[#6C5DD3]",
+            editHover: "hover:bg-[#007AFF]/10 hover:text-[#007AFF]",
           };
 
   return (
@@ -459,7 +459,7 @@ function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditF
                   À relancer
                 </span>
               ) : prochaineRelance ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#6C5DD3]/10 px-2.5 py-1 text-xs font-medium text-[#6C5DD3]">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#007AFF]/10 px-2.5 py-1 text-xs font-medium text-[#007AFF]">
                   Relance {formatDateISOFr(prochaineRelance)}
                 </span>
               ) : null}

@@ -34,8 +34,8 @@ const links: QuickLink[] = [
     label: "Deals & projets",
     hint: "Pipeline en cours",
     icon: Briefcase,
-    iconBg: "bg-violet-500/12",
-    iconColor: "text-violet-700",
+    iconBg: "bg-[#007AFF]/12",
+    iconColor: "text-[#007AFF]",
   },
   {
     href: "/objectifs",

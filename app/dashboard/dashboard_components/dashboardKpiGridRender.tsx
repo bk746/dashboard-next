@@ -63,7 +63,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
     case "cardRevenueEncaisse":
       return (
         <DashboardToneKpiCard
-          tone="violet"
+          tone="blue"
           label="Revenu encaissé"
           subtitle={ctx.hintRevenueMois}
           value={`${ctx.revenueEncaisseMois.toLocaleString("fr-FR")} €`}
@@ -74,7 +74,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
     case "cardEnAttente":
       return (
         <DashboardToneKpiCard
-          tone="violet"
+          tone="blue"
           label="En attente"
           subtitle={ctx.hintEnAttenteMois}
           value={`${ctx.enAttenteMois.toLocaleString("fr-FR")} €`}
@@ -88,7 +88,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
     case "cardEnRetard":
       return (
         <DashboardToneKpiCard
-          tone="violet"
+          tone="blue"
           label="En retard"
           subtitle="Factures impayées, date avant aujourd'hui"
           value={`${ctx.enRetardMontant.toLocaleString("fr-FR")} €`}
@@ -102,7 +102,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
     case "cardDepenses":
       return (
         <DashboardToneKpiCard
-          tone="violet"
+          tone="blue"
           label="Dépenses"
           subtitle={ctx.hintDepenseMois}
           value={`${ctx.depenseTotal.toLocaleString("fr-FR")} €`}
@@ -130,7 +130,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
       const positive = ctx.syntheseNette >= 0;
       return (
         <DashboardToneKpiCard
-          tone="violet"
+          tone="blue"
           label="Synthèse nette"
           subtitle={`Encaissé − dépenses (${ctx.periodLabelFinance})`}
           value={`${ctx.syntheseNette.toLocaleString("fr-FR")} €`}
@@ -145,7 +145,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
     case "cardValeurPipeline":
       return (
         <DashboardToneKpiCard
-          tone="violet"
+          tone="blue"
           label="Valeur en cours"
           subtitle="Pipeline hors projets terminés"
           value={`${ctx.valeurPipeline.toLocaleString("fr-FR")} €`}
@@ -197,7 +197,7 @@ export function renderDashboardKpiGridWidget(id: DashboardWidgetId, ctx: Dashboa
     case "cardAuditProspection":
       return (
         <DashboardToneKpiCard
-          tone="violet"
+          tone="blue"
           label="Audit à faire"
           subtitle="Pas encore réalisé"
           value={ctx.auditsAEnvoyer}

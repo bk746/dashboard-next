@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaTimes } from "react-icons/fa";
-import type { AbonnementOffre, Client, Devis, Facture } from "@/app/types";
+import { FaTimes, FaPlus, FaTrash } from "react-icons/fa";
+import type { AbonnementOffre, Client, Devis, Facture, PrestationDevis } from "@/app/types";
 import { ABONNEMENT_OPTIONS, normalizeAbonnement } from "@/lib/abonnement";
+import { nextNumeroFacture, isNumeroFactureDuplique } from "@/lib/factureNumber";
+import { useCompany } from "@/app/hooks/useCompany";
+import { parseDateFr } from "@/app/finance/utils";
 import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
 import {
-  financeLightPanel,
+  financeLightPanelWide,
   financeLightInput,
   financeLightLabel,
   financeVioletPrimaryBtn,
@@ -16,90 +19,133 @@ interface FactureFormProps {
   facture?: Facture | null;
   fromDevis?: Devis | null;
   clients: Client[];
+  /** Toutes les factures — numérotation séquentielle et détection de doublons. */
+  factures: Facture[];
   onClose: () => void;
   onSave: (facture: Facture) => void;
 }
 
-export default function FactureForm({ facture, fromDevis, clients, onClose, onSave }: FactureFormProps) {
+const defaultPrestation = (): PrestationDevis => ({ designation: "", prix: 0 });
+
+function addDaysFr(dateFr: string, days: number): string {
+  const d = parseDateFr(dateFr) ?? new Date();
+  d.setDate(d.getDate() + days);
+  return d.toLocaleDateString("fr-FR");
+}
+
+export default function FactureForm({
+  facture,
+  fromDevis,
+  clients,
+  factures,
+  onClose,
+  onSave,
+}: FactureFormProps) {
+  const [company] = useCompany();
+  const [numeroFacture, setNumeroFacture] = useState("");
+  const [entreprise, setEntreprise] = useState("");
+  const [statut, setStatut] = useState<Facture["statut"]>("Non payé");
+  const [date, setDate] = useState(new Date().toLocaleDateString("fr-FR"));
+  const [dateEcheance, setDateEcheance] = useState("");
+  const [abonnement, setAbonnement] = useState<AbonnementOffre>("Aucun");
+  const [prestations, setPrestations] = useState<PrestationDevis[]>([defaultPrestation()]);
   const [hasAcompte, setHasAcompte] = useState(false);
-  const [formData, setFormData] = useState<Omit<Facture, "id">>({
-    numeroFacture: "",
-    entreprise: "",
-    statut: "Non payé",
-    date: new Date().toLocaleDateString("fr-FR"),
-    prix: 0,
-    abonnement: "Aucun",
-    montantAcompte: 0,
-  });
+  const [montantAcompte, setMontantAcompte] = useState(0);
+  const [numeroError, setNumeroError] = useState<string | null>(null);
 
   useEffect(() => {
     if (facture) {
+      setNumeroFacture(facture.numeroFacture);
+      setEntreprise(facture.entreprise);
+      setStatut(facture.statut);
+      setDate(facture.date);
+      setDateEcheance(facture.dateEcheance ?? "");
+      setAbonnement(normalizeAbonnement(facture.abonnement));
+      setPrestations(
+        facture.prestations && facture.prestations.length > 0
+          ? facture.prestations
+          : [{ designation: "Prestation / Abonnement", prix: facture.prix }]
+      );
       const ac = facture.statut === "Payé" ? 0 : (facture.montantAcompte ?? 0);
       setHasAcompte(ac > 0);
-      setFormData({
-        numeroFacture: facture.numeroFacture,
-        entreprise: facture.entreprise,
-        statut: facture.statut,
-        date: facture.date,
-        prix: facture.prix,
-        abonnement: normalizeAbonnement(facture.abonnement),
-        montantAcompte: ac,
-      });
-    } else if (fromDevis) {
-      const savedFactures = localStorage.getItem("factures");
-      const factures = savedFactures ? JSON.parse(savedFactures) : [];
-      const nextNumero = factures.length + 1;
-      setHasAcompte(false);
-      setFormData({
-        numeroFacture: `FAC-${String(nextNumero).padStart(6, "0")}`,
-        entreprise: fromDevis.entreprise,
-        statut: "Non payé",
-        date: new Date().toLocaleDateString("fr-FR"),
-        prix: fromDevis.prix,
-        abonnement: normalizeAbonnement(fromDevis.abonnement),
-        montantAcompte: 0,
-      });
-    } else {
-      const savedFactures = localStorage.getItem("factures");
-      const factures = savedFactures ? JSON.parse(savedFactures) : [];
-      const nextNumero = factures.length + 1;
-      setHasAcompte(false);
-      setFormData((prev) => ({
-        ...prev,
-        numeroFacture: `FAC-${String(nextNumero).padStart(6, "0")}`,
-        montantAcompte: 0,
-      }));
+      setMontantAcompte(ac);
+      return;
     }
+
+    const today = new Date().toLocaleDateString("fr-FR");
+    const delai = Math.max(0, Math.round(company.delaiPaiementJours ?? 30));
+    setNumeroFacture(nextNumeroFacture(factures));
+    setStatut("Non payé");
+    setDate(today);
+    setDateEcheance(addDaysFr(today, delai));
+    setHasAcompte(false);
+    setMontantAcompte(0);
+
+    if (fromDevis) {
+      setEntreprise(fromDevis.entreprise);
+      setAbonnement(normalizeAbonnement(fromDevis.abonnement));
+      setPrestations(
+        fromDevis.prestations && fromDevis.prestations.length > 0
+          ? fromDevis.prestations.map((p) => ({ ...p }))
+          : [{ designation: "Prestation", prix: fromDevis.prix }]
+      );
+    } else {
+      setEntreprise("");
+      setAbonnement("Aucun");
+      setPrestations([defaultPrestation()]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [facture, fromDevis]);
 
+  const total = prestations.reduce((s, p) => s + (p.inclusForfait ? 0 : p.prix), 0);
+
   const montantAcompteEffectif =
-    formData.statut === "Payé" || !hasAcompte
-      ? 0
-      : Math.max(0, Math.min(formData.prix, Math.round(formData.montantAcompte ?? 0)));
-  const resteAPayer = formData.statut === "Payé" ? 0 : Math.max(0, formData.prix - montantAcompteEffectif);
+    statut === "Payé" || !hasAcompte ? 0 : Math.max(0, Math.min(total, Math.round(montantAcompte)));
+  const resteAPayer = statut === "Payé" ? 0 : Math.max(0, total - montantAcompteEffectif);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const ac =
-      formData.statut === "Payé" || !hasAcompte
-        ? 0
-        : Math.max(0, Math.min(formData.prix, Math.round(formData.montantAcompte ?? 0)));
+
+    const numero = numeroFacture.trim();
+    if (isNumeroFactureDuplique(factures, numero, facture?.id)) {
+      setNumeroError(`Le numéro ${numero} existe déjà — chaque facture doit avoir un numéro unique.`);
+      return;
+    }
+    setNumeroError(null);
+
+    const cleaned = prestations.filter((p) => p.designation.trim() !== "" || p.prix > 0);
+    if (cleaned.length === 0) return;
+
     const factureToSave: Facture = {
-      ...formData,
-      montantAcompte: ac > 0 ? ac : undefined,
       id: facture?.id || Date.now().toString(),
+      numeroFacture: numero,
+      entreprise,
+      statut,
+      date,
+      prix: cleaned.reduce((s, p) => s + (p.inclusForfait ? 0 : p.prix), 0),
+      abonnement,
+      prestations: cleaned,
+      dateEcheance: dateEcheance.trim() || undefined,
+      devisId: facture?.devisId ?? fromDevis?.id,
+      montantAcompte: montantAcompteEffectif > 0 ? montantAcompteEffectif : undefined,
     };
     onSave(factureToSave);
     onClose();
   };
 
-  const handleEntrepriseChange = (entreprise: string) => {
-    const client = clients.find((c) => c.entreprise === entreprise);
-    setFormData({
-      ...formData,
-      entreprise,
-      abonnement: normalizeAbonnement(client?.abonnement),
-    });
+  const handleEntrepriseChange = (val: string) => {
+    setEntreprise(val);
+    const client = clients.find((c) => c.entreprise === val);
+    setAbonnement(normalizeAbonnement(client?.abonnement));
+  };
+
+  const addPrestation = () => setPrestations((prev) => [...prev, defaultPrestation()]);
+  const removePrestation = (index: number) => {
+    if (prestations.length <= 1) return;
+    setPrestations((prev) => prev.filter((_, i) => i !== index));
+  };
+  const updatePrestation = (index: number, field: "designation" | "prix", value: string | number) => {
+    setPrestations((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
   };
 
   const title = facture
@@ -111,7 +157,7 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={financeLightPanel}
+        className={financeLightPanelWide}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -138,17 +184,30 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
               <input
                 type="text"
                 required
-                value={formData.numeroFacture}
-                onChange={(e) => setFormData({ ...formData, numeroFacture: e.target.value })}
-                className={financeLightInput}
+                readOnly={!facture}
+                value={numeroFacture}
+                onChange={(e) => {
+                  setNumeroFacture(e.target.value);
+                  setNumeroError(null);
+                }}
+                className={`${financeLightInput} ${!facture ? "cursor-default text-zinc-500" : ""}`}
               />
+              {numeroError ? (
+                <p className="mt-1.5 text-xs font-medium text-rose-600" role="alert">
+                  {numeroError}
+                </p>
+              ) : !facture ? (
+                <p className="mt-1.5 text-xs text-zinc-400">
+                  Numérotation séquentielle automatique (obligation fiscale — ne pas modifier).
+                </p>
+              ) : null}
             </div>
 
             <div>
               <label className={financeLightLabel}>Entreprise</label>
               <select
                 required
-                value={formData.entreprise}
+                value={entreprise}
                 onChange={(e) => handleEntrepriseChange(e.target.value)}
                 className={financeLightInput}
               >
@@ -165,15 +224,14 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
               <div>
                 <label className={financeLightLabel}>Statut</label>
                 <select
-                  value={formData.statut}
+                  value={statut}
                   onChange={(e) => {
-                    const statut = e.target.value as "Payé" | "Non payé";
-                    setFormData({
-                      ...formData,
-                      statut,
-                      montantAcompte: statut === "Payé" ? 0 : formData.montantAcompte,
-                    });
-                    if (statut === "Payé") setHasAcompte(false);
+                    const s = e.target.value as Facture["statut"];
+                    setStatut(s);
+                    if (s === "Payé") {
+                      setHasAcompte(false);
+                      setMontantAcompte(0);
+                    }
                   }}
                   className={financeLightInput}
                 >
@@ -181,14 +239,11 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                   <option value="Non payé">Non payé</option>
                 </select>
               </div>
-
               <div>
                 <label className={financeLightLabel}>Abonnement</label>
                 <select
-                  value={formData.abonnement}
-                  onChange={(e) =>
-                    setFormData({ ...formData, abonnement: e.target.value as AbonnementOffre })
-                  }
+                  value={abonnement}
+                  onChange={(e) => setAbonnement(e.target.value as AbonnementOffre)}
                   className={financeLightInput}
                 >
                   {ABONNEMENT_OPTIONS.map((o) => (
@@ -202,51 +257,103 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className={financeLightLabel}>Date</label>
+                <label className={financeLightLabel}>Date d&apos;émission</label>
                 <input
                   type="text"
                   required
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  placeholder="DD/MM/YYYY"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  placeholder="JJ/MM/AAAA"
                   className={financeLightInput}
                 />
               </div>
-
               <div>
-                <label className={financeLightLabel}>Prix (€)</label>
+                <label className={financeLightLabel}>Échéance de paiement</label>
                 <input
-                  type="number"
-                  required
-                  min="0"
-                  value={formData.prix}
-                  onChange={(e) => {
-                    const prix = parseInt(e.target.value, 10) || 0;
-                    const ac = Math.round(formData.montantAcompte ?? 0);
-                    setFormData({
-                      ...formData,
-                      prix,
-                      montantAcompte: hasAcompte ? Math.min(prix, ac) : 0,
-                    });
-                  }}
+                  type="text"
+                  value={dateEcheance}
+                  onChange={(e) => setDateEcheance(e.target.value)}
+                  placeholder="JJ/MM/AAAA"
                   className={financeLightInput}
                 />
+                <p className="mt-1.5 text-xs text-zinc-400">
+                  Pré-remplie : émission + {Math.max(0, Math.round(company.delaiPaiementJours ?? 30))} jours
+                  (modifiable dans Paramètres).
+                </p>
               </div>
             </div>
 
-            {formData.statut === "Non payé" ? (
-              <div className="rounded-xl border border-zinc-200/90 bg-zinc-50/50 p-4">
+            <div>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-medium text-zinc-600">Prestations facturées</span>
+                <button
+                  type="button"
+                  onClick={addPrestation}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#007AFF] transition-opacity hover:opacity-90"
+                >
+                  <FaPlus /> Ajouter une ligne
+                </button>
+              </div>
+              {fromDevis ? (
+                <p className="mb-3 rounded-lg bg-[#007AFF]/[0.08] px-3 py-2 text-xs text-zinc-700">
+                  Lignes reprises du devis {fromDevis.numeroDevis} — ajustez si besoin.
+                </p>
+              ) : null}
+              <div className="space-y-3">
+                {prestations.map((p, index) => (
+                  <div key={index} className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="text"
+                      value={p.designation}
+                      onChange={(e) => updatePrestation(index, "designation", e.target.value)}
+                      placeholder="ex. Refonte site vitrine, maintenance mensuelle…"
+                      className={`${financeLightInput} flex-1 placeholder:text-zinc-400`}
+                    />
+                    <div className="flex items-center gap-2">
+                      {p.inclusForfait ? (
+                        <span className="w-28 text-center text-sm text-zinc-400">Inclus</span>
+                      ) : (
+                        <input
+                          type="number"
+                          min="0"
+                          value={p.prix || ""}
+                          onChange={(e) => updatePrestation(index, "prix", Number(e.target.value) || 0)}
+                          placeholder="Prix €"
+                          className={`${financeLightInput} w-28`}
+                        />
+                      )}
+                      <span className="text-sm text-zinc-500">€</span>
+                      <button
+                        type="button"
+                        onClick={() => removePrestation(index)}
+                        disabled={prestations.length <= 1}
+                        className="p-2 text-zinc-500 transition-colors hover:text-red-500 disabled:opacity-40"
+                      >
+                        <FaTrash className="text-sm" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-sm text-zinc-600">
+                Total TTC :{" "}
+                <span className="font-semibold tabular-nums text-zinc-900">
+                  {total.toLocaleString("fr-FR")} €
+                </span>
+              </p>
+            </div>
+
+            {statut === "Non payé" ? (
+              <div className="rounded-xl bg-zinc-50 p-4 ring-1 ring-zinc-200/70">
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#ED8600] focus:ring-[#ED8600]"
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-zinc-300 text-[#007AFF] focus:ring-[#007AFF]"
                     checked={hasAcompte}
                     onChange={(e) => {
                       const on = e.target.checked;
                       setHasAcompte(on);
-                      if (!on) {
-                        setFormData({ ...formData, montantAcompte: 0 });
-                      }
+                      if (!on) setMontantAcompte(0);
                     }}
                   />
                   <span>
@@ -266,23 +373,20 @@ export default function FactureForm({ facture, fromDevis, clients, onClose, onSa
                         id="facture-acompte"
                         type="number"
                         min="0"
-                        max={formData.prix}
-                        value={formData.montantAcompte ?? 0}
+                        max={total}
+                        value={montantAcompte || ""}
                         onChange={(e) => {
                           const n = Math.max(0, parseInt(e.target.value, 10) || 0);
-                          setFormData({
-                            ...formData,
-                            montantAcompte: Math.min(formData.prix, n),
-                          });
+                          setMontantAcompte(Math.min(total, n));
                         }}
                         className={financeLightInput}
                       />
                     </div>
                     <p className="text-sm font-medium tabular-nums text-zinc-800">
                       Reste à payer :{" "}
-                      <span className="text-[#ED8600]">{resteAPayer.toLocaleString("fr-FR")} €</span>
+                      <span className="text-[#007AFF]">{resteAPayer.toLocaleString("fr-FR")} €</span>
                       <span className="ml-2 font-normal text-zinc-500">
-                        (total {formData.prix.toLocaleString("fr-FR")} €
+                        (total {total.toLocaleString("fr-FR")} €
                         {montantAcompteEffectif > 0
                           ? ` − acompte ${montantAcompteEffectif.toLocaleString("fr-FR")} €`
                           : ""}

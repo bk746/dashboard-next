@@ -102,13 +102,13 @@ export default function EstimationListPage() {
           <p className="px-1 text-sm text-zinc-500">Chargement…</p>
         ) : sorted.length === 0 ? (
           <div className={`${estimationFloatingCard} flex flex-col items-center justify-center px-6 py-16 text-center`}>
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
               <FileSpreadsheet className="h-7 w-7" strokeWidth={1.5} aria-hidden />
             </div>
             <p className="text-base font-semibold text-zinc-800">Aucune estimation</p>
             <p className="mt-2 max-w-sm text-sm text-zinc-500">
               Liez une estimation à un{" "}
-              <Link href="/clients" className="font-medium text-[#6C5DD3] hover:underline">
+              <Link href="/clients" className="font-medium text-[#007AFF] hover:underline">
                 client
               </Link>
               , puis créez votre première fiche.
@@ -155,12 +155,12 @@ export default function EstimationListPage() {
                     return (
                       <tr
                         key={est.id}
-                        className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-[#6C5DD3]/[0.04]"
+                        className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-[#007AFF]/[0.04]"
                       >
                         <td className="px-4 py-3">
                           <Link
                             href={`/estimation/${est.id}`}
-                            className="font-medium text-zinc-900 hover:text-[#6C5DD3]"
+                            className="font-medium text-zinc-900 hover:text-[#007AFF]"
                           >
                             {entrepriseFor(est, clients)}
                           </Link>
@@ -179,7 +179,7 @@ export default function EstimationListPage() {
                           <div className="flex items-center justify-end gap-1">
                             <Link
                               href={`/estimation/${est.id}`}
-                              className="rounded-lg px-2 py-1.5 text-xs font-medium text-[#6C5DD3] hover:bg-[#6C5DD3]/10"
+                              className="rounded-lg px-2 py-1.5 text-xs font-medium text-[#007AFF] hover:bg-[#007AFF]/10"
                             >
                               Ouvrir
                             </Link>
@@ -223,7 +223,7 @@ export default function EstimationListPage() {
               {clients.length === 0 ? (
                 <p className="text-sm text-zinc-600">
                   Aucun client.{" "}
-                  <Link href="/clients" className="font-medium text-[#6C5DD3] hover:underline">
+                  <Link href="/clients" className="font-medium text-[#007AFF] hover:underline">
                     Ajoutez un client
                   </Link>{" "}
                   d&apos;abord.

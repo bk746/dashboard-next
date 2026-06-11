@@ -84,7 +84,7 @@ export default function Objectifs() {
         <section aria-label="Indicateurs objectifs">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
             <DashboardToneKpiCard
-              tone="violet"
+              tone="blue"
               label="Progression globale"
               subtitle="Moyenne sur tous les objectifs"
               value={`${Math.min(progressionTotal, 100).toFixed(1)} %`}
@@ -129,7 +129,7 @@ export default function Objectifs() {
               <div
                 className={`col-span-full ${objectifsFloatingCard} flex flex-col items-center justify-center px-6 py-14 text-center`}
               >
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
                   <Target className="h-7 w-7" strokeWidth={1.25} aria-hidden />
                 </div>
                 <p className="text-base font-semibold text-zinc-800">Aucun objectif pour l&apos;instant</p>

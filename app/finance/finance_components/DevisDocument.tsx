@@ -1,11 +1,14 @@
 "use client";
 
-import { FaTimes, FaPrint, FaEnvelope } from "react-icons/fa";
+import { useState } from "react";
+import { FaTimes, FaPrint, FaEnvelope, FaFileDownload } from "react-icons/fa";
 import { useCompany } from "@/app/hooks/useCompany";
 import { DEVIS_INCLUS_PREFIX } from "@/app/estimation/estimation_utils";
 import type { Client, Devis, PrestationDevis } from "@/app/types";
 import { formatCompanyAddressLine, type CompanySettings } from "@/app/config/company";
 import { overlayBackdropClass } from "@/app/components/appCardStyles";
+import type { DocumentPdfData } from "@/lib/pdf/documentPdf";
+import { downloadDocumentPdf, sendDocumentByEmail } from "@/lib/pdf/documentActions";
 
 function estLigneInclusForfait(p: PrestationDevis): boolean {
   if (p.inclusForfait) return true;
@@ -30,12 +33,11 @@ interface DevisDocumentProps {
   onClose: () => void;
 }
 
-function buildDevisMailto(devis: Devis, client: Client | null | undefined, company: CompanySettings): string {
-  const subject = `Devis ${devis.numeroDevis} – ${devis.entreprise}`;
+function buildEmailContent(devis: Devis, company: CompanySettings) {
   const body = [
     "Bonjour,",
     "",
-    `Veuillez trouver notre proposition commerciale concernant le devis n° ${devis.numeroDevis} en date du ${devis.date}.`,
+    `Veuillez trouver ci-joint notre proposition commerciale — devis n° ${devis.numeroDevis} en date du ${devis.date}.`,
     `Montant total TTC : ${devis.prix.toLocaleString("fr-FR")} €`,
     devis.validite ? `Validité : ${devis.validite}` : "",
     "",
@@ -44,22 +46,59 @@ function buildDevisMailto(devis: Devis, client: Client | null | undefined, compa
   ]
     .filter((line) => line !== "")
     .join("\n");
-
-  const dest = client?.email?.trim();
-  const base = dest ? `mailto:${encodeURIComponent(dest)}` : "mailto:";
-  return `${base}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return { subject: `Devis ${devis.numeroDevis} – ${devis.entreprise}`, body };
 }
 
 const toolbarBtn =
-  "inline-flex items-center gap-2 rounded-full bg-zinc-100/80 px-4 py-2 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-200/70";
+  "inline-flex items-center gap-2 rounded-full bg-zinc-100/80 px-4 py-2 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-200/70 disabled:cursor-not-allowed disabled:opacity-50";
+
+type EmailState = "idle" | "sending" | "sent" | "fallback" | "error";
 
 export default function DevisDocument({ devis, client, onClose }: DevisDocumentProps) {
   const [company] = useCompany();
-  const mailtoHref = buildDevisMailto(devis, client, company);
+  const [emailState, setEmailState] = useState<EmailState>("idle");
+  const [pdfBusy, setPdfBusy] = useState(false);
   const lignes =
     devis.prestations && devis.prestations.length > 0
       ? devis.prestations
       : [{ designation: "Prestation", prix: devis.prix, inclusForfait: false }];
+
+  const pdfData: DocumentPdfData = {
+    kind: "devis",
+    numero: devis.numeroDevis,
+    date: devis.date,
+    validite: devis.validite,
+    entreprise: devis.entreprise,
+    clientNom: client?.patron || undefined,
+    clientEmail: client?.email || undefined,
+    clientTelephone: client?.telephone || undefined,
+    lignes: lignes.map((p) => ({
+      designation: designationLigneDevis(p) || "Prestation",
+      montant: montantLigneDevis(p),
+      inclus: estLigneInclusForfait(p),
+    })),
+    totalLabel: `${devis.prix.toLocaleString("fr-FR")} €`,
+    company,
+  };
+
+  const handleDownloadPdf = async () => {
+    setPdfBusy(true);
+    try {
+      await downloadDocumentPdf(pdfData);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    const dest = client?.email?.trim() ?? "";
+    const { subject, body } = buildEmailContent(devis, company);
+    setEmailState("sending");
+    const result = await sendDocumentByEmail({ data: pdfData, to: dest, subject, body });
+    if (result.status === "sent") setEmailState("sent");
+    else if (result.status === "fallback_mailto") setEmailState("fallback");
+    else setEmailState("error");
+  };
 
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
@@ -75,16 +114,27 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
             Devis {devis.numeroDevis}
           </h2>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <button type="button" onClick={() => window.print()} className={toolbarBtn}>
-              <FaPrint aria-hidden />
-              <span className="hidden sm:inline">Imprimer ou PDF</span>
+            <button type="button" onClick={handleDownloadPdf} disabled={pdfBusy} className={toolbarBtn}>
+              <FaFileDownload aria-hidden />
+              <span className="hidden sm:inline">{pdfBusy ? "Génération…" : "Télécharger PDF"}</span>
               <span className="sm:hidden">PDF</span>
             </button>
-            <a href={mailtoHref} className={toolbarBtn}>
+            <button type="button" onClick={() => window.print()} className={toolbarBtn}>
+              <FaPrint aria-hidden />
+              <span className="hidden sm:inline">Imprimer</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSendEmail}
+              disabled={emailState === "sending"}
+              className={toolbarBtn}
+            >
               <FaEnvelope aria-hidden />
-              <span className="hidden sm:inline">Envoyer par mail</span>
+              <span className="hidden sm:inline">
+                {emailState === "sending" ? "Envoi…" : "Envoyer par mail"}
+              </span>
               <span className="sm:hidden">Mail</span>
-            </a>
+            </button>
             <button
               type="button"
               onClick={onClose}
@@ -94,6 +144,19 @@ export default function DevisDocument({ devis, client, onClose }: DevisDocumentP
               <FaTimes className="h-5 w-5" />
             </button>
           </div>
+          {emailState === "sent" ? (
+            <p className="w-full text-right text-xs font-medium text-emerald-600" role="status">
+              Email envoyé avec le devis en pièce jointe.
+            </p>
+          ) : emailState === "fallback" ? (
+            <p className="w-full text-right text-xs font-medium text-amber-600" role="status">
+              Envoi direct non configuré — PDF téléchargé et brouillon ouvert dans votre client mail.
+            </p>
+          ) : emailState === "error" ? (
+            <p className="w-full text-right text-xs font-medium text-rose-600" role="alert">
+              Échec de l&apos;envoi — réessayez ou utilisez « Télécharger PDF ».
+            </p>
+          ) : null}
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">

@@ -118,7 +118,6 @@ export default function MotionProvider({
 }: MotionProviderProps) {
   const pathname = usePathname();
   const lenisRef = useRef<Lenis | null>(null);
-  const tickerCbRef = useRef<((time: number) => void) | null>(null);
   const reducedRef = useRef(false);
 
   useLayoutEffect(() => {
@@ -138,7 +137,6 @@ export default function MotionProvider({
 
     let cancelled = false;
     let lenis: Lenis | null = null;
-    let tickerCb: ((time: number) => void) | null = null;
 
     const mountLenis = () => {
       if (cancelled) return;
@@ -158,25 +156,17 @@ export default function MotionProvider({
         easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
         smoothWheel: true,
         syncTouch: false,
-        autoRaf: false,
+        autoRaf: true,
       });
 
       lenisRef.current = lenis;
       lenis.on("scroll", ScrollTrigger.update);
-
-      tickerCb = (time: number) => {
-        lenis?.raf(time * 1000);
-      };
-      tickerCbRef.current = tickerCb;
-      gsap.ticker.add(tickerCb);
-      gsap.ticker.lagSmoothing(0);
     };
 
     mountLenis();
 
     return () => {
       cancelled = true;
-      if (tickerCb) gsap.ticker.remove(tickerCb);
       lenis?.destroy();
       lenisRef.current = null;
       ScrollTrigger.getAll().forEach((st) => st.kill());

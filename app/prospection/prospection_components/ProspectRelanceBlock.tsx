@@ -12,7 +12,7 @@ import {
 } from "@/app/prospection/prospection_utils";
 
 const lightLabelClass = "block text-sm text-zinc-600 mb-2";
-const lightPanelSurface = "rounded-2xl border-0 bg-[#6C5DD3]/[0.06] p-4 sm:p-5 space-y-4";
+const lightPanelSurface = "rounded-2xl border-0 bg-[#007AFF]/[0.06] p-4 sm:p-5 space-y-4";
 
 interface ProspectRelanceBlockProps {
   form: Prospect;
@@ -47,7 +47,7 @@ export default function ProspectRelanceBlock({ form, onChange }: ProspectRelance
   return (
     <div className="md:col-span-2 space-y-3">
       <div className="flex items-center gap-2">
-        <Bell className="h-5 w-5 shrink-0 text-[#6C5DD3]" aria-hidden />
+        <Bell className="h-5 w-5 shrink-0 text-[#007AFF]" aria-hidden />
         <h3 className="text-sm font-semibold text-zinc-900">Relances</h3>
       </div>
 
@@ -90,9 +90,9 @@ export default function ProspectRelanceBlock({ form, onChange }: ProspectRelance
                 key={canal}
                 type="button"
                 onClick={() => marquerSansReponse(canal)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200/90 bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 transition-colors hover:border-[#6C5DD3]/30 hover:bg-[#6C5DD3]/[0.04]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200/90 bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 transition-colors hover:border-[#007AFF]/30 hover:bg-[#007AFF]/[0.04]"
               >
-                <Icon className="h-4 w-4 shrink-0 text-[#6C5DD3]" aria-hidden />
+                <Icon className="h-4 w-4 shrink-0 text-[#007AFF]" aria-hidden />
                 {label}
               </button>
             ))}

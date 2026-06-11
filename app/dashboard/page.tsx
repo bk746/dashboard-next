@@ -584,7 +584,7 @@ export default function Dashboard() {
           <div className="px-4 sm:px-6 md:px-0 mb-8">
             <div className="relative overflow-hidden rounded-2xl bg-white p-8 text-center ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
               <div className="relative">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#6C5DD3]/10 text-[#6C5DD3]">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#007AFF]/10 text-[#007AFF]">
                   <Sparkles className="h-5 w-5" strokeWidth={1.75} aria-hidden />
                 </div>
                 <p className="font-medium text-zinc-800">Votre tableau de bord est vide</p>
@@ -594,11 +594,11 @@ export default function Dashboard() {
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
                   <Link
                     href="/finance"
-                    className="inline-flex items-center justify-center rounded-full bg-[#6C5DD3] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5B4CC7]"
+                    className="inline-flex items-center justify-center rounded-full bg-[#007AFF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0066D6]"
                   >
                     Aller à Finance
                   </Link>
-                  <Link href="/clients" className="py-2.5 px-4 text-sm font-medium text-[#6C5DD3]">
+                  <Link href="/clients" className="py-2.5 px-4 text-sm font-medium text-[#007AFF]">
                     Clients
                   </Link>
                 </div>

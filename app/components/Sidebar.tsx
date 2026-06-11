@@ -53,7 +53,7 @@ function NavIconButton({
           flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200
           ${
             active
-              ? "bg-[#6C5DD3]/12 text-[#6C5DD3]"
+              ? "bg-[#007AFF]/12 text-[#007AFF]"
               : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
           }
         `}
@@ -82,7 +82,7 @@ export default function Sidebar() {
             href="/dashboard"
             title="BK Copilot"
             aria-label="Accueil BK Copilot"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#6C5DD3] text-white transition-colors hover:bg-[#5B4CC7]"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#007AFF] text-white transition-colors hover:bg-[#0066D6]"
           >
             <Bell className="h-5 w-5" strokeWidth={1.75} aria-hidden />
           </Link>
@@ -123,7 +123,7 @@ export default function Sidebar() {
               flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200
               ${
                 settingsActive
-                  ? "bg-[#6C5DD3]/12 text-[#6C5DD3]"
+                  ? "bg-[#007AFF]/12 text-[#007AFF]"
                   : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
               }
             `}

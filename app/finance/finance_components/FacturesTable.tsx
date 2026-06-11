@@ -53,7 +53,7 @@ export default function FacturesTable({ factures, totalInDatabase, onDelete, onE
     const a = normalizeAbonnement(abonnement);
     switch (a) {
       case "Croissance":
-        return "bg-violet-500/12 text-violet-800";
+        return "bg-[#007AFF]/12 text-[#007AFF]";
       case "Performance":
         return "bg-emerald-500/12 text-emerald-800";
       case "Essentiel":
@@ -128,7 +128,7 @@ export default function FacturesTable({ factures, totalInDatabase, onDelete, onE
             </div>
           ) : isDatabaseEmpty ? (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
                 <Receipt className="h-7 w-7" strokeWidth={1.25} aria-hidden />
               </div>
               <p className="text-base font-semibold text-zinc-800">Aucune facture pour l’instant</p>
@@ -148,7 +148,7 @@ export default function FacturesTable({ factures, totalInDatabase, onDelete, onE
                   setSearchTerm("");
                   setStatusFilter("Tous les statuts");
                 }}
-                className="mt-5 text-sm font-medium text-[#6C5DD3] underline-offset-4 hover:underline"
+                className="mt-5 text-sm font-medium text-[#007AFF] underline-offset-4 hover:underline"
               >
                 Réinitialiser recherche et filtre
               </button>

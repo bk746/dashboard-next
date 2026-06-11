@@ -21,7 +21,7 @@ const prospectionShellClass =
   "min-h-screen w-full bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12";
 
 const primaryButtonClass =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-[#6C5DD3] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5B4CC7] w-full sm:w-auto";
+  "inline-flex items-center justify-center gap-2 rounded-full bg-[#007AFF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0066D6] w-full sm:w-auto";
 
 export default function ProspectionPage() {
   const [prospects, setProspects] = useJsonBucket<Prospect[]>("prospection", []);
@@ -118,7 +118,7 @@ export default function ProspectionPage() {
         <section aria-label="Indicateurs prospection">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
             <DashboardToneKpiCard
-              tone="violet"
+              tone="blue"
               label="Prospects en cours"
               subtitle="Réponse en attente"
               value={prospectsEnCours}

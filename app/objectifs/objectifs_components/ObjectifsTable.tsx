@@ -42,7 +42,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
       case "Financier":
         return "bg-emerald-500/12 text-emerald-800";
       case "Client":
-        return "bg-[#6C5DD3]/12 text-[#6C5DD3]";
+        return "bg-[#007AFF]/12 text-[#007AFF]";
       default:
         return "bg-zinc-100 text-zinc-600";
     }
@@ -129,7 +129,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
       <div className="overflow-x-auto">
         {isDatabaseEmpty ? (
           <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5DD3]/12 text-[#6C5DD3]">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#007AFF]/12 text-[#007AFF]">
               <Target className="h-7 w-7" strokeWidth={1.25} aria-hidden />
             </div>
             <p className="text-base font-semibold text-zinc-800">Tableau vide</p>
@@ -147,7 +147,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-5 text-sm font-medium text-[#6C5DD3] underline-offset-4 hover:underline"
+              className="mt-5 text-sm font-medium text-[#007AFF] underline-offset-4 hover:underline"
             >
               Réinitialiser recherche et filtres
             </button>
@@ -183,7 +183,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
               {filteredObjectifs.map((objectif) => (
                 <tr
                   key={objectif.id}
-                  className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-[#6C5DD3]/[0.04]"
+                  className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-[#007AFF]/[0.04]"
                 >
                   <td className="p-4">
                     <span className="text-sm font-medium text-zinc-800">{objectif.libelle}</span>
@@ -217,7 +217,7 @@ export default function ObjectifsTable({ objectifs, onDelete, onEdit }: Objectif
                       <button
                         type="button"
                         onClick={() => onEdit(objectif)}
-                        className="p-2 text-zinc-500 transition-colors hover:text-[#6C5DD3]"
+                        className="p-2 text-zinc-500 transition-colors hover:text-[#007AFF]"
                         aria-label="Modifier"
                       >
                         <FaEllipsisV className="text-sm" />

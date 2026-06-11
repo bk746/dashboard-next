@@ -31,6 +31,12 @@ export interface Facture {
   abonnement: AbonnementOffre;
   /** Acompte déjà versé (facture non soldée). Reste à payer = prix − montantAcompte. */
   montantAcompte?: number;
+  /** Lignes détaillées (reprises du devis ou saisies). Absent = ligne unique générique. */
+  prestations?: PrestationDevis[];
+  /** Date d'échéance JJ/MM/AAAA. Absente = échéance à la date de facture (rétrocompatibilité). */
+  dateEcheance?: string;
+  /** Devis d'origine (traçabilité devis → facture). */
+  devisId?: string;
 }
 
 export interface PrestationDevis {
