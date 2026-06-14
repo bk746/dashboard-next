@@ -10,194 +10,215 @@ import {
   Briefcase,
   Target,
   Settings,
-  Menu,
-  X,
+  ChevronRight,
   Calculator,
   ClipboardList,
   LogIn,
   LogOut,
-  Bell,
+  Ellipsis,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
-const sidebarGradient = "bg-white/85 backdrop-blur-xl ring-1 ring-black/[0.05]";
+const sf =
+  "font-[system-ui,-apple-system,BlinkMacSystemFont,'SF_Pro_Text','Segoe_UI',sans-serif]";
 
-const sidebarShadow = "shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)]";
-
-const mainItems: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+const bottomTabs: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/dashboard", label: "Accueil", icon: LayoutDashboard },
   { href: "/clients", label: "Clients", icon: Users },
-  { href: "/prospection", label: "Prospection", icon: ClipboardList },
+  { href: "/prospection", label: "Prospect", icon: ClipboardList },
   { href: "/finance", label: "Finance", icon: Wallet },
+];
+
+const menuItems: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/estimation", label: "Estimation", icon: Calculator },
   { href: "/deals-projets", label: "Deals / Projets", icon: Briefcase },
   { href: "/objectifs", label: "Objectifs", icon: Target },
+  { href: "/parametres", label: "Paramètres", icon: Settings },
 ];
+
+const menuHrefs = new Set(menuItems.map((i) => i.href));
 
 function isNavActive(href: string, pathname: string): boolean {
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function isMenuSectionActive(pathname: string): boolean {
+  if (pathname === "/parametres" || pathname.startsWith("/parametres/")) return true;
+  return menuHrefs.has(pathname) || pathname.startsWith("/estimation/");
+}
+
+function TabItem({
+  label,
+  icon: Icon,
+  active,
+  href,
+  onClick,
+}: {
+  label: string;
+  icon: LucideIcon;
+  active: boolean;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const className = `${sf} flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] pt-1.5 pb-0.5 transition-opacity active:opacity-60 ${
+    active ? "text-[#007AFF]" : "text-zinc-400"
+  }`;
+
+  const content = (
+    <>
+      <Icon
+        className="h-[25px] w-[25px]"
+        strokeWidth={active ? 2.25 : 1.75}
+        aria-hidden
+      />
+      <span className={`text-[10px] leading-none tracking-[-0.01em] ${active ? "font-semibold" : "font-medium"}`}>
+        {label}
+      </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} aria-label={label} aria-current={active ? "page" : undefined} className={className}>
+      {content}
+    </button>
+  );
+}
+
 export default function MobileNav() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const cloud = isSupabaseConfigured();
-  const settingsActive = pathname === "/parametres" || pathname.startsWith("/parametres/");
+  const menuActive = isMenuSectionActive(pathname);
 
-  const close = () => setIsOpen(false);
-
-  const linkRow = (href: string, label: string, Icon: LucideIcon, active: boolean) => (
-    <Link
-      href={href}
-      onClick={close}
-      aria-current={active ? "page" : undefined}
-      className={`
-        group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200
-        ${
-          active
-            ? "bg-[#007AFF]/12 text-[#007AFF]"
-            : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-        }
-      `}
-    >
-      <span
-        className={`
-          flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors
-          ${active ? "bg-[#007AFF]/15 text-[#007AFF]" : "bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200/70"}
-        `}
-      >
-        <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-      </span>
-      <span className="truncate">{label}</span>
-    </Link>
-  );
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <>
-      {/* Barre du haut — même dégradé que la sidebar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#F5F5F7] px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <nav
-          className={`flex items-center justify-between gap-3 rounded-[1.25rem] px-3 py-2.5 ${sidebarGradient} ${sidebarShadow}`}
-          aria-label="Navigation mobile"
-        >
-          <Link
-            href="/dashboard"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#007AFF] text-white transition-colors hover:bg-[#0066D6]"
-            aria-label="Accueil BK Copilot"
-          >
-            <Bell className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-          </Link>
-
-          <p className="min-w-0 flex-1 text-center text-sm font-semibold tracking-tight text-zinc-900">
-            BK Copilot
-          </p>
-
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 transition-colors hover:bg-zinc-200/70"
-            aria-expanded={isOpen}
-            aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          >
-            {isOpen ? (
-              <X className="h-5 w-5" strokeWidth={1.75} />
-            ) : (
-              <Menu className="h-5 w-5" strokeWidth={1.75} />
-            )}
-          </button>
-        </nav>
-      </header>
-
-      {isOpen ? (
-        <div
-          className="md:hidden fixed inset-0 z-40 bg-zinc-950/25 backdrop-blur-[2px]"
-          onClick={close}
-          aria-hidden
-        />
-      ) : null}
-
-      {/* Panneau burger — style sidebar */}
-      <aside
-        className={`
-          md:hidden fixed top-0 right-0 z-50 flex h-full w-[min(17.5rem,88vw)] flex-col
-          rounded-l-[2rem] ${sidebarGradient} ${sidebarShadow}
-          transform transition-transform duration-300 ease-out
-          ${isOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"}
-        `}
-        aria-label="Menu principal"
-        aria-hidden={!isOpen}
+      {/* Tab bar iOS — pleine largeur, material blur */}
+      <nav
+        className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.06] bg-[#F9F9F9]/80 backdrop-blur-2xl backdrop-saturate-150`}
+        aria-label="Navigation principale"
+        style={{ WebkitBackdropFilter: "blur(20px) saturate(180%)" }}
       >
-        <div className="flex items-center justify-between px-5 pb-4 pt-6">
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-400">Menu</p>
-            <p className="mt-0.5 text-base font-semibold text-zinc-900">BK Copilot</p>
-          </div>
-          <button
-            type="button"
-            onClick={close}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 transition-colors hover:bg-zinc-200/70"
-            aria-label="Fermer"
-          >
-            <X className="h-5 w-5" strokeWidth={1.75} />
-          </button>
-        </div>
-
-        <div className="mx-5 h-px bg-zinc-200" aria-hidden />
-
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 [&::-webkit-scrollbar]:hidden">
-          {mainItems.map((item) => (
-            <div key={item.href}>
-              {linkRow(item.href, item.label, item.icon, isNavActive(item.href, pathname))}
-            </div>
+        <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          {bottomTabs.map((tab) => (
+            <TabItem key={tab.href} {...tab} active={isNavActive(tab.href, pathname)} href={tab.href} />
           ))}
-        </nav>
-
-        <div className="mx-5 h-px bg-zinc-200" aria-hidden />
-
-        <div className="space-y-2 px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          {!cloud ? (
-            <div className="rounded-2xl bg-amber-50 px-3 py-2.5 ring-1 ring-amber-200/70">
-              <p className="text-[10px] leading-snug text-amber-700">
-                Pas de sync cloud — ajoutez les variables sur Vercel.
-              </p>
-              <Link
-                href="/login"
-                onClick={close}
-                className="mt-2 flex items-center gap-2 text-xs font-semibold text-amber-700"
-              >
-                <LogIn className="h-3.5 w-3.5" aria-hidden />
-                Connexion &amp; aide
-              </Link>
-            </div>
-          ) : user ? (
-            <p className="truncate px-3 text-[10px] text-zinc-400" title={user.email ?? ""}>
-              {user.email}
-            </p>
-          ) : null}
-
-          {linkRow("/parametres", "Paramètres", Settings, settingsActive)}
-
-          {cloud && user ? (
-            <button
-              type="button"
-              onClick={() => {
-                close();
-                void signOut();
-              }}
-              className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200/70">
-                <LogOut className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-              </span>
-              Déconnexion
-            </button>
-          ) : null}
+          <TabItem
+            label="Plus"
+            icon={Ellipsis}
+            active={menuActive || menuOpen}
+            onClick={() => setMenuOpen(true)}
+          />
         </div>
-      </aside>
+      </nav>
+
+      {/* Sheet iOS — sections groupées */}
+      {menuOpen ? (
+        <>
+          <div
+            className="md:hidden fixed inset-0 z-[60] bg-black/25 backdrop-blur-[1px]"
+            onClick={closeMenu}
+            aria-hidden
+          />
+          <div
+            className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-[70] flex max-h-[min(88dvh,560px)] flex-col overflow-hidden rounded-t-[14px] bg-[#F2F2F7]`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Plus"
+          >
+            <div className="flex shrink-0 flex-col items-center border-b border-black/[0.06] bg-[#F2F2F7] px-5 pb-3 pt-2.5">
+              <div className="mb-3 h-[5px] w-9 rounded-full bg-zinc-300/90" aria-hidden />
+              <div className="flex w-full items-center justify-between">
+                <h2 className="text-[22px] font-bold tracking-tight text-zinc-900">Plus</h2>
+                <button
+                  type="button"
+                  onClick={closeMenu}
+                  className="text-[17px] font-normal text-[#007AFF] active:opacity-50"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+              <div className="overflow-hidden rounded-[10px] bg-white">
+                {menuItems.map(({ href, label, icon: Icon }, index) => {
+                  const active = isNavActive(href, pathname);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeMenu}
+                      aria-current={active ? "page" : undefined}
+                      className={`flex items-center gap-3 px-4 py-[11px] transition-colors active:bg-zinc-100 ${
+                        index > 0 ? "border-t border-zinc-100" : ""
+                      }`}
+                    >
+                      <Icon
+                        className={`h-[22px] w-[22px] shrink-0 ${active ? "text-[#007AFF]" : "text-[#007AFF]"}`}
+                        strokeWidth={1.75}
+                        aria-hidden
+                      />
+                      <span className={`flex-1 text-[17px] leading-snug ${active ? "font-medium text-[#007AFF]" : "text-zinc-900"}`}>
+                        {label}
+                      </span>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300" strokeWidth={2} aria-hidden />
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {!cloud ? (
+                <div className="mt-8 overflow-hidden rounded-[10px] bg-white">
+                  <Link
+                    href="/login"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 px-4 py-[11px] active:bg-zinc-100"
+                  >
+                    <LogIn className="h-[22px] w-[22px] shrink-0 text-[#007AFF]" strokeWidth={1.75} aria-hidden />
+                    <span className="flex-1 text-[17px] text-zinc-900">Connexion cloud</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300" strokeWidth={2} aria-hidden />
+                  </Link>
+                </div>
+              ) : null}
+
+              {cloud && user ? (
+                <div className="mt-8">
+                  {user.email ? (
+                    <p className="mb-2 px-4 text-[13px] text-zinc-500">{user.email}</p>
+                  ) : null}
+                  <div className="overflow-hidden rounded-[10px] bg-white">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeMenu();
+                        void signOut();
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-[11px] text-left active:bg-zinc-100"
+                    >
+                      <LogOut className="h-[22px] w-[22px] shrink-0 text-[#FF3B30]" strokeWidth={1.75} aria-hidden />
+                      <span className="flex-1 text-[17px] text-[#FF3B30]">Déconnexion</span>
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </>
+      ) : null}
     </>
   );
 }

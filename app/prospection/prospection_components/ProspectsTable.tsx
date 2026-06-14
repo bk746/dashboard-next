@@ -544,7 +544,7 @@ function BulkActionBar({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200/80 bg-white/95 px-3 py-3 shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.12)] backdrop-blur-md sm:px-6 md:left-[104px] pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      className="fixed bottom-[max(4.25rem,calc(3.25rem+env(safe-area-inset-bottom)))] left-0 right-0 z-[55] border-t border-zinc-200/80 bg-white/95 px-3 py-3 shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.12)] backdrop-blur-md sm:px-6 md:bottom-0 md:left-[104px] pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       role="toolbar"
       aria-label="Actions groupées"
     >
