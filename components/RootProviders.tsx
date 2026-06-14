@@ -59,12 +59,12 @@ export default function RootProviders({ children }: { children: React.ReactNode 
               <MobileNav />
               <Sidebar />
               <main
-                className={`relative z-0 w-full pt-20 pb-[max(2.5rem,env(safe-area-inset-bottom))] md:ml-[104px] md:pb-8 md:pt-0 ${
+                className={`relative z-0 box-border min-w-0 max-w-full w-full overflow-x-hidden pt-20 pb-[max(2.5rem,env(safe-area-inset-bottom))] md:pl-[104px] md:pb-8 md:pt-0 ${
                   isLightPage ? "bg-[#F5F5F7]" : "bg-[#0a0a0c]"
                 }`}
               >
                 <MotionProvider>
-                  <div data-page-shell>
+                  <div data-page-shell className="min-w-0 max-w-full">
                     <CacheBuster>{children}</CacheBuster>
                   </div>
                 </MotionProvider>

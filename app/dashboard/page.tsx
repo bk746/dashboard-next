@@ -38,7 +38,7 @@ import RendezVousAVenirCard from "@/app/prospection/prospection_components/Rende
 import { staggerCardsGridClass } from "@/app/components/appCardStyles";
 
 const dashboardShellClass =
-  "min-h-screen w-full bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12 [&_.motion-card]:!rounded-2xl [&_.motion-card]:!border-0 [&_.motion-card]:!ring-1 [&_.motion-card]:!ring-black/[0.05] [&_.motion-card]:!shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
+  "min-h-screen w-full max-w-full overflow-x-hidden box-border bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12 [&_.motion-card]:!rounded-2xl [&_.motion-card]:!border-0 [&_.motion-card]:!ring-1 [&_.motion-card]:!ring-black/[0.05] [&_.motion-card]:!shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 import { Sparkles, Settings } from "lucide-react";
 import EvolutionCACard from "./dashboard_components/EvolutionCACard";
 import CACard from "./dashboard_components/CACard";
@@ -556,7 +556,7 @@ export default function Dashboard() {
 
   return (
     <div className={dashboardShellClass}>
-      <div className="md:max-w-[1600px] md:mx-auto">
+      <div className="min-w-0 max-w-full md:max-w-[1600px] md:mx-auto">
         <header className="relative mb-6 overflow-hidden px-4 sm:px-6 md:mb-8 md:px-0">
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
