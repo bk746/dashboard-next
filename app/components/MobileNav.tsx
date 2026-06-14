@@ -15,14 +15,14 @@ import {
   ClipboardList,
   LogIn,
   LogOut,
-  Ellipsis,
+  SquareStack,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 const sf =
-  "font-[system-ui,-apple-system,BlinkMacSystemFont,'SF_Pro_Text','Segoe_UI',sans-serif]";
+  "font-[system-ui,-apple-system,BlinkMacSystemFont,'SF_Pro_Display','SF_Pro_Text','Segoe_UI',sans-serif]";
 
 const bottomTabs: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Accueil", icon: LayoutDashboard },
@@ -31,11 +31,46 @@ const bottomTabs: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/finance", label: "Finance", icon: Wallet },
 ];
 
-const menuItems: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/estimation", label: "Estimation", icon: Calculator },
-  { href: "/deals-projets", label: "Deals / Projets", icon: Briefcase },
-  { href: "/objectifs", label: "Objectifs", icon: Target },
-  { href: "/parametres", label: "Paramètres", icon: Settings },
+const menuItems: {
+  href: string;
+  label: string;
+  subtitle: string;
+  icon: LucideIcon;
+  tint: string;
+  iconBg: string;
+}[] = [
+  {
+    href: "/estimation",
+    label: "Estimation",
+    subtitle: "Devis & tarifs",
+    icon: Calculator,
+    tint: "text-violet-600",
+    iconBg: "bg-violet-500/12",
+  },
+  {
+    href: "/deals-projets",
+    label: "Deals / Projets",
+    subtitle: "Pipeline commercial",
+    icon: Briefcase,
+    tint: "text-[#007AFF]",
+    iconBg: "bg-[#007AFF]/12",
+  },
+  {
+    href: "/objectifs",
+    label: "Objectifs",
+    subtitle: "Cibles & progression",
+    icon: Target,
+    tint: "text-emerald-600",
+    iconBg: "bg-emerald-500/12",
+  },
+  {
+    href: "/parametres",
+    label: "Paramètres",
+    subtitle: "Compte & préférences",
+    icon: Settings,
+    tint: "text-zinc-600",
+    iconBg: "bg-zinc-500/10",
+  },
 ];
 
 const menuHrefs = new Set(menuItems.map((i) => i.href));
@@ -63,34 +98,48 @@ function TabItem({
   href?: string;
   onClick?: () => void;
 }) {
-  const className = `${sf} flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] pt-1.5 pb-0.5 transition-opacity active:opacity-60 ${
-    active ? "text-[#007AFF]" : "text-zinc-400"
-  }`;
-
-  const content = (
-    <>
+  const inner = (
+    <span
+      className={`relative flex flex-col items-center justify-center gap-[5px] rounded-[18px] px-2.5 py-2 transition-all duration-300 ease-out ${
+        active
+          ? "bg-[#007AFF]/10 shadow-[inset_0_0_0_1px_rgba(0,122,255,0.12)]"
+          : "bg-transparent"
+      }`}
+    >
       <Icon
-        className="h-[25px] w-[25px]"
-        strokeWidth={active ? 2.25 : 1.75}
+        className={`h-[22px] w-[22px] transition-colors duration-300 ${active ? "text-[#007AFF]" : "text-zinc-400"}`}
+        strokeWidth={active ? 2.25 : 1.65}
         aria-hidden
       />
-      <span className={`text-[10px] leading-none tracking-[-0.01em] ${active ? "font-semibold" : "font-medium"}`}>
+      <span
+        className={`max-w-[4.5rem] truncate text-[10px] leading-none tracking-[-0.02em] transition-colors duration-300 ${
+          active ? "font-semibold text-[#007AFF]" : "font-medium text-zinc-400"
+        }`}
+      >
         {label}
       </span>
-    </>
+    </span>
   );
+
+  const wrapperClass = `${sf} flex min-w-0 flex-1 items-center justify-center active:scale-[0.96] transition-transform duration-200`;
 
   if (href) {
     return (
-      <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={className}>
-        {content}
+      <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={wrapperClass}>
+        {inner}
       </Link>
     );
   }
 
   return (
-    <button type="button" onClick={onClick} aria-label={label} aria-current={active ? "page" : undefined} className={className}>
-      {content}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-current={active ? "page" : undefined}
+      className={wrapperClass}
+    >
+      {inner}
     </button>
   );
 }
@@ -106,56 +155,68 @@ export default function MobileNav() {
 
   return (
     <>
-      {/* Tab bar iOS — pleine largeur, material blur */}
-      <nav
-        className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.06] bg-[#F9F9F9]/80 backdrop-blur-2xl backdrop-saturate-150`}
-        aria-label="Navigation principale"
-        style={{ WebkitBackdropFilter: "blur(20px) saturate(180%)" }}
+      {/* Dock flottant premium — mobile uniquement */}
+      <div
+        className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-50 pointer-events-none`}
+        aria-hidden={false}
       >
-        <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-          {bottomTabs.map((tab) => (
-            <TabItem key={tab.href} {...tab} active={isNavActive(tab.href, pathname)} href={tab.href} />
-          ))}
-          <TabItem
-            label="Plus"
-            icon={Ellipsis}
-            active={menuActive || menuOpen}
-            onClick={() => setMenuOpen(true)}
-          />
-        </div>
-      </nav>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#F5F5F7] via-[#F5F5F7]/90 to-transparent" />
 
-      {/* Sheet iOS — sections groupées */}
+        <nav
+          className="pointer-events-auto relative mx-auto max-w-[440px] px-4 pb-[max(0.65rem,env(safe-area-inset-bottom))]"
+          aria-label="Navigation principale"
+        >
+          <div
+            className="flex items-center justify-between gap-0.5 rounded-[26px] border border-white/70 bg-white/72 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-6px_rgba(0,0,0,0.10),0_24px_48px_-12px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-3xl backdrop-saturate-150"
+            style={{ WebkitBackdropFilter: "blur(40px) saturate(180%)" }}
+          >
+            {bottomTabs.map((tab) => (
+              <TabItem key={tab.href} {...tab} active={isNavActive(tab.href, pathname)} href={tab.href} />
+            ))}
+            <TabItem
+              label="Plus"
+              icon={SquareStack}
+              active={menuActive || menuOpen}
+              onClick={() => setMenuOpen(true)}
+            />
+          </div>
+        </nav>
+      </div>
+
+      {/* Sheet premium */}
       {menuOpen ? (
         <>
           <div
-            className="md:hidden fixed inset-0 z-[60] bg-black/25 backdrop-blur-[1px]"
+            className="md:hidden fixed inset-0 z-[60] bg-zinc-950/20 backdrop-blur-[3px]"
             onClick={closeMenu}
             aria-hidden
           />
           <div
-            className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-[70] flex max-h-[min(88dvh,560px)] flex-col overflow-hidden rounded-t-[14px] bg-[#F2F2F7]`}
+            className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-[70] flex max-h-[min(88dvh,580px)] flex-col overflow-hidden rounded-t-[22px] bg-[#F2F2F7] shadow-[0_-24px_64px_-16px_rgba(0,0,0,0.18)]`}
             role="dialog"
             aria-modal="true"
             aria-label="Plus"
           >
-            <div className="flex shrink-0 flex-col items-center border-b border-black/[0.06] bg-[#F2F2F7] px-5 pb-3 pt-2.5">
-              <div className="mb-3 h-[5px] w-9 rounded-full bg-zinc-300/90" aria-hidden />
-              <div className="flex w-full items-center justify-between">
-                <h2 className="text-[22px] font-bold tracking-tight text-zinc-900">Plus</h2>
+            <div className="flex shrink-0 flex-col items-center px-5 pb-4 pt-3">
+              <div className="mb-4 h-[5px] w-10 rounded-full bg-zinc-300/80" aria-hidden />
+              <div className="flex w-full items-end justify-between">
+                <div>
+                  <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-zinc-400">Navigation</p>
+                  <h2 className="mt-0.5 text-[28px] font-bold tracking-tight text-zinc-900">Plus</h2>
+                </div>
                 <button
                   type="button"
                   onClick={closeMenu}
-                  className="text-[17px] font-normal text-[#007AFF] active:opacity-50"
+                  className="rounded-full bg-white px-4 py-2 text-[15px] font-semibold text-[#007AFF] shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] active:scale-95 transition-transform"
                 >
                   Fermer
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-              <div className="overflow-hidden rounded-[10px] bg-white">
-                {menuItems.map(({ href, label, icon: Icon }, index) => {
+            <div className="flex-1 overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <div className="space-y-2.5">
+                {menuItems.map(({ href, label, subtitle, icon: Icon, tint, iconBg }) => {
                   const active = isNavActive(href, pathname);
                   return (
                     <Link
@@ -163,17 +224,20 @@ export default function MobileNav() {
                       href={href}
                       onClick={closeMenu}
                       aria-current={active ? "page" : undefined}
-                      className={`flex items-center gap-3 px-4 py-[11px] transition-colors active:bg-zinc-100 ${
-                        index > 0 ? "border-t border-zinc-100" : ""
+                      className={`flex items-center gap-3.5 rounded-2xl bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ring-1 ring-black/[0.04] transition-transform active:scale-[0.98] ${
+                        active ? "ring-[#007AFF]/25" : ""
                       }`}
                     >
-                      <Icon
-                        className={`h-[22px] w-[22px] shrink-0 ${active ? "text-[#007AFF]" : "text-[#007AFF]"}`}
-                        strokeWidth={1.75}
-                        aria-hidden
-                      />
-                      <span className={`flex-1 text-[17px] leading-snug ${active ? "font-medium text-[#007AFF]" : "text-zinc-900"}`}>
-                        {label}
+                      <span
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${iconBg}`}
+                      >
+                        <Icon className={`h-[22px] w-[22px] ${tint}`} strokeWidth={1.75} aria-hidden />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className={`block text-[16px] font-semibold tracking-tight ${active ? "text-[#007AFF]" : "text-zinc-900"}`}>
+                          {label}
+                        </span>
+                        <span className="mt-0.5 block text-[13px] text-zinc-500">{subtitle}</span>
                       </span>
                       <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300" strokeWidth={2} aria-hidden />
                     </Link>
@@ -182,37 +246,37 @@ export default function MobileNav() {
               </div>
 
               {!cloud ? (
-                <div className="mt-8 overflow-hidden rounded-[10px] bg-white">
-                  <Link
-                    href="/login"
-                    onClick={closeMenu}
-                    className="flex items-center gap-3 px-4 py-[11px] active:bg-zinc-100"
-                  >
-                    <LogIn className="h-[22px] w-[22px] shrink-0 text-[#007AFF]" strokeWidth={1.75} aria-hidden />
-                    <span className="flex-1 text-[17px] text-zinc-900">Connexion cloud</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300" strokeWidth={2} aria-hidden />
-                  </Link>
-                </div>
+                <Link
+                  href="/login"
+                  onClick={closeMenu}
+                  className="mt-4 flex items-center gap-3.5 rounded-2xl bg-amber-50 p-3.5 ring-1 ring-amber-200/60 active:scale-[0.98] transition-transform"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-amber-500/15">
+                    <LogIn className="h-[22px] w-[22px] text-amber-700" strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <span className="flex-1 text-[16px] font-semibold text-amber-900">Connexion cloud</span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-amber-400" strokeWidth={2} aria-hidden />
+                </Link>
               ) : null}
 
               {cloud && user ? (
-                <div className="mt-8">
+                <div className="mt-6">
                   {user.email ? (
-                    <p className="mb-2 px-4 text-[13px] text-zinc-500">{user.email}</p>
+                    <p className="mb-2.5 px-1 text-[12px] font-medium text-zinc-400">{user.email}</p>
                   ) : null}
-                  <div className="overflow-hidden rounded-[10px] bg-white">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        closeMenu();
-                        void signOut();
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-[11px] text-left active:bg-zinc-100"
-                    >
-                      <LogOut className="h-[22px] w-[22px] shrink-0 text-[#FF3B30]" strokeWidth={1.75} aria-hidden />
-                      <span className="flex-1 text-[17px] text-[#FF3B30]">Déconnexion</span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMenu();
+                      void signOut();
+                    }}
+                    className="flex w-full items-center gap-3.5 rounded-2xl bg-white p-3.5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.03)] ring-1 ring-black/[0.04] active:scale-[0.98] transition-transform"
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-red-500/10">
+                      <LogOut className="h-[22px] w-[22px] text-[#FF3B30]" strokeWidth={1.75} aria-hidden />
+                    </span>
+                    <span className="text-[16px] font-semibold text-[#FF3B30]">Déconnexion</span>
+                  </button>
                 </div>
               ) : null}
             </div>
