@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useState } from "react";
+import AppLaunchSplashOverlay from "@/components/AppLaunchSplash";
 
 const STORAGE_KEY = "bk-copilot-splash-shown";
 
 type Phase = "idle" | "splash" | "exit";
 
 /**
- * Fond noir + « bk copilot » — une fois par session d’onglet.
+ * Écran d’ouverture premium — une fois par session d’onglet (pages auth).
  */
 export default function LaunchSplash({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<Phase>("splash");
@@ -35,8 +36,7 @@ export default function LaunchSplash({ children }: { children: React.ReactNode }
       return;
     }
 
-    const showMs = 2000;
-    const id = window.setTimeout(() => setPhase("exit"), showMs);
+    const id = window.setTimeout(() => setPhase("exit"), 1850);
     return () => window.clearTimeout(id);
   }, []);
 
@@ -53,19 +53,12 @@ export default function LaunchSplash({ children }: { children: React.ReactNode }
     return () => window.clearTimeout(id);
   }, [phase]);
 
+  const overlayPhase = phase === "idle" ? "hidden" : phase;
+
   return (
     <>
       {children}
-      {(phase === "splash" || phase === "exit") && (
-        <div
-          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-500 ease-out ${
-            phase === "exit" ? "pointer-events-none opacity-0" : "opacity-100"
-          }`}
-          aria-hidden={phase === "exit"}
-        >
-          <p className="px-6 text-center text-lg font-medium tracking-tight text-white">bk copilot</p>
-        </div>
-      )}
+      <AppLaunchSplashOverlay phase={overlayPhase} />
     </>
   );
 }

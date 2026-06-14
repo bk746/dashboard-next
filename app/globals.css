@@ -103,6 +103,54 @@ html.motion-js .motion-card {
   .stagger-cards > * {
     animation-delay: 0s !important;
   }
+  .splash-logo-enter,
+  .splash-text-enter,
+  .splash-progress {
+    animation: none !important;
+  }
+}
+
+@keyframes splash-logo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes splash-text-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes splash-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.splash-logo-enter {
+  animation: splash-logo-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.splash-text-enter {
+  animation: splash-text-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+.splash-progress {
+  animation: splash-progress 1.55s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both;
 }
 
 @media print {

@@ -13,6 +13,7 @@ import {
 } from "@/lib/biometricUnlock";
 import { clearStoredPin, isPinConfigured, savePin, verifyPin } from "@/lib/pinLock";
 import { Fingerprint, ScanFace } from "lucide-react";
+import AppLaunchSplashOverlay from "@/components/AppLaunchSplash";
 
 const SPLASH_KEY = "bk-copilot-splash-shown";
 
@@ -77,7 +78,7 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
       setSplashPhase("idle");
       return;
     }
-    const id = window.setTimeout(() => setSplashPhase("exit"), 1700);
+    const id = window.setTimeout(() => setSplashPhase("exit"), 1850);
     return () => window.clearTimeout(id);
   }, []);
 
@@ -178,16 +179,9 @@ export default function EntryGate({ children }: { children: React.ReactNode }) {
   return (
     <>
       {showApp ? children : null}
-      {showSplash && (
-        <div
-          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black transition-opacity duration-500 ease-out ${
-            splashPhase === "exit" ? "pointer-events-none opacity-0" : "opacity-100"
-          }`}
-          aria-hidden={splashPhase === "exit"}
-        >
-          <p className={`${sf} px-6 text-center text-lg font-medium tracking-tight text-white`}>bk copilot</p>
-        </div>
-      )}
+      {showSplash ? (
+        <AppLaunchSplashOverlay phase={splashPhase === "exit" ? "exit" : "splash"} />
+      ) : null}
 
       {showBioSetup && (
         <div
