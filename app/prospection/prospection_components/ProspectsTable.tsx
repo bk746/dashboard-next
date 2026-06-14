@@ -29,6 +29,7 @@ import {
   prospectSiteHref,
 } from "@/app/prospection/prospection_utils";
 import { prospectMatchesSearch } from "@/app/prospection/prospectionSearch";
+import SecureConfirmDialog, { type SecureConfirmRequest } from "@/components/SecureConfirmDialog";
 const floatingCard =
   "overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
 
@@ -80,6 +81,7 @@ export default function ProspectsTable({
   const [filtreEtape, setFiltreEtape] = useState<FiltreEtapeProspection>("tous");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [secureConfirm, setSecureConfirm] = useState<SecureConfirmRequest | null>(null);
 
   const searchActive = deferredSearch.trim().length > 0;
   const searchPending = search !== deferredSearch;
@@ -194,13 +196,26 @@ export default function ProspectsTable({
 
   const runBulkDelete = () => {
     if (selectedCount === 0) return;
-    const label =
-      selectedCount === 1
-        ? "Supprimer ce prospect ?"
-        : `Supprimer ${selectedCount} prospects ?`;
-    if (!confirm(label)) return;
-    onBulkDelete(selectedIdsArray);
-    clearSelection();
+    const ids = selectedIdsArray;
+    setSecureConfirm({
+      title: selectedCount === 1 ? "Supprimer le prospect" : "Supprimer les prospects",
+      message:
+        selectedCount === 1
+          ? "Confirmez la suppression de ce prospect. Cette action est irréversible."
+          : `Confirmez la suppression de ${selectedCount} prospects. Cette action est irréversible.`,
+      onConfirm: () => {
+        onBulkDelete(ids);
+        clearSelection();
+      },
+    });
+  };
+
+  const requestDeleteOne = (id: string, entreprise: string) => {
+    setSecureConfirm({
+      title: "Supprimer le prospect",
+      message: `Supprimer « ${entreprise} » ? Cette action est irréversible.`,
+      onConfirm: () => onDelete(id),
+    });
   };
 
   const runBulkAuditFait = (fait: boolean) => {
@@ -475,7 +490,7 @@ export default function ProspectsTable({
                 selected={selectedIds.has(p.id)}
                 onToggleSelect={() => toggleSelect(p.id)}
                 onEdit={onEdit}
-                onDelete={onDelete}
+                onDelete={requestDeleteOne}
                 onReponseChange={onReponseChange}
                 onAuditFaitChange={onAuditFaitChange}
               />
@@ -497,6 +512,8 @@ export default function ProspectsTable({
           onClear={clearSelection}
         />
       ) : null}
+
+      <SecureConfirmDialog request={secureConfirm} onClose={() => setSecureConfirm(null)} />
     </>
   );
 }
@@ -600,7 +617,7 @@ interface ProspectCardProps {
   selected: boolean;
   onToggleSelect: () => void;
   onEdit: (p: Prospect) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, entreprise: string) => void;
   onReponseChange: (p: Prospect, reponse: ProspectReponseClient) => void;
   onAuditFaitChange: (p: Prospect, fait: boolean) => void;
 }
@@ -775,9 +792,7 @@ function ProspectCard({
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (confirm(`Supprimer le prospect « ${p.entreprise} » ?`)) onDelete(p.id);
-              }}
+              onClick={() => onDelete(p.id, p.entreprise)}
               className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600"
               title="Supprimer"
               aria-label={`Supprimer ${p.entreprise}`}
@@ -836,9 +851,7 @@ function ProspectCard({
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (confirm(`Supprimer le prospect « ${p.entreprise} » ?`)) onDelete(p.id);
-              }}
+              onClick={() => onDelete(p.id, p.entreprise)}
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-500/10"
             >
               <Trash2 className="h-4 w-4" />
