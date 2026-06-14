@@ -5,11 +5,15 @@ import {
   Bell,
   Building2,
   Calendar,
+  Check,
+  CheckSquare,
   ChevronDown,
   ExternalLink,
+  MinusSquare,
   Pencil,
   Search,
   SlidersHorizontal,
+  Square,
   Trash2,
   X,
 } from "lucide-react";
@@ -50,6 +54,9 @@ interface ProspectsTableProps {
   onDelete: (id: string) => void;
   onReponseChange: (p: Prospect, reponse: ProspectReponseClient) => void;
   onAuditFaitChange: (p: Prospect, fait: boolean) => void;
+  onBulkDelete: (ids: string[]) => void;
+  onBulkAuditFait: (ids: string[], fait: boolean) => void;
+  onBulkReponse: (ids: string[], reponse: ProspectReponseClient) => void;
 }
 
 function libelleEtape(value: string) {
@@ -62,6 +69,9 @@ export default function ProspectsTable({
   onDelete,
   onReponseChange,
   onAuditFaitChange,
+  onBulkDelete,
+  onBulkAuditFait,
+  onBulkReponse,
 }: ProspectsTableProps) {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
@@ -69,6 +79,7 @@ export default function ProspectsTable({
   const [filtreReponse, setFiltreReponse] = useState<FiltreReponseProspection>("tous");
   const [filtreEtape, setFiltreEtape] = useState<FiltreEtapeProspection>("tous");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
 
   const searchActive = deferredSearch.trim().length > 0;
   const searchPending = search !== deferredSearch;
@@ -144,6 +155,65 @@ export default function ProspectsTable({
     (!searchActive && filtrePriorite !== "tous") ||
     filtreReponse !== "tous" ||
     filtreEtape !== "tous";
+
+  const filteredIds = useMemo(() => filtered.map((p) => p.id), [filtered]);
+  const selectedCount = selectedIds.size;
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((p) => selectedIds.has(p.id));
+  const someFilteredSelected =
+    filtered.some((p) => selectedIds.has(p.id)) && !allFilteredSelected;
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllFiltered = () => {
+    if (allFilteredSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        filteredIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    } else {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        filteredIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const selectedIdsArray = useMemo(() => [...selectedIds], [selectedIds]);
+
+  const runBulkDelete = () => {
+    if (selectedCount === 0) return;
+    const label =
+      selectedCount === 1
+        ? "Supprimer ce prospect ?"
+        : `Supprimer ${selectedCount} prospects ?`;
+    if (!confirm(label)) return;
+    onBulkDelete(selectedIdsArray);
+    clearSelection();
+  };
+
+  const runBulkAuditFait = (fait: boolean) => {
+    if (selectedCount === 0) return;
+    onBulkAuditFait(selectedIdsArray, fait);
+    clearSelection();
+  };
+
+  const runBulkReponse = (reponse: ProspectReponseClient) => {
+    if (selectedCount === 0) return;
+    onBulkReponse(selectedIdsArray, reponse);
+    clearSelection();
+  };
 
   return (
     <div className={floatingCard}>
@@ -293,6 +363,32 @@ export default function ProspectsTable({
             <span className="text-zinc-400"> / {counts.tous} au total</span>
           ) : null}
         </p>
+
+        {filtered.length > 0 ? (
+          <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3">
+            <button
+              type="button"
+              onClick={toggleSelectAllFiltered}
+              className="inline-flex items-center gap-2 rounded-xl px-2 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 sm:text-sm"
+              aria-pressed={allFilteredSelected}
+            >
+              {allFilteredSelected ? (
+                <CheckSquare className="h-4 w-4 text-[#007AFF]" aria-hidden />
+              ) : someFilteredSelected ? (
+                <MinusSquare className="h-4 w-4 text-[#007AFF]" aria-hidden />
+              ) : (
+                <Square className="h-4 w-4 text-zinc-400" aria-hidden />
+              )}
+              {allFilteredSelected ? "Tout désélectionner" : "Tout sélectionner"}
+              <span className="text-zinc-400">({filtered.length})</span>
+            </button>
+            {selectedCount > 0 ? (
+              <span className="text-xs font-medium text-[#007AFF] sm:text-sm">
+                {selectedCount} sélectionné{selectedCount > 1 ? "s" : ""}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {filtered.length === 0 ? (
@@ -317,6 +413,8 @@ export default function ProspectsTable({
             <li key={p.id}>
               <ProspectCard
                 prospect={p}
+                selected={selectedIds.has(p.id)}
+                onToggleSelect={() => toggleSelect(p.id)}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onReponseChange={onReponseChange}
@@ -326,19 +424,136 @@ export default function ProspectsTable({
           ))}
         </ul>
       )}
+
+      {selectedCount > 0 ? (
+        <BulkActionBar
+          count={selectedCount}
+          onAuditFait={() => runBulkAuditFait(true)}
+          onRetirerAudit={() => runBulkAuditFait(false)}
+          onValide={() => runBulkReponse("valide")}
+          onRefuse={() => runBulkReponse("refuse")}
+          onEnAttente={() => runBulkReponse("en_attente")}
+          onDelete={runBulkDelete}
+          onClear={clearSelection}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+interface BulkActionBarProps {
+  count: number;
+  onAuditFait: () => void;
+  onRetirerAudit: () => void;
+  onValide: () => void;
+  onRefuse: () => void;
+  onEnAttente: () => void;
+  onDelete: () => void;
+  onClear: () => void;
+}
+
+function BulkActionBar({
+  count,
+  onAuditFait,
+  onRetirerAudit,
+  onValide,
+  onRefuse,
+  onEnAttente,
+  onDelete,
+  onClear,
+}: BulkActionBarProps) {
+  const bulkBtn =
+    "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors sm:text-sm";
+
+  return (
+    <div
+      className="sticky bottom-0 z-30 border-t border-zinc-200/80 bg-white/95 px-3 py-3 backdrop-blur-md sm:px-6"
+      role="toolbar"
+      aria-label="Actions groupées"
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm font-semibold text-zinc-900">
+          {count} prospect{count > 1 ? "s" : ""} sélectionné{count > 1 ? "s" : ""}
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={onAuditFait}
+            className={`${bulkBtn} bg-emerald-600 text-white hover:bg-emerald-700`}
+          >
+            <Check className="h-3.5 w-3.5" aria-hidden />
+            Audit fait
+          </button>
+          <button
+            type="button"
+            onClick={onRetirerAudit}
+            className={`${bulkBtn} bg-zinc-100 text-zinc-700 hover:bg-zinc-200/80`}
+          >
+            Retirer audit
+          </button>
+          <button
+            type="button"
+            onClick={onValide}
+            className={`${bulkBtn} bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/80 hover:bg-emerald-100`}
+          >
+            Validé
+          </button>
+          <button
+            type="button"
+            onClick={onRefuse}
+            className={`${bulkBtn} bg-rose-50 text-rose-800 ring-1 ring-rose-200/80 hover:bg-rose-100`}
+          >
+            Refusé
+          </button>
+          <button
+            type="button"
+            onClick={onEnAttente}
+            className={`${bulkBtn} bg-[#007AFF]/10 text-[#007AFF] hover:bg-[#007AFF]/15`}
+          >
+            En attente
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className={`${bulkBtn} bg-rose-600 text-white hover:bg-rose-700`}
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+            Supprimer
+          </button>
+          <button
+            type="button"
+            onClick={onClear}
+            className={`${bulkBtn} text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800`}
+            aria-label="Annuler la sélection"
+          >
+            <X className="h-3.5 w-3.5" aria-hidden />
+            Annuler
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
 interface ProspectCardProps {
   prospect: Prospect;
+  selected: boolean;
+  onToggleSelect: () => void;
   onEdit: (p: Prospect) => void;
   onDelete: (id: string) => void;
   onReponseChange: (p: Prospect, reponse: ProspectReponseClient) => void;
   onAuditFaitChange: (p: Prospect, fait: boolean) => void;
 }
 
-function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditFaitChange }: ProspectCardProps) {
+function ProspectCard({
+  prospect: p,
+  selected,
+  onToggleSelect,
+  onEdit,
+  onDelete,
+  onReponseChange,
+  onAuditFaitChange,
+}: ProspectCardProps) {
   const et = libelleEtape(p.etapeContact);
   const dateAction = dateEtapeEnCours(p);
   const rep = p.reponseClient ?? "en_attente";
@@ -381,12 +596,33 @@ function ProspectCard({ prospect: p, onEdit, onDelete, onReponseChange, onAuditF
 
   return (
     <article
-      className={`group rounded-2xl border-0 p-4 transition-all duration-200 hover:-translate-y-0.5 sm:p-5 ${cardTheme.surface}`}
+      className={`group rounded-2xl border-0 p-4 transition-all duration-200 hover:-translate-y-0.5 sm:p-5 ${
+        selected ? "ring-2 ring-[#007AFF]/40 ring-offset-2 ring-offset-white " : ""
+      }${cardTheme.surface}`}
       aria-label={`Prospect ${p.entreprise}`}
+      aria-selected={selected}
     >
       <div className="flex flex-col gap-4">
         {/* Bandeau haut : identité + étape */}
         <div className="flex items-start gap-3 sm:gap-4">
+          <button
+            type="button"
+            onClick={onToggleSelect}
+            className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
+              selected
+                ? "bg-[#007AFF]/15 text-[#007AFF]"
+                : "bg-zinc-100/80 text-zinc-400 hover:bg-zinc-200/70 hover:text-zinc-600"
+            }`}
+            aria-label={selected ? `Désélectionner ${p.entreprise}` : `Sélectionner ${p.entreprise}`}
+            aria-pressed={selected}
+          >
+            {selected ? (
+              <CheckSquare className="h-5 w-5" aria-hidden />
+            ) : (
+              <Square className="h-5 w-5" aria-hidden />
+            )}
+          </button>
+
           <div
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold sm:h-12 sm:w-12 ${cardTheme.avatar}`}
             aria-hidden

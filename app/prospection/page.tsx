@@ -44,6 +44,37 @@ export default function ProspectionPage() {
     setProspects(prospects.filter((x) => x.id !== id));
   };
 
+  const bulkDeleteProspects = (ids: string[]) => {
+    const idSet = new Set(ids);
+    setProspects(prospects.filter((x) => !idSet.has(x.id)));
+  };
+
+  const bulkSetAuditFait = (ids: string[], fait: boolean) => {
+    const idSet = new Set(ids);
+    setProspects(
+      prospects.map((x) => {
+        if (!idSet.has(x.id)) return x;
+        return migrateProspect({
+          ...x,
+          dateAuditFait: fait ? todayDateISO() : undefined,
+          updatedAt: new Date().toISOString(),
+        });
+      })
+    );
+  };
+
+  const bulkSetReponse = (ids: string[], reponse: ProspectReponseClient) => {
+    const idSet = new Set(ids);
+    setProspects(
+      prospects.map((x) => {
+        if (!idSet.has(x.id)) return x;
+        const patch: Partial<Prospect> = { reponseClient: reponse, updatedAt: new Date().toISOString() };
+        if (reponse === "valide" || reponse === "refuse") patch.dateProchaineRelance = undefined;
+        return migrateProspect({ ...x, ...patch });
+      })
+    );
+  };
+
   const updateReponseProspect = (p: Prospect, reponse: ProspectReponseClient) => {
     setProspects(
       prospects.map((x) => {
@@ -164,6 +195,9 @@ export default function ProspectionPage() {
             onDelete={deleteProspect}
             onReponseChange={updateReponseProspect}
             onAuditFaitChange={updateAuditFaitProspect}
+            onBulkDelete={bulkDeleteProspects}
+            onBulkAuditFait={bulkSetAuditFait}
+            onBulkReponse={bulkSetReponse}
           />
         </section>
       </div>

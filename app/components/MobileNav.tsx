@@ -126,7 +126,7 @@ export default function MobileNav() {
           md:hidden fixed top-0 right-0 z-50 flex h-full w-[min(17.5rem,88vw)] flex-col
           rounded-l-[2rem] ${sidebarGradient} ${sidebarShadow}
           transform transition-transform duration-300 ease-out
-          ${isOpen ? "translate-x-0" : "translate-x-full"}
+          ${isOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"}
         `}
         aria-label="Menu principal"
         aria-hidden={!isOpen}

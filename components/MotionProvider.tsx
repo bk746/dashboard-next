@@ -13,6 +13,15 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** ScrollTrigger + transforms cassent le scroll natif sur iOS / mobile — animations desktop only. */
+function isTouchScrollDevice() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
+    window.matchMedia("(max-width: 768px)").matches
+  );
+}
+
 function runPageEnter(root: ParentNode | Document, reduced: boolean) {
   const staggerGroups = root.querySelectorAll<HTMLElement>(".stagger-cards");
   const cards = root.querySelectorAll<HTMLElement>(".motion-card");
@@ -68,7 +77,7 @@ function setupScrollReveals(root: ParentNode | Document, reduced: boolean) {
 
   if (reduced) return;
 
-  const targets = root.querySelectorAll<HTMLElement>("[data-reveal], section[aria-label]");
+  const targets = root.querySelectorAll<HTMLElement>("[data-reveal]");
 
   targets.forEach((el) => {
     if (el.closest(".stagger-cards")) return;
@@ -97,6 +106,7 @@ export default function MotionProvider({ children }: MotionProviderProps) {
   const pathname = usePathname();
 
   useLayoutEffect(() => {
+    if (isTouchScrollDevice()) return;
     const reduced = prefersReducedMotion();
     if (!reduced) {
       document.documentElement.classList.add("motion-js");
@@ -107,7 +117,10 @@ export default function MotionProvider({ children }: MotionProviderProps) {
   }, []);
 
   useEffect(() => {
+    if (isTouchScrollDevice()) return;
+
     ensureGsapPlugins();
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
     const root = document.querySelector<HTMLElement>("[data-page-shell]") ?? document;
     const reduced = prefersReducedMotion();
