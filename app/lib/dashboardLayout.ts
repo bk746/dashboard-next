@@ -22,7 +22,8 @@ export type DashboardWidgetId =
   | "cardProspectsEnCours"
   | "cardAuditProspection"
   | "cardRelanceProspection"
-  | "cardProgressionObjectifs";
+  | "cardProgressionObjectifs"
+  | "cardObjectifsSemaine";
 
 /** Bloc hero en tête : graphique CA + KPI CA / clients actifs à droite. */
 export const HERO_WIDGET_IDS: DashboardWidgetId[] = ["chartEvolutionCa", "kpiCa", "kpiClients"];
@@ -40,6 +41,7 @@ const LEGACY_CORE_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
 /** Affichage par défaut — les cartes hors de cette liste restent masquées jusqu’à activation dans Paramètres. */
 export const CORE_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
   ...LEGACY_CORE_DASHBOARD_WIDGET_IDS,
+  "cardObjectifsSemaine",
   "cardValeurPipeline",
   "cardProjetsEnCours",
   "cardProchaineEcheance",
@@ -56,7 +58,7 @@ export const CORE_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
   "cardSyntheseNette",
 ];
 
-export const TOP_WIDGET_IDS: DashboardWidgetId[] = ["quickLinks", "kpiObjectif"];
+export const TOP_WIDGET_IDS: DashboardWidgetId[] = ["quickLinks", "kpiObjectif", "cardObjectifsSemaine"];
 
 export const CHART_WIDGET_IDS: DashboardWidgetId[] = ["chartEvolutionCa", "chartActiviteClients"];
 
@@ -79,6 +81,7 @@ export const KPI_GRID_WIDGET_IDS: DashboardWidgetId[] = [
   "cardAuditProspection",
   "cardRelanceProspection",
   "cardProgressionObjectifs",
+  "cardObjectifsSemaine",
 ];
 
 export const FULL_WIDTH_WIDGET_IDS: DashboardWidgetId[] = ["cardRdvProspection", "devisKpiStrip"];
@@ -107,6 +110,7 @@ export const ALL_DASHBOARD_WIDGET_IDS: DashboardWidgetId[] = [
   "cardAuditProspection",
   "cardRelanceProspection",
   "cardProgressionObjectifs",
+  "cardObjectifsSemaine",
 ];
 
 function dedupeOrder(ids: DashboardWidgetId[]): DashboardWidgetId[] {
@@ -122,7 +126,7 @@ function dedupeOrder(ids: DashboardWidgetId[]): DashboardWidgetId[] {
 }
 
 /** Incrémenter pour une migration unique (nouvelles cartes visibles par défaut). */
-export const DASHBOARD_LAYOUT_VERSION = 2;
+export const DASHBOARD_LAYOUT_VERSION = 3;
 
 export interface DashboardLayoutPrefs {
   order: DashboardWidgetId[];
@@ -230,6 +234,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   cardAuditProspection: "[Prospection] Audit à faire",
   cardRelanceProspection: "[Prospection] Relance",
   cardProgressionObjectifs: "[Objectifs] Progression globale",
+  cardObjectifsSemaine: "[Objectifs] Objectifs de la semaine",
 };
 
 export function isKpiGridWidgetId(id: DashboardWidgetId): boolean {

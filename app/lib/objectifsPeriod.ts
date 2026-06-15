@@ -77,6 +77,19 @@ export function periodeLabelFr(periode: ObjectifPeriode): string {
   }
 }
 
+/** Libellé de la semaine en cours (lun.–dim.), ex. « 9 juin – 15 juin ». */
+export function formatWeekRangeFr(now = new Date()): string {
+  const { start, end } = getWeekBounds(now);
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+  const startStr = fmt(start);
+  const endStr =
+    start.getMonth() === end.getMonth()
+      ? end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })
+      : fmt(end);
+  return `${startStr} – ${endStr}`;
+}
+
 export function getFinancierEncaisseLabel(periode: ObjectifPeriode): string {
   switch (periode) {
     case "semaine":

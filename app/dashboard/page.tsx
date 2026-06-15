@@ -25,7 +25,7 @@ import {
   type DashboardLayoutPrefs,
   type DashboardWidgetId,
 } from "@/app/lib/dashboardLayout";
-import { getActuelPourObjectif, normalizeObjectifPeriode, getFinancierEncaisseLabel } from "@/app/lib/objectifsPeriod";
+import { getActuelPourObjectif, normalizeObjectifPeriode, getFinancierEncaisseLabel, formatWeekRangeFr } from "@/app/lib/objectifsPeriod";
 import {
   auditPasEncoreEnvoye,
   besoinRelance,
@@ -44,6 +44,7 @@ import EvolutionCACard from "./dashboard_components/EvolutionCACard";
 import CACard from "./dashboard_components/CACard";
 import ClientsActifCard from "./dashboard_components/ClientsActifCard";
 import ObjectifAnnuelCard from "./dashboard_components/ObjectifAnnuelCard";
+import ObjectifsSemaineCard from "./dashboard_components/ObjectifsSemaineCard";
 import NouveauxClientsCard from "./dashboard_components/NouveauxClientsCard";
 import DashboardQuickLinks from "./dashboard_components/DashboardQuickLinks";
 import { renderKpiGridWidget, type DashboardWidgetRenderContext } from "./dashboardWidgetsRender";
@@ -221,6 +222,20 @@ export default function Dashboard() {
     return progressions.length > 0 ? progressions.reduce((a, b) => a + b, 0) / progressions.length : 0;
   }, [objectifs, factures, clients, currentDate]);
 
+  const objectifsSemaine = useMemo(() => {
+    return objectifs
+      .filter((o) => normalizeObjectifPeriode(o.periode) === "semaine")
+      .map((o) => ({
+        id: o.id,
+        type: o.type,
+        libelle: o.libelle,
+        objectif: o.objectif,
+        actuel: getActuelPourObjectif(o, factures, clients, currentDate),
+      }));
+  }, [objectifs, factures, clients, currentDate]);
+
+  const weekLabel = useMemo(() => formatWeekRangeFr(currentDate), [currentDate]);
+
   const evolutionCAData = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (11 - i), 1);
@@ -335,7 +350,7 @@ export default function Dashboard() {
 
   const effectiveOrder = useMemo(() => {
     if (!hasNoData) return visibleOrder;
-    return visibleOrder.filter((id) => id === "quickLinks" || id === "kpiObjectif");
+    return visibleOrder.filter((id) => id === "quickLinks" || id === "kpiObjectif" || id === "cardObjectifsSemaine");
   }, [hasNoData, visibleOrder]);
 
   const blocks = useMemo(() => {
@@ -420,6 +435,9 @@ export default function Dashboard() {
                     objectifLibelle={widgetCtx.objectifFinancier?.libelle}
                     encaisseDescription={widgetCtx.encaisseDescription}
                   />
+                ) : null}
+                {wid === "cardObjectifsSemaine" ? (
+                  <ObjectifsSemaineCard items={objectifsSemaine} weekLabel={weekLabel} />
                 ) : null}
               </Fragment>
             ))}
