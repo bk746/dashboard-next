@@ -157,7 +157,7 @@ export default function MobileNav() {
     <>
       {/* Dock flottant premium — mobile uniquement */}
       <div
-        className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-50 pointer-events-none`}
+        className={`${sf} md:hidden fixed inset-x-0 bottom-0 z-50 pointer-events-none mobile-nav-root`}
         aria-hidden={false}
       >
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#F5F5F7] via-[#F5F5F7]/90 to-transparent" />

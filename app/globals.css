@@ -262,6 +262,31 @@ html.motion-js .motion-card {
   }
 }
 
+/* Modale ouverte — masquer la navbar mobile pour ne pas cacher le footer */
+@media (max-width: 767px) {
+  body:has(.app-overlay-backdrop) .mobile-nav-root {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .app-overlay-backdrop .overlay-form-compact label {
+    font-size: 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .app-overlay-backdrop .overlay-form-compact input:not([type="checkbox"]),
+  .app-overlay-backdrop .overlay-form-compact select,
+  .app-overlay-backdrop .overlay-form-compact textarea {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+    font-size: 0.875rem;
+  }
+
+  .app-overlay-backdrop .overlay-form-compact .grid {
+    gap: 0.75rem;
+  }
+}
+
 @keyframes splash-logo-in {
   from {
     opacity: 0;

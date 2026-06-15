@@ -28,6 +28,7 @@ import {
   todayDateISO,
 } from "@/app/prospection/prospection_utils";
 import { overlayBackdropClass, overlayScrollBodyClass, overlayPanelWideClass, overlayFooterClass, secondaryButtonClass } from "@/app/components/appCardStyles";
+import ModalPortal from "@/components/ModalPortal";
 
 const lightPanelSurface = "rounded-2xl border-0 bg-[#007AFF]/[0.06] p-4 sm:p-5 space-y-4";
 
@@ -183,10 +184,10 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
   const title = prospect ? "Modifier le prospect" : "Nouveau prospect";
 
   const lightInputClass =
-    "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2 text-zinc-800 placeholder:text-zinc-400 focus:border-[#007AFF] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/15 transition-colors";
-  const lightLabelClass = "block text-sm text-zinc-600 mb-2";
+    "w-full rounded-xl border border-zinc-200/90 bg-white px-3 py-1.5 text-sm text-zinc-800 placeholder:text-zinc-400 focus:border-[#007AFF] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/15 transition-colors md:px-4 md:py-2 md:text-base";
+  const lightLabelClass = "block text-xs text-zinc-600 mb-1.5 md:text-sm md:mb-2";
   const violetPrimaryBtn =
-    "px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-[#007AFF] transition-colors hover:bg-[#0066D6]";
+    "px-4 py-2 rounded-full font-semibold text-sm text-white bg-[#007AFF] transition-colors hover:bg-[#0066D6] md:px-5 md:py-2.5";
 
   const rdvTri = [...form.rdv].sort(
     (a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime()
@@ -224,16 +225,17 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
   };
 
   return (
+    <ModalPortal>
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={`${overlayPanelWideClass} ring-0 md:ring-1 md:ring-black/[0.05]`}
+        className={overlayPanelWideClass}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="prospect-form-title"
       >
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:py-5 md:pt-4">
-          <h2 id="prospect-form-title" className="text-lg font-semibold tracking-tight text-zinc-900 pr-2">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-4 py-3 sm:px-5 sm:py-4">
+          <h2 id="prospect-form-title" className="text-base font-semibold tracking-tight text-zinc-900 pr-2 md:text-lg">
             {title}
           </h2>
           <button
@@ -247,8 +249,8 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
         </div>
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className={overlayScrollBodyClass}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={`${overlayScrollBodyClass} overlay-form-compact`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div className="md:col-span-2">
                 <label className={lightLabelClass}>Entreprise *</label>
                 <input
@@ -644,7 +646,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
           </div>
 
           <div className={overlayFooterClass}>
-            <button type="button" onClick={onClose} className={secondaryButtonClass}>
+            <button type="button" onClick={onClose} className={`${secondaryButtonClass} py-2 text-sm md:py-2.5 md:text-base`}>
               Annuler
             </button>
             <button type="submit" className={violetPrimaryBtn}>
@@ -654,5 +656,6 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 }

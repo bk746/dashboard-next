@@ -52,14 +52,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="dark bg-[#F5F5F7]" suppressHydrationWarning>
+    <html lang="fr" className="bg-[#F5F5F7]" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F5F5F7] text-zinc-900`}
         suppressHydrationWarning
       >
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{document.documentElement.classList.add('dark');localStorage.setItem('theme','dark');}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');if(t!=='light')localStorage.setItem('theme','light');}}catch(e){}})();`,
           }}
         />
         <ThemeProvider>
