@@ -104,6 +104,7 @@ function WidgetTile({
   };
 
   const gridClass = getDashboardWidgetGridClass(id);
+  const isSmallWidget = getDashboardWidgetSize(id) === "small";
 
   return (
     <div
@@ -113,8 +114,10 @@ function WidgetTile({
         transition: isDragging ? undefined : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
       }}
       className={`dashboard-widget-tile relative ${gridClass} ${minHeightClass(id)} ${
-        isDragging ? "dashboard-widget-tile--dragging z-[5]" : isEditMode ? "z-[15]" : ""
-      } ${isEditMode && !isDragging ? "dashboard-widget-tile--editing" : ""}`}
+        isSmallWidget ? "dashboard-widget-tile--small" : ""
+      } ${isDragging ? "dashboard-widget-tile--dragging z-[5]" : isEditMode ? "z-[15]" : ""} ${
+        isEditMode && !isDragging ? "dashboard-widget-tile--editing" : ""
+      }`}
       onPointerDown={handlePointerDown}
       onPointerUp={clearLongPress}
       onPointerLeave={clearLongPress}

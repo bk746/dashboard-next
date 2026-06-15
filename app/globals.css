@@ -193,6 +193,75 @@ html.motion-js .motion-card {
   box-shadow: 0 28px 60px -18px rgba(0, 122, 255, 0.45);
 }
 
+/* Dashboard — petites cartes KPI : typo réduite sur mobile uniquement */
+@media (max-width: 767px) {
+  .dashboard-widget-tile--small .motion-card > div {
+    padding: 0.875rem !important;
+  }
+
+  .dashboard-widget-tile--small .motion-card .text-\[13px\] {
+    font-size: 0.6875rem;
+    line-height: 1.25;
+  }
+
+  .dashboard-widget-tile--small .motion-card .text-\[11px\] {
+    font-size: 0.625rem;
+    line-height: 1.35;
+  }
+
+  .dashboard-widget-tile--small .motion-card .text-\[28px\] {
+    font-size: 1.375rem;
+    line-height: 1.15;
+  }
+
+  .dashboard-widget-tile--small .motion-card .text-4xl {
+    font-size: 1.625rem;
+    line-height: 1.15;
+  }
+
+  .dashboard-widget-tile--small .motion-card .text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .dashboard-widget-tile--small .motion-card .text-xs {
+    font-size: 0.625rem;
+    line-height: 1.35;
+  }
+
+  .dashboard-widget-tile--small .motion-card .mt-4 {
+    margin-top: 0.625rem;
+  }
+
+  .dashboard-widget-tile--small .motion-card .gap-6 {
+    gap: 0.75rem;
+  }
+
+  .dashboard-widget-tile--small .motion-card .h-10.w-10 {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .dashboard-widget-tile--small .motion-card .h-10.w-10 svg,
+  .dashboard-widget-tile--small .motion-card .h-10.w-10 .h-5 {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+
+  .dashboard-widget-tile--small .motion-card .h-4.w-4 {
+    height: 0.75rem;
+    width: 0.75rem;
+  }
+
+  .dashboard-widget-tile--small .motion-card .min-h-\[148px\] {
+    min-height: 132px;
+  }
+
+  .dashboard-widget-tile--small {
+    min-height: 140px !important;
+  }
+}
+
 @keyframes splash-logo-in {
   from {
     opacity: 0;
