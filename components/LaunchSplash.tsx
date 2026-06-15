@@ -9,12 +9,12 @@ type Phase = "idle" | "splash" | "exit";
 
 /**
  * Écran d’ouverture premium — une fois par session d’onglet (pages auth).
+ * Phase initiale identique serveur/client pour éviter les erreurs d’hydratation.
  */
 export default function LaunchSplash({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<Phase>("splash");
 
   useLayoutEffect(() => {
-    if (typeof window === "undefined") return;
     try {
       if (sessionStorage.getItem(STORAGE_KEY)) {
         setPhase("idle");
@@ -25,8 +25,7 @@ export default function LaunchSplash({ children }: { children: React.ReactNode }
       return;
     }
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       try {
         sessionStorage.setItem(STORAGE_KEY, "1");
       } catch {

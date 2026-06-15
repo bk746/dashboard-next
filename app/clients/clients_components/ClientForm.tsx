@@ -11,7 +11,7 @@ import {
   isSecteurActiviteInList,
 } from "@/lib/secteursActivite";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
-import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
+import { overlayBackdropClass, overlayScrollBodyClass, overlayPanelClass, overlayFooterClass, secondaryButtonClass } from "@/app/components/appCardStyles";
 
 interface ClientFormProps {
   client?: Client | null;
@@ -127,8 +127,6 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
 
   const title = client ? "Modifier le client" : "Nouveau client";
 
-  const lightPanelClass =
-    "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25)] mx-2 sm:mx-4";
   const lightInputClass =
     "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#007AFF]/35";
   const lightLabelClass = "block text-[13px] font-medium text-zinc-500 mb-1.5";
@@ -138,13 +136,13 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={lightPanelClass}
+        className={`${overlayPanelClass} ring-0 md:ring-1 md:ring-black/[0.05]`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="client-form-title"
       >
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:py-5 md:pt-4">
           <h2 id="client-form-title" className="text-lg font-semibold tracking-tight text-zinc-900 pr-2">
             {title}
           </h2>
@@ -402,7 +400,7 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6">
+          <div className={overlayFooterClass}>
             <button type="button" onClick={onClose} className={`${secondaryButtonClass} w-full sm:w-auto`}>
               Annuler
             </button>

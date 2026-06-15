@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, Fragment, useEffect } from "react";
+import { useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Facture, Client, Objectif, Devis, Depense, Projet, Prospect } from "@/app/types";
@@ -17,11 +17,8 @@ import { countAbonnementPremiumClients } from "@/lib/abonnement";
 import {
   defaultDashboardLayoutPrefs,
   normalizeDashboardLayoutPrefs,
-  isTopWidgetId,
-  isHeroWidgetId,
-  isChartWidgetId,
-  isKpiGridWidgetId,
-  isFullWidthWidgetId,
+  reorderVisibleWidgets,
+  DASHBOARD_LAYOUT_VERSION,
   type DashboardLayoutPrefs,
   type DashboardWidgetId,
 } from "@/app/lib/dashboardLayout";
@@ -33,21 +30,13 @@ import {
   migrateProspect,
   prospectEnCours,
 } from "@/app/prospection/prospection_utils";
-import DevisKpiStrip from "@/app/finance/finance_components/DevisKpiStrip";
-import RendezVousAVenirCard from "@/app/prospection/prospection_components/RendezVousAVenirCard";
-import { staggerCardsGridClass } from "@/app/components/appCardStyles";
+import DashboardEditableGrid from "./dashboard_components/DashboardEditableGrid";
+import { renderDashboardWidget } from "./renderDashboardWidget";
+import { type DashboardWidgetRenderContext } from "./dashboardWidgetsRender";
+import { Sparkles, Settings } from "lucide-react";
 
 const dashboardShellClass =
   "min-h-screen w-full max-w-full overflow-x-hidden box-border bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12 [&_.motion-card]:!rounded-2xl [&_.motion-card]:!border-0 [&_.motion-card]:!ring-1 [&_.motion-card]:!ring-black/[0.05] [&_.motion-card]:!shadow-[0_1px_2px_rgba(0,0,0,0.03)]";
-import { Sparkles, Settings } from "lucide-react";
-import EvolutionCACard from "./dashboard_components/EvolutionCACard";
-import CACard from "./dashboard_components/CACard";
-import ClientsActifCard from "./dashboard_components/ClientsActifCard";
-import ObjectifAnnuelCard from "./dashboard_components/ObjectifAnnuelCard";
-import ObjectifsSemaineCard from "./dashboard_components/ObjectifsSemaineCard";
-import NouveauxClientsCard from "./dashboard_components/NouveauxClientsCard";
-import DashboardQuickLinks from "./dashboard_components/DashboardQuickLinks";
-import { renderKpiGridWidget, type DashboardWidgetRenderContext } from "./dashboardWidgetsRender";
 
 function countActifsWithActiviteInMonth(clients: Client[], year: number, month: number): number {
   return clients.filter((c) => {
@@ -353,207 +342,52 @@ export default function Dashboard() {
     return visibleOrder.filter((id) => id === "quickLinks" || id === "kpiObjectif" || id === "cardObjectifsSemaine");
   }, [hasNoData, visibleOrder]);
 
-  const blocks = useMemo(() => {
-    const out: React.ReactNode[] = [];
-    let i = 0;
-    const order = effectiveOrder;
-    const visibleSet = new Set(order);
-    const showHeroEv = visibleSet.has("chartEvolutionCa");
-    const showHeroCa = visibleSet.has("kpiCa");
-    const showHeroClients = visibleSet.has("kpiClients");
+  const widgetExtra = useMemo(
+    () => ({
+      evolutionCAData,
+      activiteClientsData,
+      objectifsSemaine,
+      weekLabel,
+      rendezVousAVenir,
+      devis,
+      router,
+    }),
+    [evolutionCAData, activiteClientsData, objectifsSemaine, weekLabel, rendezVousAVenir, devis, router]
+  );
 
-    if (showHeroEv || showHeroCa || showHeroClients) {
-      const hasSideKpis = showHeroCa || showHeroClients;
-      out.push(
-        <section
-          key="hero-overview"
-          className="mb-6 px-4 sm:px-6 md:mb-8 md:px-0"
-          aria-label="Vue principale — évolution du CA"
-        >
-          <div
-            className={`grid grid-cols-1 gap-4 sm:gap-6 ${
-              showHeroEv && hasSideKpis ? "lg:grid-cols-3" : hasSideKpis ? "sm:grid-cols-2" : ""
-            }`}
-          >
-            {showHeroEv ? (
-              <div
-                className={
-                  hasSideKpis
-                    ? "min-h-[360px] sm:min-h-[400px] lg:col-span-2 lg:min-h-[420px]"
-                    : "min-h-[360px] sm:min-h-[400px]"
-                }
-              >
-                <EvolutionCACard data={evolutionCAData} />
-              </div>
-            ) : null}
-            {hasSideKpis ? (
-              <div
-                className={`flex flex-col gap-4 sm:gap-6 ${
-                  showHeroEv ? "" : "sm:col-span-2 lg:col-span-3 sm:grid sm:grid-cols-2"
-                }`}
-              >
-                {showHeroCa ? (
-                  <CACard caMoisEncaisse={widgetCtx.caMoisEncaisse} variationPct={widgetCtx.variationCAPct} />
-                ) : null}
-                {showHeroClients ? (
-                  <ClientsActifCard
-                    clientsActifs={widgetCtx.clientsActifs}
-                    deltaActiviteVsMoisPrec={widgetCtx.deltaActiviteVsMoisPrec}
-                  />
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        </section>
-      );
-    }
+  const handleOrderChange = useCallback(
+    (newVisibleOrder: DashboardWidgetId[]) => {
+      setLayoutRaw((prev) => {
+        const base = normalizeDashboardLayoutPrefs(prev);
+        return {
+          order: reorderVisibleWidgets(base.order, base.hidden, newVisibleOrder),
+          hidden: base.hidden,
+          layoutVersion: DASHBOARD_LAYOUT_VERSION,
+        };
+      });
+    },
+    [setLayoutRaw]
+  );
 
-    while (i < order.length) {
-      const id = order[i];
+  const handleHideWidget = useCallback(
+    (id: DashboardWidgetId) => {
+      setLayoutRaw((prev) => {
+        const base = normalizeDashboardLayoutPrefs(prev);
+        if (base.hidden.includes(id)) return base;
+        return {
+          ...base,
+          hidden: [...base.hidden, id],
+          layoutVersion: DASHBOARD_LAYOUT_VERSION,
+        };
+      });
+    },
+    [setLayoutRaw]
+  );
 
-      if (isHeroWidgetId(id)) {
-        i++;
-        continue;
-      }
-
-      if (isTopWidgetId(id)) {
-        const batch: DashboardWidgetId[] = [];
-        while (i < order.length && isTopWidgetId(order[i])) {
-          batch.push(order[i]);
-          i++;
-        }
-        out.push(
-          <div key={`top-${out.length}`} className="mb-6 space-y-4 px-4 sm:px-6 md:px-0">
-            {batch.map((wid) => (
-              <Fragment key={wid}>
-                {wid === "quickLinks" ? <DashboardQuickLinks /> : null}
-                {wid === "kpiObjectif" ? (
-                  <ObjectifAnnuelCard
-                    montantActuel={widgetCtx.montantPourObjectifFinancier}
-                    objectif={widgetCtx.objectifAnnuelValue}
-                    progression={widgetCtx.progressionObjectif}
-                    objectifLibelle={widgetCtx.objectifFinancier?.libelle}
-                    encaisseDescription={widgetCtx.encaisseDescription}
-                  />
-                ) : null}
-                {wid === "cardObjectifsSemaine" ? (
-                  <ObjectifsSemaineCard items={objectifsSemaine} weekLabel={weekLabel} />
-                ) : null}
-              </Fragment>
-            ))}
-          </div>
-        );
-        continue;
-      }
-
-      if (isChartWidgetId(id)) {
-        const batch: DashboardWidgetId[] = [];
-        while (i < order.length && isChartWidgetId(order[i])) {
-          batch.push(order[i]);
-          i++;
-        }
-        const chartBatch = batch.filter((wid) => wid !== "chartEvolutionCa");
-        if (chartBatch.length === 0) continue;
-
-        const hasAc = chartBatch.includes("chartActiviteClients");
-        out.push(
-          <section key={`charts-${out.length}`} className="px-4 sm:px-6 md:px-0 mb-8" aria-labelledby="dash-charts-heading">
-            <div className="mb-4 flex items-end justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <span className="block h-5 w-1 rounded-full bg-gradient-to-b from-sky-500 to-sky-500/30" aria-hidden />
-                <div>
-                  <h2 id="dash-charts-heading" className="text-base font-semibold tracking-tight text-zinc-900">
-                    Activité clients
-                  </h2>
-                  <p className="text-xs text-zinc-500">Dernière activité par mois, 12 mois glissants.</p>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-6">
-              {hasAc ? (
-                <div className="min-h-[380px] sm:min-h-[440px]">
-                  <NouveauxClientsCard data={activiteClientsData} />
-                </div>
-              ) : null}
-            </div>
-          </section>
-        );
-        continue;
-      }
-
-      if (isFullWidthWidgetId(id)) {
-        if (id === "cardRdvProspection") {
-          out.push(
-            <section key={`rdv-${out.length}`} className="px-4 sm:px-6 md:px-0 mb-8" aria-label="Rendez-vous prospection">
-              <RendezVousAVenirCard
-                items={rendezVousAVenir}
-                onOpenProspect={() => {
-                  router.push("/prospection");
-                }}
-              />
-            </section>
-          );
-          i++;
-          continue;
-        }
-        if (id === "devisKpiStrip") {
-          out.push(
-            <section key={`devis-${out.length}`} className="px-4 sm:px-6 md:px-0 mb-8" aria-labelledby="dash-devis-kpi">
-              <div className="mb-4">
-                <h2 id="dash-devis-kpi" className="text-[17px] font-semibold tracking-tight text-zinc-900">
-                  Vue d&apos;ensemble devis
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  Signés, pipeline (brouillon + envoyé) et refus — mêmes indicateurs que dans Finance.
-                </p>
-              </div>
-              <DevisKpiStrip devis={devis} embedded />
-            </section>
-          );
-          i++;
-          continue;
-        }
-        i++;
-        continue;
-      }
-
-      if (isKpiGridWidgetId(id)) {
-        const batch: DashboardWidgetId[] = [];
-        while (i < order.length && isKpiGridWidgetId(order[i])) {
-          batch.push(order[i]);
-          i++;
-        }
-        out.push(
-          <section
-            key={`kpi-grid-${out.length}`}
-            className="px-4 sm:px-6 md:px-0 mb-6 md:mb-8"
-            aria-label="Indicateurs"
-          >
-            <div
-              className={`grid ${staggerCardsGridClass} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-6`}
-            >
-              {batch.map((bid) => (
-                <Fragment key={bid}>{renderKpiGridWidget(bid, widgetCtx)}</Fragment>
-              ))}
-            </div>
-          </section>
-        );
-        continue;
-      }
-
-      i++;
-    }
-
-    return out;
-  }, [
-    effectiveOrder,
-    evolutionCAData,
-    activiteClientsData,
-    widgetCtx,
-    rendezVousAVenir,
-    router,
-    devis,
-  ]);
+  const renderWidget = useCallback(
+    (id: DashboardWidgetId) => renderDashboardWidget(id, widgetCtx, widgetExtra),
+    [widgetCtx, widgetExtra]
+  );
 
   const dateLabel = useMemo(() => {
     return currentDate.toLocaleDateString("fr-FR", {
@@ -596,7 +430,14 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {blocks}
+        {effectiveOrder.length > 0 ? (
+          <DashboardEditableGrid
+            widgetIds={effectiveOrder}
+            onOrderChange={handleOrderChange}
+            onHide={handleHideWidget}
+            renderWidget={renderWidget}
+          />
+        ) : null}
 
         {hasNoData ? (
           <div className="px-4 sm:px-6 md:px-0 mb-8">

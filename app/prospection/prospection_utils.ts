@@ -312,7 +312,7 @@ export function migrateProspect(raw: Prospect): Prospect {
 
 function migrateAuditFields(p: Prospect): Prospect {
   let dateAuditFait = p.dateAuditFait?.trim() || undefined;
-  let dateAuditEnvoye = p.dateAuditEnvoye?.trim() || undefined;
+  const dateAuditEnvoye = p.dateAuditEnvoye?.trim() || undefined;
   if (!dateAuditFait && p.dateAuditPersoEnvoye?.trim()) {
     dateAuditFait = p.dateAuditPersoEnvoye.trim();
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { FaSearch, FaChevronDown, FaEllipsisV } from "react-icons/fa";
 import { FolderKanban } from "lucide-react";
@@ -119,11 +119,8 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
   const [statusFilter, setStatusFilter] = useState<string>("Tous les statuts");
   const [vueScope, setVueScope] = useState<"encours" | "tous">("encours");
 
-  useEffect(() => {
-    if (vueScope === "encours" && statusFilter === "Terminé") {
-      setStatusFilter("Tous les statuts");
-    }
-  }, [vueScope, statusFilter]);
+  const effectiveStatusFilter =
+    vueScope === "encours" && statusFilter === "Terminé" ? "Tous les statuts" : statusFilter;
 
   const projetsEnCoursCount = useMemo(() => projets.filter((p) => p.statut !== "Terminé").length, [projets]);
 
@@ -137,11 +134,12 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
         projet.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
         projet.entreprise.toLowerCase().includes(searchTerm.toLowerCase()) ||
         projet.responsable.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "Tous les statuts" || projet.statut === statusFilter;
+      const matchesStatus =
+        effectiveStatusFilter === "Tous les statuts" || projet.statut === effectiveStatusFilter;
       return matchesSearch && matchesStatus;
     });
     return sortProjetsForSuivi(list);
-  }, [projets, searchTerm, statusFilter, vueScope]);
+  }, [projets, searchTerm, effectiveStatusFilter, vueScope]);
 
   const isFilteredEmpty = projets.length > 0 && filteredProjets.length === 0;
   const isDatabaseEmpty = projets.length === 0;
@@ -150,7 +148,7 @@ export default function ProjetsTable({ projets, onDelete, onEdit }: ProjetsTable
     projets.every((p) => p.statut === "Terminé") &&
     vueScope === "encours" &&
     !searchTerm &&
-    statusFilter === "Tous les statuts";
+    effectiveStatusFilter === "Tous les statuts";
 
   const getStatutBadgeColor = (statut: string) => {
     switch (statut) {

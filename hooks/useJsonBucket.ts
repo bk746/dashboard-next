@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { useDataSync } from "@/context/DataSyncContext";
 
 /**
@@ -8,45 +8,41 @@ import { useDataSync } from "@/context/DataSyncContext";
  * `defaultValue` sert au parse si la clé est absente.
  * Le setter accepte une valeur ou une fonction `(prev) => next` (comme useState).
  */
+const defaultByKey = new Map<string, unknown>();
+
+function getStableDefault<T>(key: string, defaultValue: T): T {
+  if (!defaultByKey.has(key)) {
+    defaultByKey.set(key, defaultValue);
+  }
+  return defaultByKey.get(key) as T;
+}
+
+function parseBucket<T>(raw: string | undefined | null, def: T): T {
+  if (raw == null || raw === "") return def;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return def;
+  }
+}
+
 export function useJsonBucket<T>(
   key: string,
   defaultValue: T
 ): [T, (value: T | ((prev: T) => T)) => void, boolean] {
   const { buckets, setBucket, ready } = useDataSync();
   const raw = buckets[key];
+  const def = getStableDefault(key, defaultValue);
 
-  /**
-   * Les littéraux `[]` / `{}` passés en default changent de référence à chaque rendu parent.
-   * Les inclure dans useMemo recréait la valeur à chaque frame → effets qui dépendent de la
-   * donnée (ex. migration audit) rappelaient setBucket en boucle (maximum update depth).
-   */
-  const defaultForKeyRef = useRef<{ key: string; val: T } | null>(null);
-  if (!defaultForKeyRef.current || defaultForKeyRef.current.key !== key) {
-    defaultForKeyRef.current = { key, val: defaultValue };
-  }
-
-  const value = useMemo(() => {
-    const def = defaultForKeyRef.current!.val;
-    if (raw == null || raw === "") return def;
-    try {
-      return JSON.parse(raw) as T;
-    } catch {
-      return def;
-    }
-  }, [raw, key]);
-
-  const valueRef = useRef(value);
-  useEffect(() => {
-    valueRef.current = value;
-  }, [value]);
+  const value = useMemo(() => parseBucket(raw, def), [raw, def]);
 
   const setValue = useCallback(
     (next: T | ((prev: T) => T)) => {
-      const resolved =
-        typeof next === "function" ? (next as (prev: T) => T)(valueRef.current) : next;
+      const current = parseBucket(buckets[key], def);
+      const resolved = typeof next === "function" ? (next as (prev: T) => T)(current) : next;
       void setBucket(key, JSON.stringify(resolved));
     },
-    [key, setBucket]
+    [key, setBucket, buckets, def]
   );
 
   return [value, setValue, ready];

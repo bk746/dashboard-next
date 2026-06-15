@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["playwright", "web-push"],
@@ -10,8 +11,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-// PWA : activée en production uniquement (désactivée en dev)
-const withPWA = require("@ducanh2912/next-pwa").default({
+const withPWA = withPWAInit({
   dest: "public",
   register: true,
   disable: process.env.NODE_ENV === "development",
@@ -22,6 +22,4 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   },
 });
 
-export default process.env.NODE_ENV === "development"
-  ? nextConfig
-  : withPWA(nextConfig);
+export default process.env.NODE_ENV === "development" ? nextConfig : withPWA(nextConfig);

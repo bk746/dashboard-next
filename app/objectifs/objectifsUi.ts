@@ -1,5 +1,7 @@
 /** Styles partagés — page Objectifs (thème clair minimaliste, inspiration Apple). */
 
+import { overlayPanelClass } from "@/app/components/appCardStyles";
+
 export const objectifsShellClass =
   "min-h-screen w-full bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12";
 
@@ -16,7 +18,7 @@ export const objectifsInputClass =
   "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#007AFF]/35";
 
 export const objectifsLightPanel =
-  "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25)] ring-1 ring-black/[0.05] mx-2 sm:mx-4";
+  `${overlayPanelClass} ring-0 md:ring-1 md:ring-black/[0.05]`;
 
 export const objectifsLightInput =
   "w-full rounded-xl border-0 bg-zinc-100/80 px-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#007AFF]/35";

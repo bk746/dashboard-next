@@ -677,7 +677,7 @@ function ProspectCard({
         selected ? "ring-2 ring-[#007AFF]/40 ring-offset-2 ring-offset-white " : ""
       }${cardTheme.surface}`}
       aria-label={`Prospect ${p.entreprise}`}
-      aria-selected={selected}
+      data-selected={selected ? true : undefined}
     >
       <div className="flex flex-col gap-4">
         {/* Bandeau haut : identité + étape */}

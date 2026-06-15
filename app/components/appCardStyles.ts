@@ -134,28 +134,28 @@ export const sectionIntroTitleClass =
 
 export const sectionIntroDescClass = "mt-0.5 text-xs text-zinc-500 dark:text-zinc-400";
 
-/** Overlays / modales */
+/** Overlays / modales — plein écran sur mobile, centré sur desktop */
 export const overlayBackdropClass =
-  "fixed inset-0 z-[70] flex items-start md:items-center justify-center p-4 pt-20 md:pt-4 " +
-  "bg-zinc-950/55 dark:bg-black/65 backdrop-blur-md data-lenis-prevent";
+  "fixed inset-0 z-[80] flex flex-col md:flex-row md:items-center md:justify-center " +
+  "bg-zinc-950/55 dark:bg-black/65 backdrop-blur-md data-lenis-prevent md:p-4";
 
 export const overlayPanelClass =
-  "w-full max-w-2xl max-h-[min(90vh,800px)] flex flex-col overflow-hidden rounded-2xl " +
-  "border border-zinc-200/90 dark:border-white/[0.08] bg-white dark:bg-[#12131a] " +
-  "shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)] dark:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.75)] " +
-  "mx-2 sm:mx-4";
+  "flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white dark:bg-[#12131a] " +
+  "md:mx-2 md:max-h-[min(90vh,800px)] md:max-w-2xl md:flex-none md:rounded-2xl " +
+  "md:border md:border-zinc-200/90 dark:md:border-white/[0.08] " +
+  "md:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)] dark:md:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.75)]";
 
 export const overlayPanelNarrowClass =
-  "w-full max-w-md max-h-[min(90vh,720px)] flex flex-col overflow-hidden rounded-2xl " +
-  "border border-zinc-200/90 dark:border-white/[0.08] bg-white dark:bg-[#12131a] " +
-  "shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)] dark:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.75)] " +
-  "mx-2 sm:mx-4";
+  "flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white dark:bg-[#12131a] " +
+  "md:mx-2 md:max-h-[min(90vh,720px)] md:max-w-md md:flex-none md:rounded-2xl " +
+  "md:border md:border-zinc-200/90 dark:md:border-white/[0.08] " +
+  "md:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)] dark:md:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.75)]";
 
 export const overlayPanelWideClass =
-  "w-full max-w-3xl max-h-[min(90vh,900px)] flex flex-col overflow-hidden rounded-2xl " +
-  "border border-zinc-200/90 dark:border-white/[0.08] bg-white dark:bg-[#12131a] " +
-  "shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)] dark:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.75)] " +
-  "mx-2 sm:mx-4";
+  "flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white dark:bg-[#12131a] " +
+  "md:mx-2 md:max-h-[min(92vh,900px)] md:max-w-3xl md:flex-none md:rounded-2xl " +
+  "md:border md:border-zinc-200/90 dark:md:border-white/[0.08] " +
+  "md:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)] dark:md:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.75)]";
 
 /** Aperçu document (fond sombre, zone d’impression blanche à l’intérieur) */
 export const overlayDocumentViewerClass =
@@ -176,7 +176,8 @@ export const overlayScrollBodyClass =
 
 export const overlayFooterClass =
   "flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 dark:border-white/[0.06] " +
-  "bg-zinc-50/80 dark:bg-white/[0.02] px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6";
+  "bg-zinc-50/80 dark:bg-white/[0.02] px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:pb-4 " +
+  "sm:flex-row sm:justify-end sm:gap-3 sm:px-6";
 
 /** Alias compat. imports historiques `dashboardCard*` */
 export const dashboardCardKpi = `${dashboardCardBase} p-6 md:p-5 h-full flex justify-between overflow-hidden`;

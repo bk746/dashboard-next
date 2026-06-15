@@ -72,7 +72,6 @@ export function prospectMatchesSearch(p: Prospect, rawQuery: string): boolean {
   if (!query) return true;
 
   const { loose, compact } = getHaystack(p);
-  const qCompact = compactSearchText(query);
 
   const tokens = query.split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return true;

@@ -256,3 +256,57 @@ export function isHeroWidgetId(id: DashboardWidgetId): boolean {
 export function isFullWidthWidgetId(id: DashboardWidgetId): boolean {
   return FULL_WIDTH_WIDGET_IDS.includes(id);
 }
+
+/** Taille visuelle dans la grille dashboard (style widgets iOS). */
+export type DashboardWidgetSize = "small" | "large" | "full";
+
+export function getDashboardWidgetSize(id: DashboardWidgetId): DashboardWidgetSize {
+  if (isFullWidthWidgetId(id)) return "full";
+  if (id === "chartEvolutionCa" || id === "chartActiviteClients") return "large";
+  if (id === "quickLinks" || id === "kpiObjectif" || id === "cardObjectifsSemaine") return "full";
+  return "small";
+}
+
+/** Classes Tailwind pour le placement en grille (2 col mobile, 3 col desktop). */
+export function getDashboardWidgetGridClass(id: DashboardWidgetId): string {
+  const size = getDashboardWidgetSize(id);
+  switch (size) {
+    case "full":
+      return "col-span-2 md:col-span-3";
+    case "large":
+      return "col-span-2 row-span-2 min-h-[340px] sm:min-h-[400px]";
+    case "small":
+    default:
+      return "col-span-1 min-h-[160px]";
+  }
+}
+
+export function reorderVisibleWidgets(
+  order: DashboardWidgetId[],
+  hidden: DashboardWidgetId[],
+  newVisibleOrder: DashboardWidgetId[]
+): DashboardWidgetId[] {
+  const hiddenSet = new Set(hidden);
+  const hiddenTail = order.filter((id) => hiddenSet.has(id));
+  const seen = new Set<DashboardWidgetId>();
+  const merged: DashboardWidgetId[] = [];
+  for (const id of newVisibleOrder) {
+    if (!seen.has(id)) {
+      seen.add(id);
+      merged.push(id);
+    }
+  }
+  for (const id of hiddenTail) {
+    if (!seen.has(id)) {
+      seen.add(id);
+      merged.push(id);
+    }
+  }
+  for (const id of order) {
+    if (!seen.has(id)) {
+      seen.add(id);
+      merged.push(id);
+    }
+  }
+  return merged;
+}

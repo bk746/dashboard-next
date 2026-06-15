@@ -75,9 +75,10 @@ export default function DashboardLayoutPanel() {
     <div className={parametresFloatingCard}>
       <h3 className={parametresSectionTitle}>Première page (dashboard)</h3>
       <p className="mt-2 text-sm text-zinc-500">
-        Cochez les cartes à afficher sur la page d&apos;accueil, puis ordonnez-les. Les cartes « grille » se
-        regroupent sur une même rangée lorsqu&apos;elles sont consécutives ; les blocs larges restent en pleine
-        largeur.
+        Cochez les cartes à afficher sur la page d&apos;accueil, puis ordonnez-les. Sur le dashboard, un{" "}
+        <strong className="font-medium text-zinc-700">appui long</strong> ou un{" "}
+        <strong className="font-medium text-zinc-700">clic droit</strong> active le mode réorganisation (style
+        iOS).
       </p>
 
       <ul className="mt-6 space-y-3">

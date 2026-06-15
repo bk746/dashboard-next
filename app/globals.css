@@ -108,6 +108,89 @@ html.motion-js .motion-card {
   .splash-progress {
     animation: none !important;
   }
+  .dashboard-widget-tile--editing {
+    animation: none !important;
+  }
+}
+
+/* Dashboard — mode édition style iOS (appui long / clic droit) */
+@keyframes dashboard-jiggle {
+  0%,
+  100% {
+    transform: rotate(-0.55deg) scale(1.015);
+  }
+  50% {
+    transform: rotate(0.55deg) scale(1.015);
+  }
+}
+
+.dashboard-edit-mode {
+  position: relative;
+}
+
+.dashboard-edit-mode::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: rgba(0, 0, 0, 0.03);
+  pointer-events: none;
+  animation: dashboard-dim-in 0.25s ease both;
+}
+
+@keyframes dashboard-dim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dashboard-widget-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-widget-tile--editing {
+  animation: dashboard-jiggle 0.32s ease-in-out infinite;
+}
+
+.dashboard-widget-tile--editing .motion-card {
+  box-shadow: 0 14px 44px -14px rgba(0, 0, 0, 0.24);
+}
+
+.dashboard-widget-tile--dragging {
+  opacity: 1;
+}
+
+.dashboard-widget-tile--dragging .motion-card {
+  opacity: 0;
+}
+
+.dashboard-widget-placeholder {
+  background: rgba(0, 122, 255, 0.06);
+  border: 2px dashed rgba(0, 122, 255, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(0, 122, 255, 0.08);
+  animation: dashboard-placeholder-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dashboard-placeholder-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.dashboard-widget-tile--lifted {
+  z-index: 50;
+}
+
+.dashboard-widget-tile--lifted .motion-card {
+  box-shadow: 0 28px 60px -18px rgba(0, 122, 255, 0.45);
 }
 
 @keyframes splash-logo-in {

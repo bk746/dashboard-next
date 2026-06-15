@@ -27,7 +27,7 @@ import {
   REPONSES_CLIENT,
   todayDateISO,
 } from "@/app/prospection/prospection_utils";
-import { overlayBackdropClass, overlayScrollBodyClass, secondaryButtonClass } from "@/app/components/appCardStyles";
+import { overlayBackdropClass, overlayScrollBodyClass, overlayPanelWideClass, overlayFooterClass, secondaryButtonClass } from "@/app/components/appCardStyles";
 
 const lightPanelSurface = "rounded-2xl border-0 bg-[#007AFF]/[0.06] p-4 sm:p-5 space-y-4";
 
@@ -182,8 +182,6 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
 
   const title = prospect ? "Modifier le prospect" : "Nouveau prospect";
 
-  const lightPanelWideClass =
-    "w-full max-w-3xl max-h-[min(92vh,900px)] flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.05] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.25)] mx-2 sm:mx-4";
   const lightInputClass =
     "w-full rounded-xl border border-zinc-200/90 bg-white px-4 py-2 text-zinc-800 placeholder:text-zinc-400 focus:border-[#007AFF] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/15 transition-colors";
   const lightLabelClass = "block text-sm text-zinc-600 mb-2";
@@ -228,13 +226,13 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
   return (
     <div className={overlayBackdropClass} onClick={onClose} role="presentation">
       <div
-        className={lightPanelWideClass}
+        className={`${overlayPanelWideClass} ring-0 md:ring-1 md:ring-black/[0.05]`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="prospect-form-title"
       >
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6 sm:py-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:py-5 md:pt-4">
           <h2 id="prospect-form-title" className="text-lg font-semibold tracking-tight text-zinc-900 pr-2">
             {title}
           </h2>
@@ -645,7 +643,7 @@ export default function ProspectForm({ prospect, onClose, onSave }: ProspectForm
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/50 px-5 py-4 sm:flex-row sm:justify-end sm:gap-3 sm:px-6">
+          <div className={overlayFooterClass}>
             <button type="button" onClick={onClose} className={secondaryButtonClass}>
               Annuler
             </button>

@@ -29,8 +29,8 @@ export default function RootProviders({ children }: { children: React.ReactNode 
   /** Fond racine = même teinte que la page (évite la bande noire au overscroll iOS). */
   useEffect(() => {
     const bg = isPublicAuth || !isLightPage ? "#0a0a0c" : "#F5F5F7";
-    document.documentElement.style.backgroundColor = bg;
-    document.body.style.backgroundColor = bg;
+    document.documentElement.style.setProperty("background-color", bg);
+    document.body.style.setProperty("background-color", bg);
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", bg);
   }, [isPublicAuth, isLightPage]);
 
