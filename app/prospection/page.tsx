@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, UserPlus, FileText, Bell } from "lucide-react";
 import type { Prospect, ProspectReponseClient } from "@/app/types";
 import { useJsonBucket } from "@/hooks/useJsonBucket";
@@ -16,6 +16,7 @@ import {
 import ProspectForm from "./prospection_components/ProspectForm";
 import ProspectsTable from "./prospection_components/ProspectsTable";
 import RendezVousAVenirCard from "./prospection_components/RendezVousAVenirCard";
+import { mergeIadProspects } from "./importIadProspects";
 
 const prospectionShellClass =
   "min-h-screen w-full bg-[#F5F5F7] text-zinc-900 p-3 sm:p-4 md:p-8 md:px-10 lg:px-12";
@@ -24,9 +25,19 @@ const primaryButtonClass =
   "inline-flex items-center justify-center gap-2 rounded-full bg-[#007AFF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0066D6] w-full sm:w-auto";
 
 export default function ProspectionPage() {
-  const [prospects, setProspects] = useJsonBucket<Prospect[]>("prospection", []);
+  const [prospects, setProspects, bucketReady] = useJsonBucket<Prospect[]>("prospection", []);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Prospect | null>(null);
+  const iadImportDone = useRef(false);
+
+  useEffect(() => {
+    if (!bucketReady || iadImportDone.current) return;
+    iadImportDone.current = true;
+    setProspects((prev) => {
+      const { merged, added } = mergeIadProspects(prev);
+      return added > 0 ? merged : prev;
+    });
+  }, [bucketReady, setProspects]);
 
   const saveProspect = (p: Prospect) => {
     const toSave = migrateProspect(p);
